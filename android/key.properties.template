@@ -1,0 +1,4 @@
+storePassword=your-keystore-password
+keyPassword=your-key-password
+keyAlias=nook
+storeFile=/absolute/path/to/nook-keystore.jks

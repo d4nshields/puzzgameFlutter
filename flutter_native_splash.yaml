@@ -1,0 +1,21 @@
+flutter_native_splash:
+  # Background color of the splash screen
+  color: "#FFFFFF"
+  
+  # Image that will be displayed in the center of the splash screen
+  image: assets/images/splashscreen-portrait.png
+  
+  # Fade out duration in milliseconds
+  android_gravity: center
+  ios_content_mode: center
+  
+  # Ensure fullscreen mode
+  fullscreen: true
+  
+  # Support portrait and landscape modes
+  android_12:
+    image: assets/images/splashscreen-portrait.png
+    icon_background_color: "#FFFFFF"
+    
+  # Web splash screen config (if needed)
+  web: false

@@ -1,0 +1,72 @@
+name: puzzgame_flutter
+description: "Nook - A Flutter-based puzzle game app with hexagonal architecture."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.7.2 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # UI
+  cupertino_icons: ^1.0.6
+  
+  # State Management
+  flutter_riverpod: ^2.6.1  # For reactive state management
+  
+  # Utility & Architecture
+  freezed_annotation: ^3.0.0  # Updated to latest version
+  json_annotation: ^4.8.1     # For JSON serialization
+  dartz: ^0.10.1              # For functional programming (Either, Option types)
+  equatable: ^2.0.5           # For value comparisons
+  uuid: ^4.3.3                # For generating unique IDs
+  
+  # Dependency Injection
+  get_it: ^8.0.3              # Updated to latest version
+  
+  # Splash screen
+  flutter_native_splash: ^2.3.11
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  
+  # Code generation
+  build_runner: ^2.4.9
+  freezed: ^3.0.6             # Updated to latest version
+  json_serializable: ^6.7.1
+  
+  # Testing
+  mockito: ^5.4.6           # For mocking in tests
+  flutter_driver:           # For integration tests
+    sdk: flutter
+  integration_test:         # For UI tests
+    sdk: flutter
+    
+  # App icon generator
+  flutter_launcher_icons: ^0.13.1
+
+flutter:
+  uses-material-design: true
+  
+  # Include image assets
+  assets:
+    - assets/images/
+
+# Splash screen configuration
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/images/splashscreen-portrait.png
+  android: true
+  ios: true
+
+# App icon configuration
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/app_icon-512.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/app_icon-512.png"
