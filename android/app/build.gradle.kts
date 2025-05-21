@@ -18,7 +18,11 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "org.shields.nook"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "28.1.13356709"  // Updated to the required version for flutter_native_splash
+    ndkVersion = "28.1.13356709"
+
+    sourceSets {
+        getByName("main").java.srcDirs("src/main/kotlin")
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -30,14 +34,11 @@ android {
     }
 
     defaultConfig {
-        // Using a unique Application ID for the Play Store
         applicationId = "org.shields.nook"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 4  // Incremented from 1 to 2
+        versionName = "0.1.3"  // Incremented from 0.1.0 to 0.1.1
     }
 
     signingConfigs {

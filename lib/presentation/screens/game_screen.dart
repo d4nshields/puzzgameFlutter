@@ -126,6 +126,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          const SizedBox( height: 40),
+          AspectRatio(
+            aspectRatio: 1,
+            child: Image.asset('assets/images/reassembled.png', fit: BoxFit.contain,
+            ),
+          ),
           const Text(
             'Game in Progress',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
