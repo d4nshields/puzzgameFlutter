@@ -1,0 +1,16 @@
+# Recommended Categories for Nook
+
+## Primary Category
+Games > Puzzle
+
+## Secondary Category (if available)
+Games > Casual
+
+## Content Rating
+Everyone (ESRB) / 3+ (PEGI)
+
+## App Type
+Game
+
+## Tags (if allowed)
+puzzle, brain games, logic, minimalist, offline games
