@@ -37,8 +37,8 @@ android {
         applicationId = "org.shields.apps.nook"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 3
-        versionName = "0.1.2"
+        versionCode = 1
+        versionName = "0.1.0"
     }
 
     signingConfigs {
@@ -66,21 +66,17 @@ android {
                 signingConfig = signingConfigs.getByName("debug")
             }
             
-            // For now, disable minification to avoid R8 issues
-            // This is fine for a simple app like yours
+            // Disable minification for now to avoid R8 issues
             isMinifyEnabled = false
             isShrinkResources = false
-            
-            // If you want to enable minification later, uncomment these:
-            // isMinifyEnabled = true
-            // isShrinkResources = true
-            // proguardFiles(
-            //     getDefaultProguardFile("proguard-android-optimize.txt"), 
-            //     "proguard-rules.pro",
-            //     "missing_rules.pro"
-            // )
         }
     }
+}
+
+dependencies {
+    // Add Play Core dependencies explicitly if needed for deferred components
+    implementation("com.google.android.play:core:1.10.3")
+    implementation("com.google.android.play:core-ktx:1.8.1")
 }
 
 flutter {

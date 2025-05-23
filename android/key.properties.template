@@ -1,4 +1,6 @@
 storePassword=your-keystore-password
 keyPassword=your-key-password
-keyAlias=nook
-storeFile=/absolute/path/to/nook-keystore.jks
+keyAlias=upload
+storeFile=/absolute/path/to/upload-keystore.jks
+# If using PKCS12 format instead, use:
+# storeFile=/absolute/path/to/upload-keystore.p12

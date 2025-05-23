@@ -1,0 +1,4 @@
+storePassword=your-actual-keystore-password
+keyPassword=your-actual-key-password
+keyAlias=upload
+storeFile=/home/daniel/upload-keystore.p12

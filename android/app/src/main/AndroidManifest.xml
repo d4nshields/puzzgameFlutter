@@ -4,7 +4,7 @@
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity
-            android:name="org.shields.nook.MainActivity"
+            android:name="org.shields.apps.nook.MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity=""
