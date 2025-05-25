@@ -5,9 +5,9 @@ import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
 /// This class is part of the application layer in hexagonal architecture
 /// and orchestrates the interaction between the domain and infrastructure.
 class StartGameUseCase {
-  final GameModule _gameModule;
   
   StartGameUseCase(this._gameModule);
+  final GameModule _gameModule;
   
   /// Executes the use case to start a new game
   ///
@@ -22,15 +22,15 @@ class StartGameUseCase {
     }
     
     // Start the game with the specified difficulty
-    return await _gameModule.startGame(difficulty: difficulty);
+    return _gameModule.startGame(difficulty: difficulty);
   }
 }
 
 /// Use case for resuming a saved game
 class ResumeGameUseCase {
-  final GameModule _gameModule;
   
   ResumeGameUseCase(this._gameModule);
+  final GameModule _gameModule;
   
   /// Executes the use case to resume a saved game
   ///
@@ -45,7 +45,7 @@ class ResumeGameUseCase {
     }
     
     // Try to resume the game with the specified session ID
-    return await _gameModule.resumeGame(sessionId: sessionId);
+    return _gameModule.resumeGame(sessionId: sessionId);
   }
 }
 
@@ -56,6 +56,6 @@ class EndGameUseCase {
   /// [gameSession] - The active game session to end
   /// Returns the final [GameResult]
   Future<GameResult> execute({required GameSession gameSession}) async {
-    return await gameSession.endGame();
+    return gameSession.endGame();
   }
 }

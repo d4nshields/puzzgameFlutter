@@ -1,5 +1,5 @@
-import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
 import 'package:equatable/equatable.dart';
+import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
 import 'package:uuid/uuid.dart';
 
 /// Implementation of the GameModule interface
@@ -42,12 +42,6 @@ class NookGameModule implements GameModule {
 
 /// Implementation of the GameSession interface for the Nook game
 class NookGameSession extends Equatable implements GameSession {
-  final String _sessionId;
-  final int _difficulty;
-  int _score = 0;
-  int _level;
-  bool _isActive = true;
-  final DateTime _startTime = DateTime.now();
   
   NookGameSession({
     required String sessionId,
@@ -56,6 +50,12 @@ class NookGameSession extends Equatable implements GameSession {
   }) : _sessionId = sessionId,
        _level = initialLevel,
        _difficulty = difficulty;
+  final String _sessionId;
+  final int _difficulty;
+  int _score = 0;
+  int _level;
+  bool _isActive = true;
+  final DateTime _startTime = DateTime.now();
   
   @override
   String get sessionId => _sessionId;

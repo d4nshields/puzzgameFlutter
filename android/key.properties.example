@@ -1,4 +1,8 @@
-storePassword=your-actual-keystore-password
-keyPassword=your-actual-key-password
+# Local Development Key Properties Template
+# Copy this file to key.properties and fill in your actual values
+# DO NOT commit key.properties to version control
+
+storePassword=your-keystore-password
+keyPassword=your-key-password
 keyAlias=upload
-storeFile=/home/daniel/upload-keystore.p12
+storeFile=/absolute/path/to/your/upload-keystore.p12

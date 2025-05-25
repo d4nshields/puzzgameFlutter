@@ -57,11 +57,6 @@ abstract class GameSession {
 
 /// Contains the final results of a completed game session
 class GameResult {
-  final String sessionId;
-  final int finalScore;
-  final int maxLevel;
-  final Duration playTime;
-  final bool completed;
 
   const GameResult({
     required this.sessionId,
@@ -70,4 +65,9 @@ class GameResult {
     required this.playTime,
     required this.completed,
   });
+  final String sessionId;
+  final int finalScore;
+  final int maxLevel;
+  final Duration playTime;
+  final bool completed;
 }

@@ -12,7 +12,7 @@ class HomeScreen extends StatelessWidget {
         centerTitle: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

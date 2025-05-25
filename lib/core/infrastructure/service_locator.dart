@@ -14,5 +14,5 @@ void setupDependencies() {
   // Register Use Cases
   serviceLocator.registerFactory(() => StartGameUseCase(serviceLocator()));
   serviceLocator.registerFactory(() => ResumeGameUseCase(serviceLocator()));
-  serviceLocator.registerFactory(() => EndGameUseCase());
+  serviceLocator.registerFactory(EndGameUseCase.new);
 }

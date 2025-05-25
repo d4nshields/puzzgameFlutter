@@ -44,7 +44,6 @@ class NookGameApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.deepPurple,
-          brightness: Brightness.light,
         ),
         useMaterial3: true,
       ),
@@ -55,7 +54,6 @@ class NookGameApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      themeMode: ThemeMode.system, // Follows the device theme
       initialRoute: '/',
       routes: {
         '/': (context) => const HomeScreen(),
