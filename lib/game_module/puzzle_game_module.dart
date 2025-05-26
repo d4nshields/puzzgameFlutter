@@ -2,9 +2,8 @@ import 'dart:math';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
-
 import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
+import 'package:uuid/uuid.dart';
 
 /// Implementation of the GameModule interface for jigsaw puzzle game
 ///
