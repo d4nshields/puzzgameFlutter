@@ -54,6 +54,7 @@ flutter:
   # Include image assets
   assets:
     - assets/images/
+    - assets/puzzles/
 
 # Splash screen configuration
 flutter_native_splash:

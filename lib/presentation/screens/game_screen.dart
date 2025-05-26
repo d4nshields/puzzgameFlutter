@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:puzzgame_flutter/core/application/game_use_cases.dart';
 import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
+import 'package:puzzgame_flutter/game_module/puzzle_game_module.dart';
 
 /// Provider for game session state
 final gameSessionProvider = StateProvider<GameSession?>((ref) => null);
@@ -120,16 +121,66 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       );
     }
     
-    // This is a placeholder for the actual game UI
-    // It will be replaced with the actual game module's UI
+    // Check if this is a puzzle game session
+    if (gameSession is PuzzleGameSession) {
+      return PuzzleGameWidget(
+        gameSession: gameSession,
+        onGameCompleted: _onPuzzleCompleted,
+      );
+    }
+    
+    // Fallback to placeholder for other game types (like NookGameModule)
+    return _buildPlaceholderUI(gameSession);
+  }
+  
+  /// Handle puzzle completion
+  void _onPuzzleCompleted() {
+    _showCompletionCelebration();
+    
+    // TODO: Add logic for progression to next level/puzzle
+    // TODO: Save high score
+    // TODO: Unlock achievements
+  }
+  
+  /// Show celebration for puzzle completion
+  void _showCompletionCelebration() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.celebration, color: Colors.amber),
+            SizedBox(width: 8),
+            Text('Congratulations! Puzzle completed!'),
+          ],
+        ),
+        duration: Duration(seconds: 3),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+  
+  /// Placeholder UI for non-puzzle game sessions
+  Widget _buildPlaceholderUI(GameSession gameSession) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox( height: 40),
+          const SizedBox(height: 40),
           AspectRatio(
             aspectRatio: 1,
-            child: Image.asset('assets/images/reassembled.png', fit: BoxFit.contain,
+            child: Image.asset(
+              'assets/images/reassembled.png',
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: Colors.grey[300],
+                  child: const Icon(
+                    Icons.image_not_supported,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
+                );
+              },
             ),
           ),
           const Text(
