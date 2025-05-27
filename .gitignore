@@ -50,4 +50,5 @@ app.*.map.json
 *.p12
 
 # GitHub Actions generated keystore
+**/android/app/keystore.jks
 **/android/app/keystore.p12
