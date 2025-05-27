@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:puzzgame_flutter/core/application/game_use_cases.dart';
 import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
+import 'package:puzzgame_flutter/core/domain/services/settings_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/game_module/puzzle_game_module.dart';
 
@@ -28,11 +29,15 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   
   Future<void> _startGame() async {
     try {
+      // Get settings service to determine difficulty
+      final settingsService = serviceLocator<SettingsService>();
+      final difficulty = await settingsService.getDifficulty();
+      
       // Get the start game use case from service locator
       final startGameUseCase = serviceLocator<StartGameUseCase>();
       
-      // Default to medium difficulty (1-easy, 2-medium, 3-hard)
-      final gameSession = await startGameUseCase.execute(difficulty: 2);
+      // Start game with user's preferred difficulty
+      final gameSession = await startGameUseCase.execute(difficulty: difficulty);
       
       // Update the provider with the new game session
       ref.read(gameSessionProvider.notifier).state = gameSession;

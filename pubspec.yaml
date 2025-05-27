@@ -27,6 +27,9 @@ dependencies:
   
   # Splash screen
   flutter_native_splash: ^2.3.11
+  
+  # Storage
+  shared_preferences: ^2.2.2  # For persistent settings storage
 
 dev_dependencies:
   flutter_test:

@@ -1,0 +1,125 @@
+name: Build and Deploy to Play Store
+
+on:
+  release:
+    types: [published]
+  
+  # Allow manual triggering for testing
+  workflow_dispatch:
+    inputs:
+      track:
+        description: 'Deployment track (internal/alpha/beta/production)'
+        required: true
+        default: 'internal'
+        type: choice
+        options:
+        - internal
+        - alpha
+        - beta
+        - production
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.x'
+        channel: 'stable'
+        cache: true
+        
+    - name: Verify Flutter installation
+      run: |
+        which flutter
+        flutter --version
+        flutter doctor -v
+        
+    - name: Get Flutter dependencies
+      run: flutter pub get
+      
+    - name: Analyze code
+      run: flutter analyze
+      
+    - name: Run unit tests
+      run: flutter test
+      
+    - name: Run widget tests
+      run: flutter test test/widget/
+      
+  build-and-deploy:
+    name: Build and Deploy to Play Store
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.x'
+        channel: 'stable'
+        cache: true
+        
+    - name: Get Flutter dependencies
+      run: flutter pub get
+      
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+        
+    - name: Decode keystore
+      run: |
+        echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
+        
+    - name: Create key.properties
+      run: |
+        echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
+        echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+        echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+        echo "storeFile=keystore.jks" >> android/key.properties
+        
+    - name: Extract version from tag
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" = "release" ]; then
+          TAG_NAME=${{ github.event.release.tag_name }}
+        else
+          TAG_NAME=$(git describe --tags --abbrev=0 || echo "v0.1.0")
+        fi
+        VERSION_NAME=${TAG_NAME#v}
+        echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_OUTPUT
+        echo "Version: $VERSION_NAME"
+        
+    - name: Update version in files
+      run: |
+        # Update pubspec.yaml
+        sed -i "s/^version:.*/version: ${{ steps.version.outputs.VERSION_NAME }}+${{ github.run_number }}/" pubspec.yaml
+        
+        # Update build.gradle.kts
+        sed -i "s/versionCode = [0-9]\+/versionCode = ${{ github.run_number }}/" android/app/build.gradle.kts
+        sed -i "s/versionName = \"[^\"]*\"/versionName = \"${{ steps.version.outputs.VERSION_NAME }}\"/" android/app/build.gradle.kts
+        
+    - name: Build App Bundle
+      run: flutter build appbundle --release
+      
+    - name: Upload to Play Store
+      uses: r0adkll/upload-google-play@v1
+      with:
+        serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        packageName: org.shields.apps.nook
+        releaseFiles: build/app/outputs/bundle/release/app-release.aab
+        track: ${{ github.event.inputs.track || 'internal' }}
+        status: completed
+        inAppUpdatePriority: 2
+        whatsNewDirectory: distribution/whatsnew
+        releaseName: ${{ steps.version.outputs.VERSION_NAME }}

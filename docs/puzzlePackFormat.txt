@@ -1,0 +1,57 @@
+Puzzle pack format:
+
+Each puzzle pack is delivered as a zip archive. After extraction, the folder structure is as follows:
+
+puzzle_pack_name/
+
+├── manifest.json                      # JSON file describing metadata for the pack
+
+├── puzzle_01/
+
+│   ├── preview.jpg                    # Preview image of the completed puzzle
+
+│   └── layouts/
+
+│       ├── 2x2/
+
+│       │   ├── outline.svg
+
+│       │   ├── outline-split.svg
+
+│       │   └── pieces/
+
+│       │       ├── 0_0.png
+
+│       │       ├── 0_1.png
+
+│       │       ├── 1_0.png
+
+│       │       └── 1_1.png
+
+│       ├── 16x16/
+
+│       │   ├── outline.svg
+
+│       │   └── pieces/
+
+│       │       └── 0_0.png through 15_15.png
+
+│       └── 32x32/
+
+│           └── (same format)
+
+├── puzzle_02/
+
+│   └── (same structure)
+
+Each layout contains:
+
+- outline.svg: the vector outline of the jigsaw cut pattern
+
+- preview-outline.png: the preview with the cut outline for reference
+
+- pieces/: transparent PNG files, each representing a jigsaw piece
+
+The puzzle pieces are named using the pattern X_Y.png based on their row and column in the grid (0-indexed). For example, 2_3.png is the piece at row 2, column 3. This naming allows a script to reconstruct the solved puzzle layout using the filenames and the solution.json which then maps the X_Y grid coordinate to pixel offsets within the original puzzle image.
+
+
