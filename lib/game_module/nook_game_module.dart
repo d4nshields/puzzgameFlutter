@@ -1,4 +1,3 @@
-import 'package:equatable/equatable.dart';
 import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
 import 'package:uuid/uuid.dart';
 
@@ -41,7 +40,10 @@ class NookGameModule implements GameModule {
 }
 
 /// Implementation of the GameSession interface for the Nook game
-class NookGameSession extends Equatable implements GameSession {
+/// 
+/// Note: This class is intentionally mutable as it represents an active game session
+/// that changes state during gameplay.
+class NookGameSession implements GameSession {
   
   NookGameSession({
     required String sessionId,
@@ -118,7 +120,4 @@ class NookGameSession extends Equatable implements GameSession {
   void advanceLevel() {
     _level++;
   }
-  
-  @override
-  List<Object?> get props => [_sessionId, _score, _level, _isActive, _difficulty];
 }
