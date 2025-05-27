@@ -30,8 +30,14 @@ jobs:
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: 'latest'
+        flutter-version: '3.32.0'
+        channel: 'stable'
         cache: true
+        
+    - name: Verify Flutter installation
+      run: |
+        flutter --version
+        flutter doctor -v
         
     - name: Get Flutter dependencies
       run: flutter pub get
@@ -57,7 +63,8 @@ jobs:
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: 'latest'
+        flutter-version: '3.32.0'
+        channel: 'stable'
         cache: true
         
     - name: Get Flutter dependencies

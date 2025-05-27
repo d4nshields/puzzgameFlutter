@@ -5,4 +5,4 @@
 storePassword=your-keystore-password
 keyPassword=your-key-password
 keyAlias=upload
-storeFile=/absolute/path/to/your/upload-keystore.p12
+storeFile=/absolute/path/to/your/update-keystore.jks
