@@ -1,8 +1,9 @@
 import 'dart:math';
 
-import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
+import 'package:puzzgame_flutter/core/domain/services/settings_service.dart';
+import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:uuid/uuid.dart';
 
 /// Implementation of the GameModule interface for jigsaw puzzle game
@@ -24,8 +25,11 @@ class PuzzleGameModule implements GameModule {
   Future<GameSession> startGame({required int difficulty}) async {
     print('PuzzleGameModule: Starting new puzzle game with difficulty $difficulty');
     
-    // Map difficulty to grid size
-    final gridSize = _getDifficultyGridSize(difficulty);
+    // Get grid size from settings service to ensure consistency
+    final settingsService = serviceLocator<SettingsService>();
+    final gridSize = settingsService.getGridSizeForDifficulty(difficulty);
+    
+    print('PuzzleGameModule: Using ${gridSize}x$gridSize grid for difficulty $difficulty');
     
     // Create and return a new puzzle game session
     final session = PuzzleGameSession(
@@ -47,20 +51,10 @@ class PuzzleGameModule implements GameModule {
   
   @override
   String get version => _version;
-  
-  /// Maps difficulty level to grid size
-  int _getDifficultyGridSize(int difficulty) {
-    switch (difficulty) {
-      case 1: return 8;   // Easy: 8x8 = 64 pieces
-      case 2: return 16;  // Medium: 16x16 = 256 pieces  
-      case 3: return 32;  // Hard: 32x32 = 1024 pieces
-      default: return 16; // Default to medium
-    }
-  }
 }
 
 /// Implementation of the GameSession interface for the puzzle game
-class PuzzleGameSession extends Equatable implements GameSession {
+class PuzzleGameSession implements GameSession {
   
   PuzzleGameSession({
     required String sessionId,
@@ -108,7 +102,7 @@ class PuzzleGameSession extends Equatable implements GameSession {
   List<List<PuzzlePiece?>> get puzzleGrid => _puzzleGrid.map(List<PuzzlePiece?>.from).toList();
   String get currentPuzzleId => _currentPuzzleId;
   bool get isCompleted => _piecesPlaced == totalPieces;
-  DateTime get startTime => _startTime; // Add public getter for start time
+  DateTime get startTime => _startTime;
   
   /// Initialize the puzzle with pieces
   Future<void> _initializePuzzle() async {
@@ -294,21 +288,10 @@ class PuzzleGameSession extends Equatable implements GameSession {
     
     return true;
   }
-  
-  @override
-  List<Object?> get props => [
-    _sessionId, 
-    _score, 
-    _level, 
-    _isActive, 
-    _difficulty,
-    _piecesPlaced,
-    _currentPuzzleId,
-  ];
 }
 
 /// Represents a single puzzle piece
-class PuzzlePiece extends Equatable {
+class PuzzlePiece {
   const PuzzlePiece({
     required this.id,
     required this.correctRow,
@@ -327,9 +310,6 @@ class PuzzlePiece extends Equatable {
   
   /// Path to the piece image asset
   final String assetPath;
-  
-  @override
-  List<Object?> get props => [id, correctRow, correctCol, assetPath];
   
   @override
   String toString() => 'PuzzlePiece(id: $id, correctPos: ($correctRow, $correctCol))';
@@ -414,11 +394,10 @@ class _PuzzleGameWidgetState extends State<PuzzleGameWidget> {
         child: GridView.builder(
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: widget.gameSession.gridSize,
-            mainAxisSpacing: widget.gameSession.gridSize > 16 ? 1 : 2, // Tighter spacing for large grids
+            mainAxisSpacing: widget.gameSession.gridSize > 16 ? 1 : 2,
             crossAxisSpacing: widget.gameSession.gridSize > 16 ? 1 : 2,
           ),
           itemCount: widget.gameSession.totalPieces,
-          // Add caching for performance with large grids
           cacheExtent: widget.gameSession.gridSize > 16 ? 1000 : 500,
           itemBuilder: (context, index) {
             final row = index ~/ widget.gameSession.gridSize;
@@ -435,7 +414,7 @@ class _PuzzleGameWidgetState extends State<PuzzleGameWidget> {
                     decoration: BoxDecoration(
                       border: Border.all(
                         color: candidateData.isNotEmpty ? Colors.blue : Colors.grey[300]!,
-                        width: candidateData.isNotEmpty ? 2 : 0.5, // Thinner borders for large grids
+                        width: candidateData.isNotEmpty ? 2 : 0.5,
                       ),
                       color: piece != null ? null : Colors.grey[50],
                     ),
@@ -443,11 +422,9 @@ class _PuzzleGameWidgetState extends State<PuzzleGameWidget> {
                         ? Image.asset(
                             piece.assetPath,
                             fit: BoxFit.cover,
-                            // Add caching and optimize for large grids
                             cacheWidth: widget.gameSession.gridSize > 16 ? 64 : null,
                             cacheHeight: widget.gameSession.gridSize > 16 ? 64 : null,
                             errorBuilder: (context, error, stackTrace) {
-                              // Fallback when asset is not found
                               return Container(
                                 color: Colors.blue[200],
                                 child: widget.gameSession.gridSize <= 16 
@@ -457,7 +434,7 @@ class _PuzzleGameWidgetState extends State<PuzzleGameWidget> {
                                           style: const TextStyle(fontSize: 12),
                                         ),
                                       )
-                                    : null, // No text for very small cells
+                                    : null,
                               );
                             },
                           )
@@ -471,7 +448,7 @@ class _PuzzleGameWidgetState extends State<PuzzleGameWidget> {
                                   ),
                                 ),
                               )
-                            : null, // No text labels for 32x32 grid
+                            : null,
                   ),
                 );
               },
