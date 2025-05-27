@@ -15,6 +15,9 @@ void main() {
     // Verify that the welcome text appears
     expect(find.text('Welcome to Nook!'), findsOneWidget);
     
+    // Verify that the app bar title appears
+    expect(find.text('Nook'), findsOneWidget);
+    
     // Verify that the buttons appear
     expect(find.text('Start New Game'), findsOneWidget);
     expect(find.text('Settings'), findsOneWidget);
@@ -25,7 +28,8 @@ void main() {
     await tester.pumpAndSettle();
     
     // Verify the about dialog content
-    expect(find.text('Nook Game'), findsWidgets); // Appears in both app bar and dialog
+    // Note: "Nook" now appears twice - once in app bar, once in dialog
+    expect(find.text('Nook'), findsNWidgets(2));
     expect(find.text('1.0.0'), findsOneWidget);
   });
 }
