@@ -1,85 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:puzzgame_flutter/core/domain/services/settings_service.dart';
-import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:puzzgame_flutter/core/application/settings_providers.dart';
 
-/// Settings screen for the application
-class SettingsScreen extends StatefulWidget {
+/// Settings screen for the application - now fully reactive
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
-  @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
+  String _getDifficultyDescription(WidgetRef ref, int difficulty) {
+    final settingsService = ref.read(settingsServiceProvider);
+    final gridSize = settingsService.getGridSizeForDifficulty(difficulty);
+    final pieceCount = settingsService.getPieceCountForDifficulty(difficulty);
+    return '${gridSize}×$gridSize grid ($pieceCount pieces)';
+  }
 
-class _SettingsScreenState extends State<SettingsScreen> {
-  late SettingsService _settingsService;
-  int _difficulty = 2; // Default to medium difficulty
-  bool _soundEnabled = true;
-  bool _vibrationEnabled = true;
-  bool _isLoading = true;
-  
   @override
-  void initState() {
-    super.initState();
-    _settingsService = serviceLocator<SettingsService>();
-    _loadSettings();
-  }
-  
-  Future<void> _loadSettings() async {
-    try {
-      final difficulty = await _settingsService.getDifficulty();
-      final soundEnabled = await _settingsService.getSoundEnabled();
-      final vibrationEnabled = await _settingsService.getVibrationEnabled();
-      
-      setState(() {
-        _difficulty = difficulty;
-        _soundEnabled = soundEnabled;
-        _vibrationEnabled = vibrationEnabled;
-        _isLoading = false;
-      });
-    } catch (e) {
-      // Handle error, use defaults
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-  
-  Future<void> _saveSettings() async {
-    try {
-      await _settingsService.setDifficulty(_difficulty);
-      await _settingsService.setSoundEnabled(_soundEnabled);
-      await _settingsService.setVibrationEnabled(_vibrationEnabled);
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Settings saved'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-        Navigator.pop(context);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to save settings'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    }
-  }
-  
-  String _getDifficultyDescription(int difficulty) {
-    final gridSize = _settingsService.getGridSizeForDifficulty(difficulty);
-    final pieceCount = _settingsService.getPieceCountForDifficulty(difficulty);
-    return '${gridSize}x$gridSize grid ($pieceCount pieces)';
-  }
-  
-  @override
-  Widget build(BuildContext context) {
-    if (_isLoading) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch all settings providers
+    final difficultyAsync = ref.watch(difficultyProvider);
+    final soundEnabledAsync = ref.watch(soundEnabledProvider);
+    final vibrationEnabledAsync = ref.watch(vibrationEnabledProvider);
+
+    // Show loading state if any setting is loading
+    final isLoading = difficultyAsync.isLoading || 
+                     soundEnabledAsync.isLoading || 
+                     vibrationEnabledAsync.isLoading;
+
+    if (isLoading && !difficultyAsync.hasValue && !soundEnabledAsync.hasValue && !vibrationEnabledAsync.hasValue) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Settings'),
@@ -89,10 +35,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       );
     }
-    
+
+    // Handle error states
+    final hasError = difficultyAsync.hasError || 
+                    soundEnabledAsync.hasError || 
+                    vibrationEnabledAsync.hasError;
+
+    if (hasError && !difficultyAsync.hasValue && !soundEnabledAsync.hasValue && !vibrationEnabledAsync.hasValue) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Settings'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error, color: Colors.red, size: 48),
+              const SizedBox(height: 16),
+              const Text('Failed to load settings'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  // Refresh all providers
+                  ref.invalidate(difficultyProvider);
+                  ref.invalidate(soundEnabledProvider);
+                  ref.invalidate(vibrationEnabledProvider);
+                },
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Get the current values
+    final difficulty = difficultyAsync.value ?? 2;
+    final soundEnabled = soundEnabledAsync.value ?? true;
+    final vibrationEnabled = vibrationEnabledAsync.value ?? true;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
+        // Add a visual indicator when changes are auto-saving
+        actions: [
+          if (difficultyAsync.isLoading || soundEnabledAsync.isLoading || vibrationEnabledAsync.isLoading)
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -106,8 +102,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 8),
             
+            // Auto-save indicator
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.green[50],
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.green[200]!),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.auto_awesome, size: 16, color: Colors.green[700]),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Settings auto-save',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.green[700],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 20),
+
             // Difficulty setting
             const Text(
               'Difficulty',
@@ -116,76 +139,141 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            RadioListTile<int>(
-              title: const Text('Easy'),
-              subtitle: Text(_getDifficultyDescription(1)),
-              value: 1,
-              groupValue: _difficulty,
-              onChanged: (value) {
-                setState(() {
-                  _difficulty = value!;
-                });
-              },
-            ),
-            RadioListTile<int>(
-              title: const Text('Medium'),
-              subtitle: Text(_getDifficultyDescription(2)),
-              value: 2,
-              groupValue: _difficulty,
-              onChanged: (value) {
-                setState(() {
-                  _difficulty = value!;
-                });
-              },
-            ),
-            RadioListTile<int>(
-              title: const Text('Hard'),
-              subtitle: Text(_getDifficultyDescription(3)),
-              value: 3,
-              groupValue: _difficulty,
-              onChanged: (value) {
-                setState(() {
-                  _difficulty = value!;
-                });
-              },
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // Sound settings
-            SwitchListTile(
-              title: const Text('Sound Effects'),
-              value: _soundEnabled,
-              onChanged: (value) {
-                setState(() {
-                  _soundEnabled = value;
-                });
-              },
-            ),
-            
-            // Vibration settings
-            SwitchListTile(
-              title: const Text('Vibration'),
-              value: _vibrationEnabled,
-              onChanged: (value) {
-                setState(() {
-                  _vibrationEnabled = value;
-                });
-              },
-            ),
-            
-            const Spacer(),
-            
-            // Save button
-            Center(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(200, 50),
-                ),
-                onPressed: _saveSettings,
-                child: const Text('Save Settings'),
+            const SizedBox(height: 8),
+
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.blue[200]!),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                children: [
+                  RadioListTile<int>(
+                    title: const Text('Easy'),
+                    subtitle: Text(_getDifficultyDescription(ref, 1)),
+                    value: 1,
+                    groupValue: difficulty,
+                    activeColor: Colors.green,
+                    onChanged: (value) {
+                      if (value != null) {
+                        // Immediately save the new difficulty
+                        ref.read(difficultyProvider.notifier).setDifficulty(value);
+                        
+                        // Show feedback
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Difficulty changed! Game will restart.'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                  const Divider(height: 1),
+                  RadioListTile<int>(
+                    title: const Text('Medium'),
+                    subtitle: Text(_getDifficultyDescription(ref, 2)),
+                    value: 2,
+                    groupValue: difficulty,
+                    activeColor: Colors.orange,
+                    onChanged: (value) {
+                      if (value != null) {
+                        ref.read(difficultyProvider.notifier).setDifficulty(value);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Difficulty changed! Game will restart.'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                  const Divider(height: 1),
+                  RadioListTile<int>(
+                    title: const Text('Hard'),
+                    subtitle: Text(_getDifficultyDescription(ref, 3)),
+                    value: 3,
+                    groupValue: difficulty,
+                    activeColor: Colors.red,
+                    onChanged: (value) {
+                      if (value != null) {
+                        ref.read(difficultyProvider.notifier).setDifficulty(value);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Difficulty changed! Game will restart.'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ],
               ),
             ),
+
+            const SizedBox(height: 20),
+
+            // Sound settings - now reactive
+            SwitchListTile(
+              title: const Text('Sound Effects'),
+              subtitle: const Text('Enable audio feedback'),
+              value: soundEnabled,
+              onChanged: (value) {
+                // Immediately save the new setting
+                ref.read(soundEnabledProvider.notifier).setSoundEnabled(value);
+              },
+            ),
+
+            // Vibration settings - now reactive
+            SwitchListTile(
+              title: const Text('Vibration'),
+              subtitle: const Text('Enable haptic feedback'),
+              value: vibrationEnabled,
+              onChanged: (value) {
+                // Immediately save the new setting
+                ref.read(vibrationEnabledProvider.notifier).setVibrationEnabled(value);
+              },
+            ),
+
+            const Spacer(),
+
+            // Keep the save button for the "elevator door close" effect 😉
+            Center(
+              child: Column(
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(200, 50),
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () {
+                      // This button doesn't actually do anything anymore,
+                      // but users might expect it, like the elevator close door button!
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Settings are already saved automatically!'),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                    },
+                    child: const Text('Save Settings'),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    '✨ All changes are saved automatically',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.green,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
           ],
         ),
       ),
