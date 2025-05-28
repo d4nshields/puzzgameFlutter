@@ -37,8 +37,8 @@ android {
         applicationId = "org.shields.apps.nook"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 5
-        versionName = "0.1.4"
+        versionCode = 8
+        versionName = "0.1.7"
     }
 
     signingConfigs {
