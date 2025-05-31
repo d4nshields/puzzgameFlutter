@@ -13,10 +13,10 @@ void main() {
     ));
 
     // Verify that the welcome text appears
-    expect(find.text('Welcome to Nook!'), findsOneWidget);
+    expect(find.text('Welcome to Puzzle Bazaar!'), findsOneWidget);
     
     // Verify that the app bar title appears
-    expect(find.text('Nook'), findsOneWidget);
+    expect(find.text('Puzzle Bazaar'), findsOneWidget);
     
     // Verify that the buttons appear
     expect(find.text('Start New Game'), findsOneWidget);
@@ -28,8 +28,8 @@ void main() {
     await tester.pumpAndSettle();
     
     // Verify the about dialog content
-    // Note: "Nook" now appears twice - once in app bar, once in dialog
-    expect(find.text('Nook'), findsNWidgets(2));
+    // Note: "Puzzle Bazaar" now appears twice - once in app bar, once in dialog
+    expect(find.text('Puzzle Bazaar'), findsNWidgets(2));
     expect(find.text('1.0.0'), findsOneWidget);
   });
 }
