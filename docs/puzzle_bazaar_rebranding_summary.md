@@ -76,6 +76,25 @@ This document summarizes all changes made during the rebranding from "Nook" to "
   - Updated keystore filename: `keystore.jks` → `upload-keystore-puzzlebazaar.p12`
   - Updated storeFile reference in key.properties generation
 
+#### 13. `lib/presentation/screens/home_screen.dart`
+- **Changes:**
+  - Updated app bar title: `'Nook'` → `'Puzzle Bazaar'`
+  - Updated welcome text: `'Welcome to Nook!'` → `'Welcome to Puzzle Bazaar!'`
+  - Updated about dialog application name: `'Nook'` → `'Puzzle Bazaar'`
+
+#### 14. `test/unit/game_module_test.dart`
+- **Changes:**
+  - Updated import: `nook_game_module.dart` → `puzzle_bazaar_game_module.dart`
+  - Updated class references: `NookGameModule` → `PuzzleBazaarGameModule`
+  - Updated class references: `NookGameSession` → `PuzzleBazaarGameSession`
+  - Updated test group names to reflect new class names
+
+#### 15. `test/widget/home_screen_test.dart`
+- **Changes:**
+  - Updated expected text: `'Welcome to Nook!'` → `'Welcome to Puzzle Bazaar!'`
+  - Updated expected app bar title: `'Nook'` → `'Puzzle Bazaar'`
+  - Updated dialog text expectations to match new name
+
 ---
 
 ### iOS Configuration

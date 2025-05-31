@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
-import 'package:puzzgame_flutter/game_module/nook_game_module.dart';
+import 'package:puzzgame_flutter/game_module/puzzle_bazaar_game_module.dart';
 
 void main() {
-  group('NookGameModule Tests', () {
-    late NookGameModule gameModule;
+  group('PuzzleBazaarGameModule Tests', () {
+    late PuzzleBazaarGameModule gameModule;
     
     setUp(() {
-      gameModule = NookGameModule();
+      gameModule = PuzzleBazaarGameModule();
     });
     
     test('initialize returns true', () async {
@@ -35,11 +35,11 @@ void main() {
     });
   });
   
-  group('NookGameSession Tests', () {
-    late NookGameSession gameSession;
+  group('PuzzleBazaarGameSession Tests', () {
+    late PuzzleBazaarGameSession gameSession;
     
     setUp(() {
-      gameSession = NookGameSession(
+      gameSession = PuzzleBazaarGameSession(
         sessionId: 'test-session',
         initialLevel: 1,
         difficulty: 2,
