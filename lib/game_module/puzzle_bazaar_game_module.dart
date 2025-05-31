@@ -5,22 +5,22 @@ import 'package:uuid/uuid.dart';
 ///
 /// This class serves as the adapter to the actual game implementation
 /// following the hexagonal architecture pattern.
-class NookGameModule implements GameModule {
+class PuzzleBazaarGameModule implements GameModule {
   static const String _version = '1.0.0';
   
   @override
   Future<bool> initialize() async {
     // TODO: Implement actual game initialization
-    print('NookGameModule: Initializing game...');
+    print('PuzzleBazaarGameModule: Initializing game...');
     await Future.delayed(const Duration(seconds: 1)); // Simulate initialization time
     return true;
   }
   
   @override
   Future<GameSession> startGame({required int difficulty}) async {
-    print('NookGameModule: Starting new game with difficulty $difficulty');
+    print('PuzzleBazaarGameModule: Starting new game with difficulty $difficulty');
     // Create and return a new game session
-    final session = NookGameSession(
+    final session = PuzzleBazaarGameSession(
       sessionId: const Uuid().v4(),
       initialLevel: 1,
       difficulty: difficulty,
@@ -31,7 +31,7 @@ class NookGameModule implements GameModule {
   @override
   Future<GameSession?> resumeGame({required String sessionId}) async {
     // TODO: Implement game session resumption from saved state
-    print('NookGameModule: Attempting to resume game with session ID: $sessionId');
+    print('PuzzleBazaarGameModule: Attempting to resume game with session ID: $sessionId');
     return null; // Not implemented yet
   }
   
@@ -39,13 +39,13 @@ class NookGameModule implements GameModule {
   String get version => _version;
 }
 
-/// Implementation of the GameSession interface for the Nook game
+/// Implementation of the GameSession interface for the Puzzle Bazaar game
 /// 
 /// Note: This class is intentionally mutable as it represents an active game session
 /// that changes state during gameplay.
-class NookGameSession implements GameSession {
+class PuzzleBazaarGameSession implements GameSession {
   
-  NookGameSession({
+  PuzzleBazaarGameSession({
     required String sessionId,
     required int initialLevel,
     required int difficulty,
@@ -75,7 +75,7 @@ class NookGameSession implements GameSession {
   Future<void> pauseGame() async {
     if (_isActive) {
       _isActive = false;
-      print('NookGameSession: Game paused');
+      print('PuzzleBazaarGameSession: Game paused');
     }
   }
   
@@ -83,7 +83,7 @@ class NookGameSession implements GameSession {
   Future<void> resumeSession() async {
     if (!_isActive) {
       _isActive = true;
-      print('NookGameSession: Game resumed');
+      print('PuzzleBazaarGameSession: Game resumed');
     }
   }
   
@@ -101,14 +101,14 @@ class NookGameSession implements GameSession {
       completed: true, // You may need logic to determine if game was actually completed
     );
     
-    print('NookGameSession: Game ended with score: ${result.finalScore}');
+    print('PuzzleBazaarGameSession: Game ended with score: ${result.finalScore}');
     return result;
   }
   
   @override
   Future<bool> saveGame() async {
     // TODO: Implement game saving logic
-    print('NookGameSession: Saving game state...');
+    print('PuzzleBazaarGameSession: Saving game state...');
     return true;
   }
   

@@ -79,14 +79,14 @@ jobs:
         
     - name: Decode keystore
       run: |
-        echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
+        echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore-puzzlebazaar.p12
         
     - name: Create key.properties
       run: |
         echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
         echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
         echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
-        echo "storeFile=keystore.jks" >> android/key.properties
+        echo "storeFile=upload-keystore-puzzlebazaar.p12" >> android/key.properties
         
     - name: Extract version from tag
       id: version
@@ -116,7 +116,7 @@ jobs:
       uses: r0adkll/upload-google-play@v1
       with:
         serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-        packageName: org.shields.apps.nook
+        packageName: com.tinkerplexlabs.puzzlebazaar
         releaseFiles: build/app/outputs/bundle/release/app-release.aab
         track: ${{ github.event.inputs.track || 'internal' }}
         status: completed

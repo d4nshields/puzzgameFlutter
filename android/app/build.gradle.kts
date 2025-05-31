@@ -16,7 +16,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "org.shields.apps.nook"
+    namespace = "com.tinkerplexlabs.puzzlebazaar"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "28.1.13356709"
 
@@ -34,11 +34,11 @@ android {
     }
 
     defaultConfig {
-        applicationId = "org.shields.apps.nook"
+        applicationId = "com.tinkerplexlabs.puzzlebazaar"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 8
-        versionName = "0.1.7"
+        versionCode = 9
+        versionName = "0.1.8"
     }
 
     signingConfigs {

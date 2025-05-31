@@ -1,10 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="Nook"
+        android:label="Puzzle Bazaar"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity
-            android:name="org.shields.apps.nook.MainActivity"
+            android:name="com.tinkerplexlabs.puzzlebazaar.MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity=""

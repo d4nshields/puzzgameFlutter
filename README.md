@@ -1,10 +1,10 @@
-# Nook Game
+# Puzzle Bazaar Game
 
 A Flutter-based puzzle game application with a hexagonal architecture.
 
 ## Project Overview
 
-Nook is a puzzle game for Android (and eventually iOS) designed for offline entertainment. The game's core logic is being developed separately and will be integrated into this application as a module.
+Puzzle Bazaar is a puzzle game for Android (and eventually iOS) designed for offline entertainment. The game's core logic is being developed separately and will be integrated into this application as a module.
 
 ## Architecture
 
