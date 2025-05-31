@@ -28,19 +28,19 @@ void main() async {
   runApp(
     // Wrap the app with ProviderScope for Riverpod state management
     const ProviderScope(
-      child: NookGameApp(),
+      child: PuzzleBazaarGameApp(),
     ),
   );
 }
 
 /// Main application widget
-class NookGameApp extends StatelessWidget {
-  const NookGameApp({super.key});
+class PuzzleBazaarGameApp extends StatelessWidget {
+  const PuzzleBazaarGameApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Nook',
+      title: 'Puzzle Bazaar',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.deepPurple,
