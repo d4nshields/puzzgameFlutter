@@ -88,6 +88,52 @@ jobs:
         echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
         echo "storeFile=upload-keystore-puzzlebazaar.p12" >> android/key.properties
         
+    - name: Determine deployment track
+      id: track
+      run: |
+        # Default to internal
+        TRACK="internal"
+        
+        # Check manual input first (highest priority)
+        if [ "${{ github.event.inputs.track }}" != "" ]; then
+          TRACK="${{ github.event.inputs.track }}"
+          echo "Using manual track selection: $TRACK"
+        # Check tag pattern for automatic selection
+        elif [ "${{ github.event_name }}" = "release" ]; then
+          TAG_NAME="${{ github.event.release.tag_name }}"
+          echo "Analyzing tag: $TAG_NAME"
+          
+          if [[ $TAG_NAME =~ ^v[0-9]+\.[0-9]+\.[0-9]+-alpha(\.[0-9]+)?$ ]]; then
+            TRACK="alpha"
+            echo "Alpha release detected"
+          elif [[ $TAG_NAME =~ ^v[0-9]+\.[0-9]+\.[0-9]+-beta(\.[0-9]+)?$ ]]; then
+            TRACK="beta"
+            echo "Beta release detected (closed testing)"
+          elif [[ $TAG_NAME =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc(\.[0-9]+)?$ ]]; then
+            TRACK="beta"
+            echo "Release candidate detected (deploying to beta)"
+          elif [[ $TAG_NAME =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            TRACK="production"
+            echo "Production release detected"
+          else
+            TRACK="internal"
+            echo "Unknown tag pattern, defaulting to internal"
+          fi
+        else
+          echo "Manual trigger without track specified, using internal"
+        fi
+        
+        echo "TRACK=$TRACK" >> $GITHUB_OUTPUT
+        echo "🚀 Deploying to track: $TRACK"
+        
+    - name: Production release confirmation
+      if: steps.track.outputs.TRACK == 'production'
+      run: |
+        echo "⚠️  PRODUCTION RELEASE DETECTED"
+        echo "This will deploy to the production track on Google Play Store"
+        echo "Tag: ${{ github.event.release.tag_name }}"
+        echo "Proceeding with production deployment..."
+        
     - name: Extract version from tag
       id: version
       run: |
@@ -96,7 +142,9 @@ jobs:
         else
           TAG_NAME=$(git describe --tags --abbrev=0 || echo "v0.1.0")
         fi
+        # Extract base version (remove pre-release suffixes)
         VERSION_NAME=${TAG_NAME#v}
+        VERSION_NAME=${VERSION_NAME%%-*}  # Remove everything after first dash
         echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_OUTPUT
         echo "Version: $VERSION_NAME"
         
@@ -118,7 +166,7 @@ jobs:
         serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
         packageName: com.tinkerplexlabs.puzzlebazaar
         releaseFiles: build/app/outputs/bundle/release/app-release.aab
-        track: ${{ github.event.inputs.track || 'internal' }}
+        track: ${{ steps.track.outputs.TRACK }}
         status: completed
         inAppUpdatePriority: 2
         whatsNewDirectory: distribution/whatsnew
