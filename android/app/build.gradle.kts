@@ -37,8 +37,8 @@ android {
         applicationId = "com.tinkerplexlabs.puzzlebazaar"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 9
-        versionName = "0.1.8"
+        versionCode = 12
+        versionName = "0.1.11"
     }
 
     signingConfigs {
