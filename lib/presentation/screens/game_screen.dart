@@ -5,6 +5,8 @@ import 'package:puzzgame_flutter/core/application/settings_providers.dart';
 import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/game_module/puzzle_game_module.dart';
+import 'package:puzzgame_flutter/game_module/services/puzzle_asset_manager.dart';
+import 'package:puzzgame_flutter/game_module/widgets/puzzle_selection_widget.dart';
 
 /// Provider for game session state that automatically restarts when difficulty changes
 final gameSessionProvider = AsyncNotifierProvider<GameSessionNotifier, GameSession?>(() {
@@ -73,6 +75,12 @@ class GameScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Nook'),
         actions: [
+          // Puzzle selection button
+          IconButton(
+            icon: const Icon(Icons.palette),
+            onPressed: () => _showPuzzleSelection(context, ref),
+            tooltip: 'Select Puzzle',
+          ),
           // Show difficulty in app bar
           if (difficultyAsync.hasValue)
             Container(
@@ -189,8 +197,22 @@ class GameScreen extends ConsumerWidget {
     final difficulty = difficultyAsync.value ?? 2;
 
     if (gameSession == null) {
-      return const Center(
-        child: Text('No active game session'),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'No active game session',
+              style: TextStyle(fontSize: 18),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () => _showPuzzleSelection(context, ref),
+              icon: const Icon(Icons.palette),
+              label: const Text('Select Puzzle'),
+            ),
+          ],
+        ),
       );
     }
 
@@ -198,43 +220,16 @@ class GameScreen extends ConsumerWidget {
     if (gameSession is PuzzleGameSession) {
       return Column(
         children: [
-          // Show current difficulty info with reactive updates
-          Container(
-            padding: const EdgeInsets.all(12),
-            margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  _getDifficultyColor(difficulty).withOpacity(0.1),
-                  _getDifficultyColor(difficulty).withOpacity(0.05),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: _getDifficultyColor(difficulty).withOpacity(0.3)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.grid_3x3,
-                  color: _getDifficultyColor(difficulty),
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Difficulty: ${_getDifficultyName(difficulty)} ($gridSize×$gridSize grid)',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: _getDifficultyColor(difficulty),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          // Show current puzzle info
+          _buildPuzzleInfo(context, gameSession, difficulty, gridSize, ref),
+          
+          // Main puzzle game widget
           Expanded(
             child: PuzzleGameWidget(
               gameSession: gameSession,
               onGameCompleted: () => _onPuzzleCompleted(context, ref),
+              onGridSizeChanged: (newGridSize) => _onGridSizeChanged(context, ref, newGridSize),
+              onPuzzleChanged: (newPuzzleId) => _onPuzzleChanged(context, ref, newPuzzleId),
             ),
           ),
         ],
@@ -263,6 +258,156 @@ class GameScreen extends ConsumerWidget {
     }
   }
 
+  Widget _buildPuzzleInfo(
+    BuildContext context,
+    PuzzleGameSession gameSession,
+    int difficulty,
+    int gridSize,
+    WidgetRef ref,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            _getDifficultyColor(difficulty).withOpacity(0.1),
+            _getDifficultyColor(difficulty).withOpacity(0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: _getDifficultyColor(difficulty).withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          // Puzzle info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Puzzle: ${_formatPuzzleName(gameSession.currentPuzzleId)}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  'Grid: ${gameSession.gridSize}×${gameSession.gridSize} (${gameSession.totalPieces} pieces)',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Quick actions
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                onPressed: () => _showPuzzleSelection(context, ref),
+                icon: const Icon(Icons.palette),
+                tooltip: 'Change Puzzle',
+                iconSize: 20,
+              ),
+              IconButton(
+                onPressed: () => _restartCurrentPuzzle(context, ref),
+                icon: const Icon(Icons.refresh),
+                tooltip: 'Restart Puzzle',
+                iconSize: 20,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Event handlers
+
+  Future<void> _showPuzzleSelection(BuildContext context, WidgetRef ref) async {
+    try {
+      // Get the asset manager from the game module
+      if (!serviceLocator.isRegistered<PuzzleAssetManager>()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Asset manager not initialized')),
+        );
+        return;
+      }
+      
+      final assetManager = serviceLocator<PuzzleAssetManager>();
+      
+      // Get current session info for pre-selection
+      final currentSession = ref.read(gameSessionProvider).value;
+      String? currentPuzzleId;
+      String? currentGridSize;
+      
+      if (currentSession is PuzzleGameSession) {
+        currentPuzzleId = currentSession.currentPuzzleId;
+        currentGridSize = '${currentSession.gridSize}x${currentSession.gridSize}';
+      }
+
+      await PuzzleSelectionDialog.show(
+        context,
+        assetManager,
+        (puzzleId, gridSize) async {
+          // Handle puzzle selection
+          await _startNewGame(ref, puzzleId, gridSize);
+        },
+        currentPuzzleId: currentPuzzleId,
+        currentGridSize: currentGridSize,
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to show puzzle selection: $e')),
+      );
+    }
+  }
+
+  Future<void> _startNewGame(WidgetRef ref, String puzzleId, String gridSize) async {
+    try {
+      // Extract difficulty from grid size
+      final dimensions = gridSize.split('x');
+      final size = int.parse(dimensions[0]);
+      
+      // This is a simplified approach - in a more complete implementation,
+      // you might want to update your settings service with the new grid size
+      // and then restart the game. For now, we'll just restart.
+      
+      await ref.read(gameSessionProvider.notifier).restartGame();
+      
+    } catch (e) {
+      debugPrint('Failed to start new game: $e');
+    }
+  }
+
+  Future<void> _restartCurrentPuzzle(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Restart Puzzle'),
+        content: const Text('Are you sure you want to restart the current puzzle? Your progress will be lost.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Restart'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await ref.read(gameSessionProvider.notifier).restartGame();
+    }
+  }
+
   /// Handle puzzle completion
   void _onPuzzleCompleted(BuildContext context, WidgetRef ref) {
     _showCompletionCelebration(context);
@@ -270,6 +415,26 @@ class GameScreen extends ConsumerWidget {
     // TODO: Add logic for progression to next level/puzzle
     // TODO: Save high score
     // TODO: Unlock achievements
+  }
+
+  void _onGridSizeChanged(BuildContext context, WidgetRef ref, int newGridSize) {
+    // Handle grid size change if needed
+    debugPrint('Grid size changed to: $newGridSize');
+  }
+
+  void _onPuzzleChanged(BuildContext context, WidgetRef ref, String newPuzzleId) {
+    // Handle puzzle change if needed
+    debugPrint('Puzzle changed to: $newPuzzleId');
+  }
+
+  // Utility methods
+
+  String _formatPuzzleName(String puzzleId) {
+    return puzzleId
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map((word) => word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1))
+        .join(' ');
   }
 
   /// Show celebration for puzzle completion
