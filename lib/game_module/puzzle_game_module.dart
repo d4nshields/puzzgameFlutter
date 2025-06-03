@@ -4,20 +4,30 @@ import 'package:flutter/material.dart';
 import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
 import 'package:puzzgame_flutter/core/domain/services/settings_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
+import 'package:puzzgame_flutter/game_module/services/puzzle_asset_manager.dart';
 import 'package:uuid/uuid.dart';
 
 /// Implementation of the GameModule interface for jigsaw puzzle game
-///
-/// This class serves as the adapter to the puzzle game implementation
-/// following the hexagonal architecture pattern.
+/// Now with integrated high-performance asset management
 class PuzzleGameModule implements GameModule {
   static const String _version = '1.0.0';
+  
+  late final PuzzleAssetManager _assetManager;
   
   @override
   Future<bool> initialize() async {
     print('PuzzleGameModule: Initializing puzzle game...');
-    // TODO: Add puzzle pack validation, asset loading verification
-    await Future.delayed(const Duration(milliseconds: 500));
+    
+    // Initialize asset manager
+    _assetManager = PuzzleAssetManager();
+    await _assetManager.initialize();
+    
+    // Register asset manager in service locator for easy access
+    if (!serviceLocator.isRegistered<PuzzleAssetManager>()) {
+      serviceLocator.registerSingleton<PuzzleAssetManager>(_assetManager);
+    }
+    
+    print('PuzzleGameModule: Asset manager initialized with ${(await _assetManager.getAvailablePuzzles()).length} puzzles');
     return true;
   }
   
@@ -25,17 +35,18 @@ class PuzzleGameModule implements GameModule {
   Future<GameSession> startGame({required int difficulty}) async {
     print('PuzzleGameModule: Starting new puzzle game with difficulty $difficulty');
     
-    // Get grid size from settings service to ensure consistency
+    // Get grid size from settings service
     final settingsService = serviceLocator<SettingsService>();
     final gridSize = settingsService.getGridSizeForDifficulty(difficulty);
     
     print('PuzzleGameModule: Using ${gridSize}x$gridSize grid for difficulty $difficulty');
     
-    // Create and return a new puzzle game session
+    // Create game session with asset manager
     final session = PuzzleGameSession(
       sessionId: const Uuid().v4(),
       difficulty: difficulty,
       gridSize: gridSize,
+      assetManager: _assetManager,
     );
     
     await session._initializePuzzle();
@@ -44,30 +55,37 @@ class PuzzleGameModule implements GameModule {
   
   @override
   Future<GameSession?> resumeGame({required String sessionId}) async {
-    // TODO: Implement puzzle session resumption from saved state
     print('PuzzleGameModule: Attempting to resume puzzle game with session ID: $sessionId');
-    return null; // Not implemented yet
+    // TODO: Implement session resumption with proper asset loading
+    return null;
   }
   
   @override
   String get version => _version;
+  
+  /// Get asset manager for external access
+  PuzzleAssetManager get assetManager => _assetManager;
 }
 
-/// Implementation of the GameSession interface for the puzzle game
+/// Enhanced PuzzleGameSession with asset manager integration
 class PuzzleGameSession implements GameSession {
   
   PuzzleGameSession({
     required String sessionId,
     required int difficulty,
     required int gridSize,
+    required PuzzleAssetManager assetManager,
   }) : _sessionId = sessionId,
        _difficulty = difficulty,
-       _gridSize = gridSize;
+       _gridSize = gridSize,
+       _assetManager = assetManager;
 
   // Core session data
   final String _sessionId;
   final int _difficulty;
   final int _gridSize;
+  final PuzzleAssetManager _assetManager;
+  
   int _score = 0;
   final int _level = 1;
   bool _isActive = true;
@@ -79,17 +97,15 @@ class PuzzleGameSession implements GameSession {
   late List<List<PuzzlePiece?>> _puzzleGrid;
   late String _currentPuzzleId;
   int _piecesPlaced = 0;
+  bool _assetsLoaded = false;
   
-  // Getters for GameSession interface
+  // Getters
   @override
   String get sessionId => _sessionId;
-  
   @override
   int get score => _score;
-  
   @override
   int get level => _level;
-  
   @override
   bool get isActive => _isActive;
   
@@ -102,16 +118,35 @@ class PuzzleGameSession implements GameSession {
   List<List<PuzzlePiece?>> get puzzleGrid => _puzzleGrid.map(List<PuzzlePiece?>.from).toList();
   String get currentPuzzleId => _currentPuzzleId;
   bool get isCompleted => _piecesPlaced == totalPieces;
+  bool get assetsLoaded => _assetsLoaded;
   DateTime get startTime => _startTime;
+  PuzzleAssetManager get assetManager => _assetManager;
   
-  /// Initialize the puzzle with pieces
+  /// Initialize the puzzle with high-performance asset loading
   Future<void> _initializePuzzle() async {
     print('PuzzleGameSession: Initializing ${_gridSize}x$_gridSize puzzle');
     
-    // TODO: Replace with actual puzzle pack selection logic
-    _currentPuzzleId = 'sample_puzzle_01';
+    // Select a puzzle (for now, use the first available)
+    final availablePuzzles = await _assetManager.getAvailablePuzzles();
+    if (availablePuzzles.isEmpty) {
+      throw Exception('No puzzles available');
+    }
     
-    // Create all puzzle pieces
+    _currentPuzzleId = availablePuzzles.first.id;
+    final gridSizeStr = '${_gridSize}x$_gridSize';
+    
+    // Check if the selected grid size is available
+    final puzzleMetadata = _assetManager.getPuzzleMetadata(_currentPuzzleId);
+    if (puzzleMetadata == null || !puzzleMetadata.availableGridSizes.contains(gridSizeStr)) {
+      throw Exception('Grid size $gridSizeStr not available for puzzle $_currentPuzzleId');
+    }
+    
+    print('PuzzleGameSession: Loading assets for puzzle $_currentPuzzleId, grid size $gridSizeStr');
+    
+    // Load all assets for this puzzle/grid size combination
+    await _assetManager.loadPuzzleGridSize(_currentPuzzleId, gridSizeStr);
+    
+    // Create puzzle pieces with asset manager references
     _allPieces = [];
     for (int row = 0; row < _gridSize; row++) {
       for (int col = 0; col < _gridSize; col++) {
@@ -119,7 +154,7 @@ class PuzzleGameSession implements GameSession {
           id: '${row}_$col',
           correctRow: row,
           correctCol: col,
-          assetPath: 'assets/puzzles/$_currentPuzzleId/layouts/${_gridSize}x$_gridSize/pieces/${row}_$col.png',
+          assetManager: _assetManager,
         );
         _allPieces.add(piece);
       }
@@ -136,12 +171,125 @@ class PuzzleGameSession implements GameSession {
     _trayPieces.shuffle(Random());
     
     _piecesPlaced = 0;
+    _assetsLoaded = true;
+    
+    print('PuzzleGameSession: Puzzle initialized with ${_allPieces.length} pieces');
   }
   
+  /// Switch to a different grid size for the same puzzle
+  Future<void> switchGridSize(int newGridSize) async {
+    if (newGridSize == _gridSize) return;
+    
+    print('PuzzleGameSession: Switching to grid size ${newGridSize}x$newGridSize');
+    
+    // Reset game state
+    _allPieces.clear();
+    _trayPieces.clear();
+    _puzzleGrid.clear();
+    _piecesPlaced = 0;
+    _assetsLoaded = false;
+    
+    // Update grid size and reload assets
+    // Note: This would require updating _gridSize if it wasn't final
+    // For now, this demonstrates the concept
+    final gridSizeStr = '${newGridSize}x$newGridSize';
+    
+    // Verify grid size is available
+    final puzzleMetadata = _assetManager.getPuzzleMetadata(_currentPuzzleId);
+    if (puzzleMetadata == null || !puzzleMetadata.availableGridSizes.contains(gridSizeStr)) {
+      throw Exception('Grid size $gridSizeStr not available for puzzle $_currentPuzzleId');
+    }
+    
+    // Load new assets
+    await _assetManager.loadPuzzleGridSize(_currentPuzzleId, gridSizeStr);
+    
+    // Recreate pieces for new grid size
+    _allPieces = [];
+    for (int row = 0; row < newGridSize; row++) {
+      for (int col = 0; col < newGridSize; col++) {
+        final piece = PuzzlePiece(
+          id: '${row}_$col',
+          correctRow: row,
+          correctCol: col,
+          assetManager: _assetManager,
+        );
+        _allPieces.add(piece);
+      }
+    }
+    
+    // Reinitialize grid and tray
+    _puzzleGrid = List.generate(
+      newGridSize,
+      (row) => List.generate(newGridSize, (col) => null),
+    );
+    
+    _trayPieces = List.from(_allPieces);
+    _trayPieces.shuffle(Random());
+    
+    _assetsLoaded = true;
+    print('PuzzleGameSession: Successfully switched to ${newGridSize}x$newGridSize grid');
+  }
+
+  /// Switch to a different puzzle
+  Future<void> switchPuzzle(String newPuzzleId) async {
+    if (newPuzzleId == _currentPuzzleId) return;
+    
+    print('PuzzleGameSession: Switching to puzzle $newPuzzleId');
+    
+    // Verify puzzle exists
+    final puzzleMetadata = _assetManager.getPuzzleMetadata(newPuzzleId);
+    if (puzzleMetadata == null) {
+      throw Exception('Puzzle $newPuzzleId not found');
+    }
+    
+    // Check if current grid size is available for new puzzle
+    final gridSizeStr = '${_gridSize}x$_gridSize';
+    if (!puzzleMetadata.availableGridSizes.contains(gridSizeStr)) {
+      throw Exception('Grid size $gridSizeStr not available for puzzle $newPuzzleId');
+    }
+    
+    // Reset game state
+    _allPieces.clear();
+    _trayPieces.clear();
+    _puzzleGrid.clear();
+    _piecesPlaced = 0;
+    _assetsLoaded = false;
+    
+    // Update puzzle ID and reload assets
+    _currentPuzzleId = newPuzzleId;
+    await _assetManager.loadPuzzleGridSize(_currentPuzzleId, gridSizeStr);
+    
+    // Recreate pieces for new puzzle
+    _allPieces = [];
+    for (int row = 0; row < _gridSize; row++) {
+      for (int col = 0; col < _gridSize; col++) {
+        final piece = PuzzlePiece(
+          id: '${row}_$col',
+          correctRow: row,
+          correctCol: col,
+          assetManager: _assetManager,
+        );
+        _allPieces.add(piece);
+      }
+    }
+    
+    // Reinitialize grid and tray
+    _puzzleGrid = List.generate(
+      _gridSize,
+      (row) => List.generate(_gridSize, (col) => null),
+    );
+    
+    _trayPieces = List.from(_allPieces);
+    _trayPieces.shuffle(Random());
+    
+    _assetsLoaded = true;
+    print('PuzzleGameSession: Successfully switched to puzzle $newPuzzleId');
+  }
+
   /// Attempt to place a piece at the specified grid position
   /// Returns true if placement was successful
   bool tryPlacePiece(PuzzlePiece piece, int targetRow, int targetCol) {
-    if (!_isActive) return false;
+    if (!_isActive || !_assetsLoaded) return false;
     
     // Check if the position is correct
     if (piece.correctRow != targetRow || piece.correctCol != targetCol) {
@@ -178,7 +326,7 @@ class PuzzleGameSession implements GameSession {
   
   /// Remove a piece from the puzzle grid back to the tray
   void removePieceFromGrid(int row, int col) {
-    if (!_isActive) return;
+    if (!_isActive || !_assetsLoaded) return;
     
     final piece = _puzzleGrid[row][col];
     if (piece != null) {
@@ -222,7 +370,7 @@ class PuzzleGameSession implements GameSession {
   
   /// Get hint for next best piece to place
   PuzzlePiece? getHint() {
-    if (_trayPieces.isEmpty) return null;
+    if (_trayPieces.isEmpty || !_assetsLoaded) return null;
     
     // Find a piece that would fit in an empty spot
     for (int row = 0; row < _gridSize; row++) {
@@ -290,42 +438,38 @@ class PuzzleGameSession implements GameSession {
   }
 }
 
-/// Represents a single puzzle piece
+/// Enhanced puzzle piece with asset manager integration
 class PuzzlePiece {
   const PuzzlePiece({
     required this.id,
     required this.correctRow,
     required this.correctCol,
-    required this.assetPath,
+    required this.assetManager,
   });
   
-  /// Unique identifier for this piece (typically "row_col")
   final String id;
-  
-  /// The correct row position in the solved puzzle (0-indexed)
   final int correctRow;
-  
-  /// The correct column position in the solved puzzle (0-indexed)  
   final int correctCol;
-  
-  /// Path to the piece image asset
-  final String assetPath;
+  final PuzzleAssetManager assetManager;
   
   @override
   String toString() => 'PuzzlePiece(id: $id, correctPos: ($correctRow, $correctCol))';
 }
 
-/// Widget that renders the puzzle game UI
-/// This should be integrated into your GameScreen
+/// High-performance puzzle game widget with optimized rendering
 class PuzzleGameWidget extends StatefulWidget {
   const PuzzleGameWidget({
     super.key,
     required this.gameSession,
     this.onGameCompleted,
+    this.onGridSizeChanged,
+    this.onPuzzleChanged,
   });
   
   final PuzzleGameSession gameSession;
   final VoidCallback? onGameCompleted;
+  final Function(int newGridSize)? onGridSizeChanged;
+  final Function(String newPuzzleId)? onPuzzleChanged;
   
   @override
   State<PuzzleGameWidget> createState() => _PuzzleGameWidgetState();
@@ -333,33 +477,56 @@ class PuzzleGameWidget extends StatefulWidget {
 
 class _PuzzleGameWidgetState extends State<PuzzleGameWidget> {
   PuzzlePiece? _selectedPiece;
+  bool _isLoading = false;
   
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Game info header
+        // Game info with puzzle/grid size controls
         _buildGameInfo(),
         
         const SizedBox(height: 16),
         
-        // Main puzzle area
-        Expanded(
-          flex: 3,
-          child: _buildPuzzleGrid(),
-        ),
-        
-        const SizedBox(height: 16),
-        
-        // Pieces tray
-        Expanded(
-          child: _buildPiecesTray(),
-        ),
-        
-        const SizedBox(height: 8),
-        
-        // Control buttons
-        _buildControlButtons(),
+        // Loading indicator or main game content
+        if (_isLoading)
+          const Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Loading puzzle assets...'),
+                ],
+              ),
+            ),
+          )
+        else if (!widget.gameSession.assetsLoaded)
+          const Expanded(
+            child: Center(
+              child: Text('Assets not loaded'),
+            ),
+          )
+        else ...[
+          // Main puzzle area
+          Expanded(
+            flex: 3,
+            child: _buildPuzzleGrid(),
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Pieces tray
+          Expanded(
+            child: _buildPiecesTray(),
+          ),
+          
+          const SizedBox(height: 8),
+          
+          // Control buttons
+          _buildControlButtons(),
+        ],
       ],
     );
   }
@@ -419,26 +586,12 @@ class _PuzzleGameWidgetState extends State<PuzzleGameWidget> {
                       color: piece != null ? null : Colors.grey[50],
                     ),
                     child: piece != null
-                        ? Image.asset(
-                            piece.assetPath,
+                        ? CachedPuzzleImage(
+                            pieceId: piece.id,
+                            assetManager: piece.assetManager,
                             fit: BoxFit.cover,
-                            cacheWidth: widget.gameSession.gridSize > 16 ? 64 : null,
-                            cacheHeight: widget.gameSession.gridSize > 16 ? 64 : null,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: Colors.blue[200],
-                                child: widget.gameSession.gridSize <= 16 
-                                    ? Center(
-                                        child: Text(
-                                          piece.id,
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                      )
-                                    : null,
-                              );
-                            },
                           )
-                        : widget.gameSession.gridSize <= 16
+                        : widget.gameSession.gridSize <= 12
                             ? Center(
                                 child: Text(
                                   '${row}_$col',
@@ -495,15 +648,10 @@ class _PuzzleGameWidgetState extends State<PuzzleGameWidget> {
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.blue, width: 2),
                     ),
-                    child: Image.asset(
-                      piece.assetPath,
+                    child: CachedPuzzleImage(
+                      pieceId: piece.id,
+                      assetManager: piece.assetManager,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.blue[200],
-                          child: Center(child: Text(piece.id)),
-                        );
-                      },
                     ),
                   ),
                   childWhenDragging: Container(
@@ -521,20 +669,10 @@ class _PuzzleGameWidgetState extends State<PuzzleGameWidget> {
                           width: isSelected ? 2 : 1,
                         ),
                       ),
-                      child: Image.asset(
-                        piece.assetPath,
+                      child: CachedPuzzleImage(
+                        pieceId: piece.id,
+                        assetManager: piece.assetManager,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.blue[200],
-                            child: Center(
-                              child: Text(
-                                piece.id,
-                                style: const TextStyle(fontSize: 10),
-                              ),
-                            ),
-                          );
-                        },
                       ),
                     ),
                   ),
