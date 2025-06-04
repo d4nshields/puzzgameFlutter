@@ -60,7 +60,7 @@ class GameSessionNotifier extends AsyncNotifier<GameSession?> {
   }
 }
 
-/// Game screen that hosts the Nook game with reactive settings
+/// Game screen that hosts the Puzzle Bazaar game with reactive settings
 class GameScreen extends ConsumerWidget {
   const GameScreen({super.key});
 
@@ -73,7 +73,7 @@ class GameScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nook'),
+        title: const Text('Puzzle Bazaar'),
         actions: [
           // Puzzle selection button
           IconButton(
