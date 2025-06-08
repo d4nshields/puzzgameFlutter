@@ -48,12 +48,12 @@ class SharedPreferencesSettingsService implements SettingsService {
     switch (difficulty) {
       case 1: // Easy
         return 8;
-      case 2: // Medium  
-        return 16;  // Changed from 12 to 16
-      case 3: // Hard
-        return 32;  // Changed from 16 to 32
+      case 2: // Medium (Hard in your assets)
+        return 12;
+      case 3: // Hard (Advanced in your assets)
+        return 15;
       default:
-        return 16; // Default to medium
+        return 8; // Default to easy
     }
   }
   

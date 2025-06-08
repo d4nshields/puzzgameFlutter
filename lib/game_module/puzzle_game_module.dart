@@ -12,27 +12,38 @@ import 'package:uuid/uuid.dart';
 class PuzzleGameModule implements GameModule {
   static const String _version = '1.0.0';
   
-  late final PuzzleAssetManager _assetManager;
+  PuzzleAssetManager? _assetManager;
+  bool _isInitialized = false;
   
   @override
   Future<bool> initialize() async {
+    if (_isInitialized) {
+      print('PuzzleGameModule: Already initialized');
+      return true;
+    }
+    
     print('PuzzleGameModule: Initializing puzzle game...');
     
     // Initialize asset manager
     _assetManager = PuzzleAssetManager();
-    await _assetManager.initialize();
+    await _assetManager!.initialize();
     
     // Register asset manager in service locator for easy access
     if (!serviceLocator.isRegistered<PuzzleAssetManager>()) {
-      serviceLocator.registerSingleton<PuzzleAssetManager>(_assetManager);
+      serviceLocator.registerSingleton<PuzzleAssetManager>(_assetManager!);
     }
     
-    print('PuzzleGameModule: Asset manager initialized with ${(await _assetManager.getAvailablePuzzles()).length} puzzles');
+    _isInitialized = true;
+    print('PuzzleGameModule: Asset manager initialized with ${(await _assetManager!.getAvailablePuzzles()).length} puzzles');
     return true;
   }
   
   @override
   Future<GameSession> startGame({required int difficulty}) async {
+    if (!_isInitialized || _assetManager == null) {
+      throw Exception('PuzzleGameModule must be initialized before starting a game');
+    }
+    
     print('PuzzleGameModule: Starting new puzzle game with difficulty $difficulty');
     
     // Get grid size from settings service
@@ -46,7 +57,7 @@ class PuzzleGameModule implements GameModule {
       sessionId: const Uuid().v4(),
       difficulty: difficulty,
       gridSize: gridSize,
-      assetManager: _assetManager,
+      assetManager: _assetManager!,
     );
     
     await session._initializePuzzle();
@@ -64,7 +75,7 @@ class PuzzleGameModule implements GameModule {
   String get version => _version;
   
   /// Get asset manager for external access
-  PuzzleAssetManager get assetManager => _assetManager;
+  PuzzleAssetManager? get assetManager => _assetManager;
 }
 
 /// Enhanced PuzzleGameSession with asset manager integration

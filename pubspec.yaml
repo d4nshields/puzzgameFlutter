@@ -18,8 +18,6 @@ dependencies:
   # Utility & Architecture
   freezed_annotation: ^3.0.0  # Updated to latest version
   json_annotation: ^4.8.1     # For JSON serialization
-  dartz: ^0.10.1              # For functional programming (Either, Option types)
-  equatable: ^2.0.5           # For value comparisons
   uuid: ^4.3.3                # For generating unique IDs
   
   # Dependency Injection
@@ -57,7 +55,13 @@ flutter:
   # Include image assets
   assets:
     - assets/images/
-    - assets/puzzles/
+    - assets/puzzles/sample_puzzle_01/
+    - assets/puzzles/sample_puzzle_01/layouts/8x8/
+    - assets/puzzles/sample_puzzle_01/layouts/8x8/pieces/
+    - assets/puzzles/sample_puzzle_01/layouts/12x12/
+    - assets/puzzles/sample_puzzle_01/layouts/12x12/pieces/
+    - assets/puzzles/sample_puzzle_01/layouts/15x15/
+    - assets/puzzles/sample_puzzle_01/layouts/15x15/pieces/
 
 # Splash screen configuration
 flutter_native_splash:

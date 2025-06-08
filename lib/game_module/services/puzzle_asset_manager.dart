@@ -153,44 +153,69 @@ class PuzzleAssetManager {
     // Hardcoded puzzle discovery for now - in production this could read from a manifest
     const knownPuzzles = ['sample_puzzle_01'];
     
+    print('PuzzleAssetManager: Discovering puzzles: $knownPuzzles');
+    
     for (final puzzleId in knownPuzzles) {
       try {
+        print('PuzzleAssetManager: Loading metadata for puzzle $puzzleId');
         final metadata = await _loadPuzzleMetadata(puzzleId);
         _availablePuzzles[puzzleId] = metadata;
+        print('PuzzleAssetManager: Successfully loaded puzzle $puzzleId with grid sizes: ${metadata.availableGridSizes}');
       } catch (e) {
-        debugPrint('Failed to load metadata for puzzle $puzzleId: $e');
+        print('PuzzleAssetManager: Failed to load metadata for puzzle $puzzleId: $e');
       }
     }
+    
+    print('PuzzleAssetManager: Total puzzles discovered: ${_availablePuzzles.length}');
   }
 
   Future<PuzzleMetadata> _loadPuzzleMetadata(String puzzleId) async {
     final basePath = '$_assetBasePath$puzzleId';
+    print('PuzzleAssetManager: Loading metadata for $puzzleId at $basePath');
     
     // Try to load manifest.json first
     String? manifestJson;
     try {
       manifestJson = await rootBundle.loadString('$basePath/manifest.json');
+      print('PuzzleAssetManager: Found manifest for $puzzleId');
     } catch (e) {
-      debugPrint('No manifest found for $puzzleId');
+      print('PuzzleAssetManager: No manifest found for $puzzleId: $e');
     }
 
     // Discover available grid sizes by checking layout directories
     final availableGridSizes = <String>[];
-    const possibleGridSizes = ['8x8', '12x12', '15x15', '16x16', '32x32'];
+    // Check the grid sizes that match your actual assets
+    const possibleGridSizes = ['8x8', '12x12', '15x15'];
+    
+    print('PuzzleAssetManager: Checking grid sizes for $puzzleId');
     
     for (final gridSize in possibleGridSizes) {
       try {
-        // Check if this grid size exists by testing a piece file
-        await rootBundle.load('$basePath/layouts/$gridSize/pieces/0_0.png');
-        availableGridSizes.add(gridSize);
+        // Try to load the first piece to verify the grid size exists
+        final testPath = '$basePath/layouts/$gridSize/pieces/0_0.png';
+        print('PuzzleAssetManager: Testing path: $testPath');
+        
+        // Test if we can load the asset
+        final data = await rootBundle.load(testPath);
+        if (data.lengthInBytes > 0) {
+          availableGridSizes.add(gridSize);
+          print('PuzzleAssetManager: ✅ Found grid size $gridSize for $puzzleId (${data.lengthInBytes} bytes)');
+        }
       } catch (e) {
-        // Grid size not available
+        print('PuzzleAssetManager: ❌ Grid size $gridSize not available for $puzzleId: $e');
       }
     }
 
     if (availableGridSizes.isEmpty) {
+      print('PuzzleAssetManager: ❌ No valid grid sizes found for puzzle $puzzleId');
+      print('PuzzleAssetManager: Checked paths:');
+      for (final gridSize in possibleGridSizes) {
+        print('  - $basePath/layouts/$gridSize/pieces/0_0.png');
+      }
       throw Exception('No valid grid sizes found for puzzle $puzzleId');
     }
+
+    print('PuzzleAssetManager: ✅ Found ${availableGridSizes.length} grid sizes for $puzzleId: $availableGridSizes');
 
     // Load preview image
     ui.Image? previewImage;
@@ -199,8 +224,9 @@ class PuzzleAssetManager {
       final codec = await ui.instantiateImageCodec(previewData.buffer.asUint8List());
       final frame = await codec.getNextFrame();
       previewImage = frame.image;
+      print('PuzzleAssetManager: ✅ Loaded preview image for $puzzleId');
     } catch (e) {
-      debugPrint('No preview image found for $puzzleId');
+      print('PuzzleAssetManager: ⚠️ No preview image found for $puzzleId: $e');
     }
 
     return PuzzleMetadata(
