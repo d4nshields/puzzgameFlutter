@@ -5,6 +5,7 @@ import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
 import 'package:puzzgame_flutter/core/domain/services/settings_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/game_module/services/puzzle_asset_manager.dart';
+import 'package:puzzgame_flutter/game_module/services/enhanced_puzzle_asset_manager.dart';
 import 'package:uuid/uuid.dart';
 
 /// Implementation of the GameModule interface for jigsaw puzzle game
@@ -13,7 +14,9 @@ class PuzzleGameModule implements GameModule {
   static const String _version = '1.0.0';
   
   PuzzleAssetManager? _assetManager;
+  EnhancedPuzzleAssetManager? _enhancedAssetManager;
   bool _isInitialized = false;
+  bool _useEnhancedRendering = true; // Flag to enable enhanced rendering
   
   @override
   Future<bool> initialize() async {
@@ -24,23 +27,30 @@ class PuzzleGameModule implements GameModule {
     
     print('PuzzleGameModule: Initializing puzzle game...');
     
-    // Initialize asset manager
+    // Initialize asset managers
     _assetManager = PuzzleAssetManager();
     await _assetManager!.initialize();
     
-    // Register asset manager in service locator for easy access
+    _enhancedAssetManager = EnhancedPuzzleAssetManager();
+    await _enhancedAssetManager!.initialize();
+    
+    // Register asset managers in service locator for easy access
     if (!serviceLocator.isRegistered<PuzzleAssetManager>()) {
       serviceLocator.registerSingleton<PuzzleAssetManager>(_assetManager!);
     }
+    if (!serviceLocator.isRegistered<EnhancedPuzzleAssetManager>()) {
+      serviceLocator.registerSingleton<EnhancedPuzzleAssetManager>(_enhancedAssetManager!);
+    }
     
     _isInitialized = true;
-    print('PuzzleGameModule: Asset manager initialized with ${(await _assetManager!.getAvailablePuzzles()).length} puzzles');
+    print('PuzzleGameModule: Asset managers initialized with ${(await _assetManager!.getAvailablePuzzles()).length} puzzles');
+    print('PuzzleGameModule: Enhanced rendering enabled: $_useEnhancedRendering');
     return true;
   }
   
   @override
   Future<GameSession> startGame({required int difficulty}) async {
-    if (!_isInitialized || _assetManager == null) {
+    if (!_isInitialized || _assetManager == null || _enhancedAssetManager == null) {
       throw Exception('PuzzleGameModule must be initialized before starting a game');
     }
     
@@ -52,12 +62,14 @@ class PuzzleGameModule implements GameModule {
     
     print('PuzzleGameModule: Using ${gridSize}x$gridSize grid for difficulty $difficulty');
     
-    // Create game session with asset manager
+    // Create game session with enhanced asset manager
     final session = PuzzleGameSession(
       sessionId: const Uuid().v4(),
       difficulty: difficulty,
       gridSize: gridSize,
       assetManager: _assetManager!,
+      enhancedAssetManager: _enhancedAssetManager!,
+      useEnhancedRendering: _useEnhancedRendering,
     );
     
     await session._initializePuzzle();
@@ -76,6 +88,18 @@ class PuzzleGameModule implements GameModule {
   
   /// Get asset manager for external access
   PuzzleAssetManager? get assetManager => _assetManager;
+  
+  /// Get enhanced asset manager for external access
+  EnhancedPuzzleAssetManager? get enhancedAssetManager => _enhancedAssetManager;
+  
+  /// Check if enhanced rendering is enabled
+  bool get useEnhancedRendering => _useEnhancedRendering;
+  
+  /// Toggle enhanced rendering mode
+  void setEnhancedRendering(bool enabled) {
+    _useEnhancedRendering = enabled;
+    print('PuzzleGameModule: Enhanced rendering ${enabled ? 'enabled' : 'disabled'}');
+  }
 }
 
 /// Enhanced PuzzleGameSession with asset manager integration
@@ -86,16 +110,22 @@ class PuzzleGameSession implements GameSession {
     required int difficulty,
     required int gridSize,
     required PuzzleAssetManager assetManager,
+    required EnhancedPuzzleAssetManager enhancedAssetManager,
+    required bool useEnhancedRendering,
   }) : _sessionId = sessionId,
        _difficulty = difficulty,
        _gridSize = gridSize,
-       _assetManager = assetManager;
+       _assetManager = assetManager,
+       _enhancedAssetManager = enhancedAssetManager,
+       _useEnhancedRendering = useEnhancedRendering;
 
   // Core session data
   final String _sessionId;
   final int _difficulty;
   final int _gridSize;
   final PuzzleAssetManager _assetManager;
+  final EnhancedPuzzleAssetManager _enhancedAssetManager;
+  final bool _useEnhancedRendering;
   
   int _score = 0;
   final int _level = 1;
@@ -132,6 +162,8 @@ class PuzzleGameSession implements GameSession {
   bool get assetsLoaded => _assetsLoaded;
   DateTime get startTime => _startTime;
   PuzzleAssetManager get assetManager => _assetManager;
+  EnhancedPuzzleAssetManager get enhancedAssetManager => _enhancedAssetManager;
+  bool get useEnhancedRendering => _useEnhancedRendering;
   
   /// Initialize the puzzle with high-performance asset loading
   Future<void> _initializePuzzle() async {
@@ -157,6 +189,11 @@ class PuzzleGameSession implements GameSession {
     // Load all assets for this puzzle/grid size combination
     await _assetManager.loadPuzzleGridSize(_currentPuzzleId, gridSizeStr);
     
+    // Also load enhanced assets if enhanced rendering is enabled
+    if (_useEnhancedRendering) {
+      await _enhancedAssetManager.loadPuzzleGridSize(_currentPuzzleId, gridSizeStr);
+    }
+    
     // Create puzzle pieces with asset manager references
     _allPieces = [];
     for (int row = 0; row < _gridSize; row++) {
@@ -166,6 +203,7 @@ class PuzzleGameSession implements GameSession {
           correctRow: row,
           correctCol: col,
           assetManager: _assetManager,
+          enhancedAssetManager: _enhancedAssetManager,
         );
         _allPieces.add(piece);
       }
@@ -214,6 +252,11 @@ class PuzzleGameSession implements GameSession {
     // Load new assets
     await _assetManager.loadPuzzleGridSize(_currentPuzzleId, gridSizeStr);
     
+    // Also load enhanced assets if enhanced rendering is enabled
+    if (_useEnhancedRendering) {
+      await _enhancedAssetManager.loadPuzzleGridSize(_currentPuzzleId, gridSizeStr);
+    }
+    
     // Recreate pieces for new grid size
     _allPieces = [];
     for (int row = 0; row < newGridSize; row++) {
@@ -223,6 +266,7 @@ class PuzzleGameSession implements GameSession {
           correctRow: row,
           correctCol: col,
           assetManager: _assetManager,
+          enhancedAssetManager: _enhancedAssetManager,
         );
         _allPieces.add(piece);
       }
@@ -270,6 +314,11 @@ class PuzzleGameSession implements GameSession {
     _currentPuzzleId = newPuzzleId;
     await _assetManager.loadPuzzleGridSize(_currentPuzzleId, gridSizeStr);
     
+    // Also load enhanced assets if enhanced rendering is enabled
+    if (_useEnhancedRendering) {
+      await _enhancedAssetManager.loadPuzzleGridSize(_currentPuzzleId, gridSizeStr);
+    }
+    
     // Recreate pieces for new puzzle
     _allPieces = [];
     for (int row = 0; row < _gridSize; row++) {
@@ -279,6 +328,7 @@ class PuzzleGameSession implements GameSession {
           correctRow: row,
           correctCol: col,
           assetManager: _assetManager,
+          enhancedAssetManager: _enhancedAssetManager,
         );
         _allPieces.add(piece);
       }
@@ -449,19 +499,21 @@ class PuzzleGameSession implements GameSession {
   }
 }
 
-/// Enhanced puzzle piece with asset manager integration
+/// Enhanced puzzle piece with dual asset manager integration
 class PuzzlePiece {
   const PuzzlePiece({
     required this.id,
     required this.correctRow,
     required this.correctCol,
     required this.assetManager,
+    required this.enhancedAssetManager,
   });
   
   final String id;
   final int correctRow;
   final int correctCol;
   final PuzzleAssetManager assetManager;
+  final EnhancedPuzzleAssetManager enhancedAssetManager;
   
   @override
   String toString() => 'PuzzlePiece(id: $id, correctPos: ($correctRow, $correctCol))';

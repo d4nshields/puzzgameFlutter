@@ -8,6 +8,7 @@ import 'package:puzzgame_flutter/core/domain/services/zoom_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/game_module/puzzle_game_module.dart';
 import 'package:puzzgame_flutter/game_module/services/puzzle_asset_manager.dart';
+import 'package:puzzgame_flutter/game_module/services/enhanced_puzzle_asset_manager.dart';
 import 'package:puzzgame_flutter/game_module/widgets/zoom_control.dart';
 
 /// Enhanced puzzle game widget with zoom, pan, and audio feedback
@@ -284,10 +285,19 @@ class _EnhancedPuzzleGameWidgetState extends State<EnhancedPuzzleGameWidget> {
                       color: piece != null ? null : Colors.grey[50],
                     ),
                     child: piece != null
-                        ? CachedPuzzleImage(
-                            pieceId: piece.id,
-                            assetManager: piece.assetManager,
-                            fit: BoxFit.cover,
+                        ? (widget.gameSession.useEnhancedRendering
+                            ? EnhancedCachedPuzzleImage(
+                                pieceId: piece.id,
+                                assetManager: piece.enhancedAssetManager,
+                                fit: BoxFit.contain,
+                                zoomLevel: 1.0, // InteractiveViewer handles zoom for grid
+                                cropToContent: true,
+                              )
+                            : CachedPuzzleImage(
+                                pieceId: piece.id,
+                                assetManager: piece.assetManager,
+                                fit: BoxFit.cover,
+                              )
                           )
                         : Center(
                             child: Text(
@@ -371,28 +381,33 @@ class _EnhancedPuzzleGameWidgetState extends State<EnhancedPuzzleGameWidget> {
     final orientation = MediaQuery.of(context).orientation;
     final isLandscape = orientation == Orientation.landscape;
     
-    // Calculate piece size based on zoom level
+    // Calculate piece size based on zoom level - this determines the actual cell size
     final baseSize = 60.0;
-    final scaledSize = baseSize * _zoomService.zoomLevel;
+    final zoomedPieceSize = baseSize * _zoomService.zoomLevel;
+    final cellPadding = 4.0;
+    final totalCellSize = zoomedPieceSize + cellPadding;
     
-    // Calculate layout based on orientation
+    // Calculate how many pieces can fit based on available space and zoomed piece size
     int piecesPerRow;
     if (isLandscape) {
-      // In landscape, tray is vertical on the right, so fewer pieces per row
-      final availableWidth = MediaQuery.of(context).size.width * 0.25; // Rough estimate for tray width
-      piecesPerRow = (availableWidth / (scaledSize + 4)).floor().clamp(1, 3);
+      // In landscape, tray is vertical on the right side
+      final availableWidth = MediaQuery.of(context).size.width * 0.25 - 32; // Tray width minus padding
+      piecesPerRow = (availableWidth / totalCellSize).floor().clamp(1, 4);
     } else {
-      // In portrait, tray is horizontal at bottom, so more pieces per row
-      final availableWidth = MediaQuery.of(context).size.width - 32; // Minus padding
-      piecesPerRow = (availableWidth / (scaledSize + 4)).floor().clamp(3, 8);
+      // In portrait, tray is horizontal at bottom
+      final availableWidth = MediaQuery.of(context).size.width - 32; // Screen width minus padding
+      piecesPerRow = (availableWidth / totalCellSize).floor().clamp(2, 8);
     }
+    
+    // Ensure we don't have more columns than pieces
+    piecesPerRow = piecesPerRow.clamp(1, widget.gameSession.trayPieces.length);
     
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: piecesPerRow,
-        mainAxisSpacing: 4,
-        crossAxisSpacing: 4,
-        childAspectRatio: 1,
+        mainAxisSpacing: cellPadding,
+        crossAxisSpacing: cellPadding,
+        childAspectRatio: 1.0, // Keep pieces square
       ),
       itemCount: widget.gameSession.trayPieces.length,
       itemBuilder: (context, index) {
@@ -402,17 +417,25 @@ class _EnhancedPuzzleGameWidgetState extends State<EnhancedPuzzleGameWidget> {
         return Draggable<PuzzlePiece>(
           data: piece,
           feedback: Container(
-            width: scaledSize,
-            height: scaledSize,
+            width: zoomedPieceSize,
+            height: zoomedPieceSize,
             decoration: BoxDecoration(
               border: Border.all(color: Colors.blue, width: 2),
               borderRadius: BorderRadius.circular(4),
             ),
-            child: CachedPuzzleImage(
-              pieceId: piece.id,
-              assetManager: piece.assetManager,
-              fit: BoxFit.cover,
-            ),
+            child: widget.gameSession.useEnhancedRendering
+                ? EnhancedCachedPuzzleImage(
+                    pieceId: piece.id,
+                    assetManager: piece.enhancedAssetManager,
+                    fit: BoxFit.contain,
+                    zoomLevel: 1.0, // Don't double-apply zoom to feedback
+                    cropToContent: true,
+                  )
+                : CachedPuzzleImage(
+                    pieceId: piece.id,
+                    assetManager: piece.assetManager,
+                    fit: BoxFit.cover,
+                  ),
           ),
           childWhenDragging: Container(
             decoration: BoxDecoration(
@@ -431,11 +454,19 @@ class _EnhancedPuzzleGameWidgetState extends State<EnhancedPuzzleGameWidget> {
                 ),
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: CachedPuzzleImage(
-                pieceId: piece.id,
-                assetManager: piece.assetManager,
-                fit: BoxFit.cover,
-              ),
+              child: widget.gameSession.useEnhancedRendering
+                  ? EnhancedCachedPuzzleImage(
+                      pieceId: piece.id,
+                      assetManager: piece.enhancedAssetManager,
+                      fit: BoxFit.contain,
+                      zoomLevel: 1.0, // Don't apply zoom here - grid cells handle sizing
+                      cropToContent: true,
+                    )
+                  : CachedPuzzleImage(
+                      pieceId: piece.id,
+                      assetManager: piece.assetManager,
+                      fit: BoxFit.cover,
+                    ),
             ),
           ),
         );
