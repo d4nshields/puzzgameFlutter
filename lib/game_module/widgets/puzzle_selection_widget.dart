@@ -7,10 +7,6 @@ import 'dart:ui' as ui;
 
 /// High-performance puzzle selection widget for browsing and selecting puzzles and grid sizes
 class PuzzleSelectionWidget extends StatefulWidget {
-  final PuzzleAssetManager assetManager;
-  final Function(String puzzleId, String gridSize) onPuzzleSelected;
-  final String? selectedPuzzleId;
-  final String? selectedGridSize;
 
   const PuzzleSelectionWidget({
     super.key,
@@ -19,6 +15,10 @@ class PuzzleSelectionWidget extends StatefulWidget {
     this.selectedPuzzleId,
     this.selectedGridSize,
   });
+  final PuzzleAssetManager assetManager;
+  final Function(String puzzleId, String gridSize) onPuzzleSelected;
+  final String? selectedPuzzleId;
+  final String? selectedGridSize;
 
   @override
   State<PuzzleSelectionWidget> createState() => _PuzzleSelectionWidgetState();
@@ -355,9 +355,9 @@ class _PuzzleSelectionWidgetState extends State<PuzzleSelectionWidget> {
 
 /// Custom painter for high-performance preview image rendering
 class _PreviewImagePainter extends CustomPainter {
-  final ui.Image image;
 
   _PreviewImagePainter(this.image);
+  final ui.Image image;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -379,10 +379,6 @@ class _PreviewImagePainter extends CustomPainter {
 
 /// Dialog wrapper for puzzle selection
 class PuzzleSelectionDialog extends StatelessWidget {
-  final PuzzleAssetManager assetManager;
-  final Function(String puzzleId, String gridSize) onPuzzleSelected;
-  final String? currentPuzzleId;
-  final String? currentGridSize;
 
   const PuzzleSelectionDialog({
     super.key,
@@ -391,6 +387,10 @@ class PuzzleSelectionDialog extends StatelessWidget {
     this.currentPuzzleId,
     this.currentGridSize,
   });
+  final PuzzleAssetManager assetManager;
+  final Function(String puzzleId, String gridSize) onPuzzleSelected;
+  final String? currentPuzzleId;
+  final String? currentGridSize;
 
   @override
   Widget build(BuildContext context) {

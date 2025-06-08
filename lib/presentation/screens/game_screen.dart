@@ -7,6 +7,7 @@ import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/game_module/puzzle_game_module.dart';
 import 'package:puzzgame_flutter/game_module/services/puzzle_asset_manager.dart';
 import 'package:puzzgame_flutter/game_module/widgets/puzzle_selection_widget.dart';
+import 'package:puzzgame_flutter/game_module/widgets/enhanced_puzzle_game_widget.dart';
 
 /// Provider for game session state that automatically restarts when difficulty changes
 final gameSessionProvider = AsyncNotifierProvider<GameSessionNotifier, GameSession?>(() {
@@ -223,13 +224,11 @@ class GameScreen extends ConsumerWidget {
           // Show current puzzle info
           _buildPuzzleInfo(context, gameSession, difficulty, gridSize, ref),
           
-          // Main puzzle game widget
+          // Enhanced puzzle game widget with zoom and audio
           Expanded(
-            child: PuzzleGameWidget(
+            child: EnhancedPuzzleGameWidget(
               gameSession: gameSession,
               onGameCompleted: () => _onPuzzleCompleted(context, ref),
-              onGridSizeChanged: (newGridSize) => _onGridSizeChanged(context, ref, newGridSize),
-              onPuzzleChanged: (newPuzzleId) => _onPuzzleChanged(context, ref, newPuzzleId),
             ),
           ),
         ],
