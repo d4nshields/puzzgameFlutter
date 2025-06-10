@@ -1,6 +1,6 @@
 # Puzzle Bazaar Game
 
-A Flutter-based puzzle game application with a hexagonal architecture.
+A multiplatform puzzle game application.
 
 ## Project Overview
 
