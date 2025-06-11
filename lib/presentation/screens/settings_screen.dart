@@ -19,13 +19,15 @@ class SettingsScreen extends ConsumerWidget {
     final difficultyAsync = ref.watch(difficultyProvider);
     final soundEnabledAsync = ref.watch(soundEnabledProvider);
     final vibrationEnabledAsync = ref.watch(vibrationEnabledProvider);
+    final easyPieceSortingAsync = ref.watch(easyPieceSortingProvider);
 
     // Show loading state if any setting is loading
     final isLoading = difficultyAsync.isLoading || 
                      soundEnabledAsync.isLoading || 
-                     vibrationEnabledAsync.isLoading;
+                     vibrationEnabledAsync.isLoading ||
+                     easyPieceSortingAsync.isLoading;
 
-    if (isLoading && !difficultyAsync.hasValue && !soundEnabledAsync.hasValue && !vibrationEnabledAsync.hasValue) {
+    if (isLoading && !difficultyAsync.hasValue && !soundEnabledAsync.hasValue && !vibrationEnabledAsync.hasValue && !easyPieceSortingAsync.hasValue) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Settings'),
@@ -39,9 +41,10 @@ class SettingsScreen extends ConsumerWidget {
     // Handle error states
     final hasError = difficultyAsync.hasError || 
                     soundEnabledAsync.hasError || 
-                    vibrationEnabledAsync.hasError;
+                    vibrationEnabledAsync.hasError ||
+                    easyPieceSortingAsync.hasError;
 
-    if (hasError && !difficultyAsync.hasValue && !soundEnabledAsync.hasValue && !vibrationEnabledAsync.hasValue) {
+    if (hasError && !difficultyAsync.hasValue && !soundEnabledAsync.hasValue && !vibrationEnabledAsync.hasValue && !easyPieceSortingAsync.hasValue) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Settings'),
@@ -60,6 +63,7 @@ class SettingsScreen extends ConsumerWidget {
                   ref.invalidate(difficultyProvider);
                   ref.invalidate(soundEnabledProvider);
                   ref.invalidate(vibrationEnabledProvider);
+                  ref.invalidate(easyPieceSortingProvider);
                 },
                 child: const Text('Retry'),
               ),
@@ -73,13 +77,14 @@ class SettingsScreen extends ConsumerWidget {
     final difficulty = difficultyAsync.value ?? 2;
     final soundEnabled = soundEnabledAsync.value ?? true;
     final vibrationEnabled = vibrationEnabledAsync.value ?? true;
+    final easyPieceSortingEnabled = easyPieceSortingAsync.value ?? false;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
         // Add a visual indicator when changes are auto-saving
         actions: [
-          if (difficultyAsync.isLoading || soundEnabledAsync.isLoading || vibrationEnabledAsync.isLoading)
+          if (difficultyAsync.isLoading || soundEnabledAsync.isLoading || vibrationEnabledAsync.isLoading || easyPieceSortingAsync.isLoading)
             const Padding(
               padding: EdgeInsets.all(16.0),
               child: SizedBox(
@@ -232,6 +237,17 @@ class SettingsScreen extends ConsumerWidget {
               onChanged: (value) {
                 // Immediately save the new setting
                 ref.read(vibrationEnabledProvider.notifier).setVibrationEnabled(value);
+              },
+            ),
+
+            // Easy Piece Sorting settings - new feature
+            SwitchListTile(
+              title: const Text('Easy Piece Sorting'),
+              subtitle: const Text('Show corner and edge pieces first in tray'),
+              value: easyPieceSortingEnabled,
+              onChanged: (value) {
+                // Immediately save the new setting
+                ref.read(easyPieceSortingProvider.notifier).setEasyPieceSortingEnabled(value);
               },
             ),
 
