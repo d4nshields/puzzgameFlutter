@@ -74,12 +74,11 @@ When we're ready to enhance audio:
 
 - `lib/core/domain/services/audio_service.dart` - Interface definition
 - `lib/core/infrastructure/system_audio_service.dart` - System sound implementation
-- `test/core/domain/services/audio_service_test.dart` - Comprehensive tests
 
 ## Testing Strategy
 
 - Interface contract testing with mocks
-- System audio service unit tests
+- System audio service unit tests (to be implemented)
 - Error handling verification
 - Volume/enabled state management tests
 - Integration tests with game mechanics

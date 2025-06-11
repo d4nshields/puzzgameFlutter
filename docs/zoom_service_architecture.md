@@ -104,11 +104,10 @@ When ready to enhance zoom functionality:
 - `lib/core/domain/services/zoom_service.dart` - Interface and default implementation
 - `lib/game_module/widgets/zoom_control.dart` - Zoom control UI widget
 - `lib/game_module/widgets/enhanced_puzzle_game_widget.dart` - Integration with game
-- `test/core/domain/services/zoom_service_test.dart` - Comprehensive tests
 
 ## Testing Strategy
 
-- Zoom level boundary testing
+- Zoom level boundary testing (to be implemented)
 - Pan offset management verification
 - Change notification testing
 - UI widget interaction tests
