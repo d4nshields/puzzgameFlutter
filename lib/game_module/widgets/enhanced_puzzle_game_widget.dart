@@ -3,6 +3,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:puzzgame_flutter/core/application/settings_providers.dart';
 import 'package:puzzgame_flutter/core/domain/services/audio_service.dart';
 import 'package:puzzgame_flutter/core/domain/services/zoom_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
@@ -12,7 +14,7 @@ import 'package:puzzgame_flutter/game_module/services/enhanced_puzzle_asset_mana
 import 'package:puzzgame_flutter/game_module/widgets/zoom_control.dart';
 
 /// Enhanced puzzle game widget with zoom, pan, and audio feedback
-class EnhancedPuzzleGameWidget extends StatefulWidget {
+class EnhancedPuzzleGameWidget extends ConsumerStatefulWidget {
   const EnhancedPuzzleGameWidget({
     super.key,
     required this.gameSession,
@@ -23,10 +25,10 @@ class EnhancedPuzzleGameWidget extends StatefulWidget {
   final VoidCallback? onGameCompleted;
   
   @override
-  State<EnhancedPuzzleGameWidget> createState() => _EnhancedPuzzleGameWidgetState();
+  ConsumerState<EnhancedPuzzleGameWidget> createState() => _EnhancedPuzzleGameWidgetState();
 }
 
-class _EnhancedPuzzleGameWidgetState extends State<EnhancedPuzzleGameWidget> {
+class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWidget> {
   late final ZoomService _zoomService;
   late final AudioService _audioService;
   PuzzlePiece? _selectedPiece;
@@ -339,8 +341,15 @@ class _EnhancedPuzzleGameWidgetState extends State<EnhancedPuzzleGameWidget> {
               ListenableBuilder(
                 listenable: _zoomService,
                 builder: (context, child) {
+                  // Get sorted pieces count
+                  final sortingService = ref.watch(pieceSortingServiceProvider);
+                  final sortedPieces = sortingService.sortPieces(
+                    widget.gameSession.trayPieces,
+                    widget.gameSession.gridSize,
+                  );
+                  
                   return Text(
-                    '${widget.gameSession.trayPieces.length} pieces',
+                    '${sortedPieces.length} pieces',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[600],
@@ -365,7 +374,14 @@ class _EnhancedPuzzleGameWidgetState extends State<EnhancedPuzzleGameWidget> {
   }
   
   Widget _buildTrayGrid() {
-    if (widget.gameSession.trayPieces.isEmpty) {
+    // Get sorted pieces using the piece sorting service
+    final sortingService = ref.watch(pieceSortingServiceProvider);
+    final sortedPieces = sortingService.sortPieces(
+      widget.gameSession.trayPieces,
+      widget.gameSession.gridSize,
+    );
+    
+    if (sortedPieces.isEmpty) {
       return const Center(
         child: Text(
           'All pieces placed!',
@@ -400,7 +416,7 @@ class _EnhancedPuzzleGameWidgetState extends State<EnhancedPuzzleGameWidget> {
     }
     
     // Ensure we don't have more columns than pieces
-    piecesPerRow = piecesPerRow.clamp(1, widget.gameSession.trayPieces.length);
+    piecesPerRow = piecesPerRow.clamp(1, sortedPieces.length);
     
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -409,9 +425,9 @@ class _EnhancedPuzzleGameWidgetState extends State<EnhancedPuzzleGameWidget> {
         crossAxisSpacing: cellPadding,
         childAspectRatio: 1.0, // Keep pieces square
       ),
-      itemCount: widget.gameSession.trayPieces.length,
+      itemCount: sortedPieces.length,
       itemBuilder: (context, index) {
-        final piece = widget.gameSession.trayPieces[index];
+        final piece = sortedPieces[index];
         final isSelected = _selectedPiece == piece;
         
         return Draggable<PuzzlePiece>(

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:puzzgame_flutter/core/domain/services/settings_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/presentation/screens/game_screen.dart';
+import 'package:puzzgame_flutter/game_module/services/piece_sorting_service.dart';
 
 /// Provider for the settings service
 final settingsServiceProvider = Provider<SettingsService>((ref) {
@@ -23,6 +24,25 @@ final soundEnabledProvider = AsyncNotifierProvider<SoundEnabledNotifier, bool>((
 /// Provider for vibration enabled setting  
 final vibrationEnabledProvider = AsyncNotifierProvider<VibrationEnabledNotifier, bool>(() {
   return VibrationEnabledNotifier();
+});
+
+/// Provider for easy piece sorting enabled setting
+final easyPieceSortingProvider = AsyncNotifierProvider<EasyPieceSortingNotifier, bool>(() {
+  return EasyPieceSortingNotifier();
+});
+
+/// Provider for piece sorting service that reacts to easy sorting setting changes
+final pieceSortingServiceProvider = Provider<PieceSortingService>((ref) {
+  final sortingService = PieceSortingService();
+  
+  // Watch the easy piece sorting setting and update the service
+  final easyPieceSortingAsync = ref.watch(easyPieceSortingProvider);
+  
+  easyPieceSortingAsync.whenData((enabled) {
+    sortingService.setEasySorting(enabled);
+  });
+  
+  return sortingService;
 });
 
 /// Computed provider for grid size based on current difficulty
@@ -115,6 +135,28 @@ class VibrationEnabledNotifier extends AsyncNotifier<bool> {
     try {
       final settingsService = ref.read(settingsServiceProvider);
       await settingsService.setVibrationEnabled(enabled);
+      state = AsyncValue.data(enabled);
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+    }
+  }
+}
+
+/// Notifier class for easy piece sorting enabled setting
+class EasyPieceSortingNotifier extends AsyncNotifier<bool> {
+  @override
+  Future<bool> build() async {
+    final settingsService = ref.watch(settingsServiceProvider);
+    return await settingsService.getEasyPieceSortingEnabled();
+  }
+  
+  /// Update easy piece sorting setting and persist immediately
+  Future<void> setEasyPieceSortingEnabled(bool enabled) async {
+    state = const AsyncValue.loading();
+    
+    try {
+      final settingsService = ref.read(settingsServiceProvider);
+      await settingsService.setEasyPieceSortingEnabled(enabled);
       state = AsyncValue.data(enabled);
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);

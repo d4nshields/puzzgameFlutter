@@ -6,6 +6,7 @@ class SharedPreferencesSettingsService implements SettingsService {
   static const String _difficultyKey = 'difficulty';
   static const String _soundEnabledKey = 'sound_enabled';
   static const String _vibrationEnabledKey = 'vibration_enabled';
+  static const String _easyPieceSortingKey = 'easy_piece_sorting_enabled';
   
   @override
   Future<int> getDifficulty() async {
@@ -61,5 +62,17 @@ class SharedPreferencesSettingsService implements SettingsService {
   int getPieceCountForDifficulty(int difficulty) {
     final gridSize = getGridSizeForDifficulty(difficulty);
     return gridSize * gridSize;
+  }
+  
+  @override
+  Future<bool> getEasyPieceSortingEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_easyPieceSortingKey) ?? false; // Default disabled
+  }
+  
+  @override
+  Future<void> setEasyPieceSortingEnabled(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_easyPieceSortingKey, enabled);
   }
 }

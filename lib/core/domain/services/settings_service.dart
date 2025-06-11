@@ -23,4 +23,10 @@ abstract class SettingsService {
   
   /// Get piece count for difficulty
   int getPieceCountForDifficulty(int difficulty);
+  
+  /// Get easy piece sorting enabled setting
+  Future<bool> getEasyPieceSortingEnabled();
+  
+  /// Set easy piece sorting enabled setting
+  Future<void> setEasyPieceSortingEnabled(bool enabled);
 }
