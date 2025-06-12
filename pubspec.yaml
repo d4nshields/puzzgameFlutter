@@ -28,6 +28,9 @@ dependencies:
   
   # Storage
   shared_preferences: ^2.2.2  # For persistent settings storage
+  
+  # Error Tracking & Monitoring
+  sentry_flutter: ^8.14.2
 
 dev_dependencies:
   flutter_test:

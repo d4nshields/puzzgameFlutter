@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:puzzgame_flutter/core/infrastructure/app_initializer.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/presentation/screens/game_screen.dart';
@@ -24,11 +25,19 @@ void main() async {
   // The native splash screen will be shown during this time
   await AppInitializer.initialize();
   
-  // Run the app
-  runApp(
-    // Wrap the app with ProviderScope for Riverpod state management
-    const ProviderScope(
-      child: PuzzleBazaarGameApp(),
+  // Run the app with Sentry integration
+  await SentryFlutter.init(
+    (options) {
+      // This will be overridden by SentryErrorReportingService,
+      // but we need this minimal setup for Flutter error capture
+      options.dsn = 'https://bad7dd46cda8efe8c1d48e06a893a048@o4509486679195648.ingest.de.sentry.io/4509486690467920';
+      options.debug = false;
+    },
+    appRunner: () => runApp(
+      // Wrap the app with ProviderScope for Riverpod state management
+      const ProviderScope(
+        child: PuzzleBazaarGameApp(),
+      ),
     ),
   );
 }

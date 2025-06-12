@@ -4,8 +4,10 @@ import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
 import 'package:puzzgame_flutter/core/domain/services/settings_service.dart';
 import 'package:puzzgame_flutter/core/domain/services/audio_service.dart';
 import 'package:puzzgame_flutter/core/domain/services/zoom_service.dart';
+import 'package:puzzgame_flutter/core/domain/services/error_reporting_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/shared_preferences_settings_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/system_audio_service.dart';
+import 'package:puzzgame_flutter/core/infrastructure/sentry_error_reporting_service.dart';
 import 'package:puzzgame_flutter/game_module/puzzle_game_module.dart';
 
 /// Service locator singleton
@@ -13,6 +15,9 @@ final serviceLocator = GetIt.instance;
 
 /// Sets up the dependency injection
 void setupDependencies() {
+  // Register Error Reporting Service
+  serviceLocator.registerSingleton<ErrorReportingService>(SentryErrorReportingService());
+  
   // Register Settings Service
   serviceLocator.registerSingleton<SettingsService>(SharedPreferencesSettingsService());
   
