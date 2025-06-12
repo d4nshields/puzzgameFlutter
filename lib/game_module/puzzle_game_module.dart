@@ -136,7 +136,9 @@ class PuzzleGameSession implements GameSession {
   late List<PuzzlePiece> _allPieces;
   late List<PuzzlePiece> _trayPieces;
   late List<List<PuzzlePiece?>> _puzzleGrid;
+  final List<PuzzlePiece> _placedPieces = []; // Canvas-placed pieces
   late String _currentPuzzleId;
+  late PuzzleCanvasInfo _canvasInfo;
   int _piecesPlaced = 0;
   bool _assetsLoaded = false;
   
@@ -157,7 +159,9 @@ class PuzzleGameSession implements GameSession {
   int get piecesRemaining => totalPieces - _piecesPlaced;
   List<PuzzlePiece> get trayPieces => List.unmodifiable(_trayPieces);
   List<List<PuzzlePiece?>> get puzzleGrid => _puzzleGrid.map(List<PuzzlePiece?>.from).toList();
+  List<PuzzlePiece> get placedPieces => List.unmodifiable(_placedPieces); // Canvas-placed pieces
   String get currentPuzzleId => _currentPuzzleId;
+  PuzzleCanvasInfo get canvasInfo => _canvasInfo;
   bool get isCompleted => _piecesPlaced == totalPieces;
   bool get assetsLoaded => _assetsLoaded;
   DateTime get startTime => _startTime;
@@ -194,6 +198,9 @@ class PuzzleGameSession implements GameSession {
       await _enhancedAssetManager.loadPuzzleGridSize(_currentPuzzleId, gridSizeStr);
     }
     
+    // Load canvas info
+    _canvasInfo = await _enhancedAssetManager.getCanvasInfo(_currentPuzzleId, gridSizeStr);
+    
     // Create puzzle pieces with asset manager references
     _allPieces = [];
     for (int row = 0; row < _gridSize; row++) {
@@ -218,6 +225,9 @@ class PuzzleGameSession implements GameSession {
     // Shuffle pieces for the tray
     _trayPieces = List.from(_allPieces);
     _trayPieces.shuffle(Random());
+    
+    // Clear placed pieces
+    _placedPieces.clear();
     
     _piecesPlaced = 0;
     _assetsLoaded = true;
@@ -347,25 +357,18 @@ class PuzzleGameSession implements GameSession {
     print('PuzzleGameSession: Successfully switched to puzzle $newPuzzleId');
   }
 
-  /// Attempt to place a piece at the specified grid position
-  /// Returns true if placement was successful
-  bool tryPlacePiece(PuzzlePiece piece, int targetRow, int targetCol) {
+  /// Place piece on canvas (PNG padding handles positioning)
+  bool placePiece(PuzzlePiece piece) {
     if (!_isActive || !_assetsLoaded) return false;
     
-    // Check if the position is correct
-    if (piece.correctRow != targetRow || piece.correctCol != targetCol) {
-      print('PuzzleGameSession: Incorrect placement attempt for piece ${piece.id}');
+    // Check if piece is already placed
+    if (_placedPieces.contains(piece)) {
+      print('PuzzleGameSession: Piece ${piece.id} already placed');
       return false;
     }
     
-    // Check if position is already occupied
-    if (_puzzleGrid[targetRow][targetCol] != null) {
-      print('PuzzleGameSession: Position ($targetRow, $targetCol) already occupied');
-      return false;
-    }
-    
-    // Place the piece
-    _puzzleGrid[targetRow][targetCol] = piece;
+    // Always succeeds - PNG padding ensures correct placement
+    _placedPieces.add(piece);
     _trayPieces.remove(piece);
     _piecesPlaced++;
     
@@ -375,7 +378,7 @@ class PuzzleGameSession implements GameSession {
     final points = (basePoints * timeBonusMultiplier).round();
     _score += points;
     
-    print('PuzzleGameSession: Placed piece ${piece.id} at ($targetRow, $targetCol). Score: +$points');
+    print('PuzzleGameSession: Placed piece ${piece.id} on canvas. Score: +$points');
     
     // Check if puzzle is completed
     if (isCompleted) {
@@ -385,21 +388,38 @@ class PuzzleGameSession implements GameSession {
     return true;
   }
   
-  /// Remove a piece from the puzzle grid back to the tray
+  /// Legacy method for backward compatibility with grid-based placement
+  bool tryPlacePiece(PuzzlePiece piece, int targetRow, int targetCol) {
+    // For now, just call the new placePiece method
+    // This maintains compatibility with existing drag/drop code
+    return placePiece(piece);
+  }
+  
+  /// Remove piece from canvas back to tray
+  void removePiece(PuzzlePiece piece) {
+    if (!_isActive || !_assetsLoaded) return;
+    
+    if (_placedPieces.remove(piece)) {
+      _trayPieces.add(piece);
+      _piecesPlaced--;
+      _trayPieces.shuffle(Random());
+      
+      print('PuzzleGameSession: Removed piece ${piece.id} from canvas');
+    }
+  }
+  
+  /// Legacy method for backward compatibility with grid-based removal
   void removePieceFromGrid(int row, int col) {
     if (!_isActive || !_assetsLoaded) return;
     
-    final piece = _puzzleGrid[row][col];
-    if (piece != null) {
-      _puzzleGrid[row][col] = null;
-      _trayPieces.add(piece);
-      _piecesPlaced--;
-      
-      // Shuffle tray to avoid giving hints
-      _trayPieces.shuffle(Random());
-      
-      print('PuzzleGameSession: Removed piece ${piece.id} from grid');
-    }
+    // Find piece at this grid position and remove it
+    final pieceId = '${row}_$col';
+    final piece = _placedPieces.firstWhere(
+      (p) => p.id == pieceId,
+      orElse: () => _allPieces.firstWhere((p) => p.id == pieceId),
+    );
+    
+    removePiece(piece);
   }
   
   /// Calculate time bonus multiplier (faster completion = higher bonus)

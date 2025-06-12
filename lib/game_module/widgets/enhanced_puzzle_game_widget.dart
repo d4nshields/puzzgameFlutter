@@ -251,71 +251,52 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
       return const Center(child: CircularProgressIndicator());
     }
     
-    return AspectRatio(
-      aspectRatio: 1,
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[400]!),
-          borderRadius: BorderRadius.circular(8),
-          color: Colors.white,
-        ),
-        child: GridView.builder(
-          physics: const NeverScrollableScrollPhysics(), // Disable scrolling, use pan instead
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: widget.gameSession.gridSize,
-            mainAxisSpacing: 1,
-            crossAxisSpacing: 1,
-          ),
-          itemCount: widget.gameSession.totalPieces,
-          itemBuilder: (context, index) {
-            final row = index ~/ widget.gameSession.gridSize;
-            final col = index % widget.gameSession.gridSize;
-            final piece = widget.gameSession.puzzleGrid[row][col];
-            
-            return DragTarget<PuzzlePiece>(
-              onWillAcceptWithDetails: (details) => details.data != null,
-              onAcceptWithDetails: (details) => _placePiece(details.data, row, col),
-              builder: (context, candidateData, rejectedData) {
-                return GestureDetector(
-                  onTap: () => _removePiece(row, col),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: candidateData.isNotEmpty ? Colors.blue : Colors.grey[300]!,
-                        width: candidateData.isNotEmpty ? 2 : 0.5,
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey[400]!),
+        borderRadius: BorderRadius.circular(8),
+        color: Colors.white,
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final canvasInfo = widget.gameSession.canvasInfo;
+          final scale = _calculateCanvasScale(canvasInfo.canvasSize, constraints.biggest);
+          final scaledSize = canvasInfo.canvasSize * scale;
+          
+          return Center(
+            child: SizedBox(
+              width: scaledSize.width,
+              height: scaledSize.height,
+              child: Stack(
+                children: [
+                  // Canvas background
+                  Container(
+                    width: scaledSize.width,
+                    height: scaledSize.height,
+                    color: Colors.grey[50],
+                    child: Center(
+                      child: Text(
+                        'Canvas ${canvasInfo.canvasSize.width.toInt()}x${canvasInfo.canvasSize.height.toInt()}',
+                        style: TextStyle(
+                          color: Colors.grey[300],
+                          fontSize: 12,
+                        ),
                       ),
-                      color: piece != null ? null : Colors.grey[50],
                     ),
-                    child: piece != null
-                        ? (widget.gameSession.useEnhancedRendering
-                            ? EnhancedCachedPuzzleImage(
-                                pieceId: piece.id,
-                                assetManager: piece.enhancedAssetManager,
-                                fit: BoxFit.contain,
-                                zoomLevel: 1.0, // InteractiveViewer handles zoom for grid
-                                cropToContent: true,
-                              )
-                            : CachedPuzzleImage(
-                                pieceId: piece.id,
-                                assetManager: piece.assetManager,
-                                fit: BoxFit.cover,
-                              )
-                          )
-                        : Center(
-                            child: Text(
-                              '${row}_$col',
-                              style: TextStyle(
-                                color: Colors.grey[400],
-                                fontSize: 8,
-                              ),
-                            ),
-                          ),
                   ),
-                );
-              },
-            );
-          },
-        ),
+                  
+                  // Placed pieces - each PNG is layered at full canvas scale
+                  ...widget.gameSession.placedPieces.map((piece) =>
+                    _buildCanvasPiece(piece, scaledSize)
+                  ),
+                  
+                  // Drop zone overlay for drag targets
+                  _buildDropZoneOverlay(scaledSize),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -445,7 +426,7 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
                     assetManager: piece.enhancedAssetManager,
                     fit: BoxFit.contain,
                     zoomLevel: 1.0, // Don't double-apply zoom to feedback
-                    cropToContent: true,
+                    cropToContent: true, // Crop for feedback display
                   )
                 : CachedPuzzleImage(
                     pieceId: piece.id,
@@ -476,7 +457,7 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
                       assetManager: piece.enhancedAssetManager,
                       fit: BoxFit.contain,
                       zoomLevel: 1.0, // Don't apply zoom here - grid cells handle sizing
-                      cropToContent: true,
+                      cropToContent: true, // Crop for tray display
                     )
                   : CachedPuzzleImage(
                       pieceId: piece.id,
@@ -515,9 +496,9 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
   
   // Event handlers with audio feedback
   
-  Future<void> _placePiece(PuzzlePiece piece, int row, int col) async {
+  void _placePieceOnCanvas(PuzzlePiece piece) {
     setState(() {
-      final success = widget.gameSession.tryPlacePiece(piece, row, col);
+      final success = widget.gameSession.placePiece(piece);
       
       if (success) {
         _selectedPiece = null;
@@ -538,20 +519,87 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
         // Show error feedback
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('This piece doesn\'t belong here!'),
+            content: Text('Piece already placed!'),
             duration: Duration(seconds: 1),
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.orange,
           ),
         );
       }
     });
   }
   
-  void _removePiece(int row, int col) {
+  void _removePiece(PuzzlePiece piece) {
+    setState(() {
+      widget.gameSession.removePiece(piece);
+      _audioService.playUIClick();
+    });
+  }
+  
+  // Legacy method for backward compatibility
+  void _removePieceAtPosition(int row, int col) {
     setState(() {
       widget.gameSession.removePieceFromGrid(row, col);
       _audioService.playUIClick();
     });
+  }
+  
+  /// Build a canvas piece (full padded PNG)
+  Widget _buildCanvasPiece(PuzzlePiece piece, Size scaledCanvasSize) {
+    return Positioned.fill(
+      child: GestureDetector(
+        onTap: () => _removePiece(piece),
+        child: SizedBox(
+          width: scaledCanvasSize.width,
+          height: scaledCanvasSize.height,
+          child: widget.gameSession.useEnhancedRendering
+              ? EnhancedCachedPuzzleImage(
+                  pieceId: piece.id,
+                  assetManager: piece.enhancedAssetManager,
+                  width: scaledCanvasSize.width,
+                  height: scaledCanvasSize.height,
+                  fit: BoxFit.fill, // Use exact size - no scaling needed
+                  zoomLevel: 1.0,   // Scale handled by container size
+                  cropToContent: false, // Use full padded PNG
+                )
+              : CachedPuzzleImage(
+                  pieceId: piece.id,
+                  assetManager: piece.assetManager,
+                  width: scaledCanvasSize.width,
+                  height: scaledCanvasSize.height,
+                  fit: BoxFit.fill, // Use exact size
+                ),
+        ),
+      ),
+    );
+  }
+  
+  /// Build drop zone overlay for canvas
+  Widget _buildDropZoneOverlay(Size canvasSize) {
+    return Positioned.fill(
+      child: DragTarget<PuzzlePiece>(
+        onWillAcceptWithDetails: (details) => details.data != null,
+        onAcceptWithDetails: (details) => _placePieceOnCanvas(details.data),
+        builder: (context, candidateData, rejectedData) {
+          return Container(
+            decoration: candidateData.isNotEmpty
+                ? BoxDecoration(
+                    border: Border.all(color: Colors.blue, width: 3),
+                    color: Colors.blue.withOpacity(0.1),
+                  )
+                : null,
+          );
+        },
+      ),
+    );
+  }
+  
+  /// Calculate scale to fit canvas in available space
+  double _calculateCanvasScale(Size canvasSize, Size availableSize) {
+    final scaleX = availableSize.width / canvasSize.width;
+    final scaleY = availableSize.height / canvasSize.height;
+    
+    // Use the smaller scale to ensure entire canvas fits
+    return scaleX < scaleY ? scaleX : scaleY;
   }
   
   void _selectPiece(PuzzlePiece piece) {
