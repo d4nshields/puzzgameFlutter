@@ -19,8 +19,7 @@ class EnhancedPuzzleAssetManager {
   String? _currentGridSize;
   
   // Memory-efficient caches (only current grid size)
-  final Map<String, ui.Image> _pieceImageCache = {}; // Cropped images for tray
-  final Map<String, ui.Image> _originalImageCache = {}; // Full padded images for canvas
+  final Map<String, ui.Image> _originalImageCache = {}; // Only cache original padded images
   final Map<String, PieceBounds> _pieceBoundsCache = {};
   final Map<String, Uint8List> _pieceDataCache = {};
   ui.Image? _fullPuzzleImage;
@@ -108,7 +107,7 @@ class EnhancedPuzzleAssetManager {
       _currentPuzzleId = puzzleId;
       _currentGridSize = gridSize;
 
-      debugPrint('EnhancedPuzzleAssetManager: Loaded $puzzleId $gridSize with ${_pieceImageCache.length} processed pieces');
+      debugPrint('EnhancedPuzzleAssetManager: Loaded $puzzleId $gridSize with ${_originalImageCache.length} processed pieces');
       completer.complete();
     } catch (e) {
       completer.completeError(e);
@@ -118,9 +117,9 @@ class EnhancedPuzzleAssetManager {
     }
   }
 
-  /// Get a cached cropped piece image for tray display (synchronous - call after loadPuzzleGridSize)
+  /// Get a cached original padded piece image (synchronous - call after loadPuzzleGridSize)
   ui.Image? getCachedPieceImage(String pieceId) {
-    return _pieceImageCache[pieceId];
+    return _originalImageCache[pieceId];
   }
 
   /// Get a cached original padded piece image for canvas placement (synchronous - call after loadPuzzleGridSize)
@@ -293,14 +292,13 @@ class EnhancedPuzzleAssetManager {
       // Process the image to find bounds and create cropped version
       final processingResult = await _processPieceImage(originalImage, pieceId);
       
-      // Cache original padded image for canvas use
+      // Cache original padded image (single cache for both modes)
       _originalImageCache[pieceId] = originalImage;
       
-      // Cache the processed (cropped) image and bounds for tray use
-      _pieceImageCache[pieceId] = processingResult.croppedImage;
+      // Process to find bounds for smart cropping during render
       _pieceBoundsCache[pieceId] = processingResult.bounds;
       
-      // Don't dispose original - we need it for canvas rendering
+      // Don't create separate cropped image - we'll crop during rendering
       
     } catch (e) {
       debugPrint('Failed to load and process piece image $pieceId: $e');
@@ -348,7 +346,7 @@ class EnhancedPuzzleAssetManager {
         contentRect: Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
         hasContent: false,
       );
-      return PieceProcessingResult(originalImage, bounds);
+      return PieceProcessingResult(bounds);
     }
     
     // Calculate content bounds with some padding to avoid clipping
@@ -375,34 +373,7 @@ class EnhancedPuzzleAssetManager {
       hasContent: true,
     );
     
-    // Create cropped image
-    final croppedImage = await _createCroppedImage(
-      originalImage, 
-      contentLeft, 
-      contentTop, 
-      contentWidth, 
-      contentHeight
-    );
-    
-    return PieceProcessingResult(croppedImage, bounds);
-  }
-
-  /// Create a cropped version of the image containing only the content area
-  Future<ui.Image> _createCroppedImage(ui.Image sourceImage, int x, int y, int width, int height) async {
-    final recorder = ui.PictureRecorder();
-    final canvas = Canvas(recorder);
-    
-    // Draw the source image cropped to the content area
-    final srcRect = Rect.fromLTWH(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble());
-    final destRect = Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble());
-    
-    canvas.drawImageRect(sourceImage, srcRect, destRect, Paint());
-    
-    final picture = recorder.endRecording();
-    final croppedImage = await picture.toImage(width, height);
-    picture.dispose();
-    
-    return croppedImage;
+    return PieceProcessingResult(bounds);
   }
 
   Future<void> _loadFullPuzzleImage(String puzzleId) async {
@@ -428,13 +399,9 @@ class EnhancedPuzzleAssetManager {
 
   Future<void> _clearCurrentCache() async {
     // Dispose ui.Image objects to free memory
-    for (final image in _pieceImageCache.values) {
-      image.dispose();
-    }
     for (final image in _originalImageCache.values) {
       image.dispose();
     }
-    _pieceImageCache.clear();
     _originalImageCache.clear();
     _pieceBoundsCache.clear();
     _pieceDataCache.clear();
@@ -488,12 +455,11 @@ class PieceBounds {
   }
 }
 
-/// Result of piece image processing
+/// Result of piece image processing (no longer creates cropped image)
 class PieceProcessingResult {
-  final ui.Image croppedImage;
   final PieceBounds bounds;
   
-  const PieceProcessingResult(this.croppedImage, this.bounds);
+  const PieceProcessingResult(this.bounds);
 }
 
 /// Lightweight metadata about a puzzle (unchanged from original)
@@ -544,28 +510,23 @@ class EnhancedCachedPuzzleImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (cropToContent) {
-      // Use cropped image for tray display
-      final image = assetManager.getCachedPieceImage(pieceId);
-      final bounds = assetManager.getPieceBounds(pieceId);
-      
-      if (image != null && bounds != null) {
+    final originalImage = assetManager.getCachedOriginalPieceImage(pieceId);
+    final bounds = assetManager.getPieceBounds(pieceId);
+    
+    if (originalImage != null && bounds != null) {
+      if (cropToContent) {
+        // Use smart cropping painter for tray display
         return CustomPaint(
           size: Size(width ?? double.infinity, height ?? double.infinity),
-          painter: EnhancedImagePainter(
-            image: image,
+          painter: SmartCroppedImagePainter(
+            image: originalImage,
             bounds: bounds,
             fit: fit,
             zoomLevel: zoomLevel,
-            cropToContent: true,
           ),
         );
-      }
-    } else {
-      // Use original padded image for canvas placement
-      final originalImage = assetManager.getCachedOriginalPieceImage(pieceId);
-      
-      if (originalImage != null) {
+      } else {
+        // Use original padded image for canvas placement
         return CustomPaint(
           size: Size(width ?? double.infinity, height ?? double.infinity),
           painter: OriginalImagePainter(
@@ -592,20 +553,18 @@ class EnhancedCachedPuzzleImage extends StatelessWidget {
   }
 }
 
-/// Enhanced custom painter for optimized piece rendering with zoom awareness
-class EnhancedImagePainter extends CustomPainter {
+/// Smart cropping painter that crops from original image during render
+class SmartCroppedImagePainter extends CustomPainter {
   final ui.Image image;
   final PieceBounds bounds;
   final BoxFit fit;
   final double zoomLevel;
-  final bool cropToContent;
 
-  EnhancedImagePainter({
+  SmartCroppedImagePainter({
     required this.image,
     required this.bounds,
     required this.fit,
     required this.zoomLevel,
-    required this.cropToContent,
   });
 
   @override
@@ -619,77 +578,72 @@ class EnhancedImagePainter extends CustomPainter {
       return;
     }
 
-    // Calculate rendering parameters based on zoom level and fit
-    final renderParams = _calculateRenderParameters(size);
+    // Crop the original image to content bounds during rendering
+    final srcRect = bounds.contentRect; // Use content bounds as source
+    final destRect = _calculateDestRect(size);
     
     // Apply zoom-aware scaling
-    final zoomedScale = renderParams.scale * zoomLevel;
-    final scaledWidth = image.width * zoomedScale;
-    final scaledHeight = image.height * zoomedScale;
+    final zoomedDestRect = Rect.fromLTWH(
+      destRect.left,
+      destRect.top,
+      destRect.width * zoomLevel,
+      destRect.height * zoomLevel,
+    );
     
     // Center the zoomed image
-    final offsetX = (size.width - scaledWidth) / 2;
-    final offsetY = (size.height - scaledHeight) / 2;
+    final centeredRect = Rect.fromLTWH(
+      (size.width - zoomedDestRect.width) / 2,
+      (size.height - zoomedDestRect.height) / 2,
+      zoomedDestRect.width,
+      zoomedDestRect.height,
+    );
     
-    final srcRect = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
-    final destRect = Rect.fromLTWH(offsetX, offsetY, scaledWidth, scaledHeight);
-    
-    // Draw the piece image
-    canvas.drawImageRect(image, srcRect, destRect, Paint()..filterQuality = FilterQuality.medium);
+    // Draw cropped content from original image
+    canvas.drawImageRect(image, srcRect, centeredRect, Paint()..filterQuality = FilterQuality.medium);
     
     // Optional: Draw debug bounds
     if (kDebugMode && false) { // Set to true to see bounds in debug mode
-      _drawDebugBounds(canvas, destRect);
+      _drawDebugBounds(canvas, centeredRect);
     }
   }
 
-  RenderParameters _calculateRenderParameters(Size size) {
-    double scale;
+  Rect _calculateDestRect(Size size) {
+    final contentSize = bounds.contentRect.size;
     
     switch (fit) {
       case BoxFit.fill:
-        // Scale to fill the entire container, potentially distorting aspect ratio
-        scale = (size.width / image.width).clamp(size.height / image.height, double.infinity);
-        break;
+        return Rect.fromLTWH(0, 0, size.width, size.height);
       case BoxFit.contain:
-        // Scale to fit entirely within container, maintaining aspect ratio
-        scale = (size.width / image.width).clamp(0.0, size.height / image.height);
-        break;
+        final scale = (size.width / contentSize.width).clamp(0.0, size.height / contentSize.height);
+        final scaledWidth = contentSize.width * scale;
+        final scaledHeight = contentSize.height * scale;
+        final dx = (size.width - scaledWidth) / 2;
+        final dy = (size.height - scaledHeight) / 2;
+        return Rect.fromLTWH(dx, dy, scaledWidth, scaledHeight);
       case BoxFit.cover:
-        // Scale to cover the entire container, maintaining aspect ratio
-        scale = (size.width / image.width).clamp(size.height / image.height, double.infinity);
-        break;
-      case BoxFit.fitWidth:
-        scale = size.width / image.width;
-        break;
-      case BoxFit.fitHeight:
-        scale = size.height / image.height;
-        break;
-      case BoxFit.scaleDown:
-        scale = (size.width / image.width).clamp(0.0, 1.0).clamp(0.0, size.height / image.height);
-        break;
       default:
-        scale = bounds.getScaleFactorForSize(size);
-        break;
+        final scale = (size.width / contentSize.width).clamp(size.height / contentSize.height, double.infinity);
+        final scaledWidth = contentSize.width * scale;
+        final scaledHeight = contentSize.height * scale;
+        final dx = (size.width - scaledWidth) / 2;
+        final dy = (size.height - scaledHeight) / 2;
+        return Rect.fromLTWH(dx, dy, scaledWidth, scaledHeight);
     }
-    
-    return RenderParameters(scale: scale);
   }
 
   void _drawDebugBounds(Canvas canvas, Rect destRect) {
     final debugPaint = Paint()
-      ..color = Colors.red.withOpacity(0.3)
+      ..color = Colors.green.withOpacity(0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
     canvas.drawRect(destRect, debugPaint);
   }
 
   @override
-  bool shouldRepaint(covariant EnhancedImagePainter oldDelegate) {
+  bool shouldRepaint(covariant SmartCroppedImagePainter oldDelegate) {
     return oldDelegate.image != image ||
            oldDelegate.zoomLevel != zoomLevel ||
-           oldDelegate.fit != fit ||
-           oldDelegate.cropToContent != cropToContent;
+           oldDelegate.fit != fit;
   }
 }
 
