@@ -1,6 +1,7 @@
 // Enhanced Puzzle Game Widget with Zoom and Audio
 // File: lib/game_module/widgets/enhanced_puzzle_game_widget.dart
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,6 +30,38 @@ class EnhancedPuzzleGameWidget extends ConsumerStatefulWidget {
 }
 
 class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWidget> {
+  // ==================== CONFIGURATION ====================
+  // Adjust these values to fine-tune piece placement behavior
+  
+  /// Tolerance in pixels for piece drop accuracy (scaled with zoom)
+  /// Higher values = more forgiving placement, lower values = more precise
+  static const double _dropAccuracyTolerance = 80.0;
+  
+  /// Whether to enable snap-to-position when pieces are dropped close enough
+  static const bool _useSnapToPosition = true;
+  
+  /// Whether to enable detailed console debugging for drop actions
+  static const bool _enableDropDebugging = true;
+  
+  /// Whether to show visual debug overlays (red/green lines)
+  static const bool _showDebugVisuals = false;
+  
+  /// Whether to show simplified drag target outlines for positioning verification
+  static const bool _showTargetOutlines = true;
+  
+  /// Corner pieces to focus debugging on
+  static const Set<String> _debugTargetPieces = {'0_0', '0_7', '7_0', '7_7'};
+  static const Set<String> _debugTargetPositions = {'(0, 0)', '(0, 7)', '(7, 0)', '(7, 7)'};
+  
+  /// Helper method to check if we should debug this piece/position
+  bool _shouldDebugPiece(String pieceId) => _debugTargetPieces.contains(pieceId);
+  bool _shouldDebugPosition(int row, int col) => _debugTargetPositions.contains('($row, $col)');
+  
+  /// Whether to only accept pieces in their correct positions (vs any position)
+  static const bool _enforceCorrectPositionOnly = true;
+  
+  // ==================== STATE VARIABLES ====================
+  
   late final ZoomService _zoomService;
   late final AudioService _audioService;
   PuzzlePiece? _selectedPiece;
@@ -250,73 +283,39 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
     if (!widget.gameSession.assetsLoaded) {
       return const Center(child: CircularProgressIndicator());
     }
-    
-    return AspectRatio(
-      aspectRatio: 1,
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[400]!),
-          borderRadius: BorderRadius.circular(8),
-          color: Colors.white,
-        ),
-        child: GridView.builder(
-          physics: const NeverScrollableScrollPhysics(), // Disable scrolling, use pan instead
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: widget.gameSession.gridSize,
-            mainAxisSpacing: 1,
-            crossAxisSpacing: 1,
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate the puzzle dimensions from original asset grid
+        final puzzleDimensions = _calculateOriginalPuzzleDimensions();
+        final availableSize = Size(constraints.maxWidth, constraints.maxHeight);
+        
+        // Calculate scale to fill the container while maintaining aspect ratio
+        final scaleX = availableSize.width / puzzleDimensions.width;
+        final scaleY = availableSize.height / puzzleDimensions.height;
+        final scale = (scaleX < scaleY ? scaleX : scaleY);
+        
+        return Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey[400]!),
+            borderRadius: BorderRadius.circular(8),
+            color: Colors.white,
           ),
-          itemCount: widget.gameSession.totalPieces,
-          itemBuilder: (context, index) {
-            final row = index ~/ widget.gameSession.gridSize;
-            final col = index % widget.gameSession.gridSize;
-            final piece = widget.gameSession.puzzleGrid[row][col];
-            
-            return DragTarget<PuzzlePiece>(
-              onWillAcceptWithDetails: (details) => details.data != null,
-              onAcceptWithDetails: (details) => _placePiece(details.data, row, col),
-              builder: (context, candidateData, rejectedData) {
-                return GestureDetector(
-                  onTap: () => _removePiece(row, col),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: candidateData.isNotEmpty ? Colors.blue : Colors.grey[300]!,
-                        width: candidateData.isNotEmpty ? 2 : 0.5,
-                      ),
-                      color: piece != null ? null : Colors.grey[50],
-                    ),
-                    child: piece != null
-                        ? (widget.gameSession.useEnhancedRendering
-                            ? EnhancedCachedPuzzleImage(
-                                pieceId: piece.id,
-                                assetManager: piece.enhancedAssetManager,
-                                fit: BoxFit.contain,
-                                zoomLevel: 1.0, // InteractiveViewer handles zoom for grid
-                                cropToContent: true,
-                              )
-                            : CachedPuzzleImage(
-                                pieceId: piece.id,
-                                assetManager: piece.assetManager,
-                                fit: BoxFit.cover,
-                              )
-                          )
-                        : Center(
-                            child: Text(
-                              '${row}_$col',
-                              style: TextStyle(
-                                color: Colors.grey[400],
-                                fontSize: 8,
-                              ),
-                            ),
-                          ),
-                  ),
-                );
-              },
-            );
-          },
-        ),
-      ),
+          child: AspectRatio(
+            aspectRatio: puzzleDimensions.width / puzzleDimensions.height,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // Positioned pieces using original locations
+                ..._buildPositionedPieces(scale),
+                
+                // Drag targets for empty positions
+                ..._buildDragTargets(scale),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
   
@@ -432,6 +431,19 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
         
         return Draggable<PuzzlePiece>(
           data: piece,
+          onDragStarted: () {
+            if (_enableDropDebugging && _shouldDebugPiece(piece.id)) {
+              print('🚀 Started dragging piece ${piece.id}');
+              print('   - Correct position: (${piece.correctRow}, ${piece.correctCol})');
+            }
+          },
+          onDragEnd: (details) {
+            if (_enableDropDebugging && _shouldDebugPiece(piece.id)) {
+              print('🚀 Finished dragging piece ${piece.id}');
+              print('   - Drop position: (${details.offset.dx}, ${details.offset.dy})');
+              print('   - Was accepted: ${details.wasAccepted}');
+            }
+          },
           feedback: Container(
             width: zoomedPieceSize,
             height: zoomedPieceSize,
@@ -513,7 +525,91 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
     );
   }
   
-  // Event handlers with audio feedback
+  // Event handlers with audio feedback and snap-to-position
+  
+  bool _willAcceptPiece(DragTargetDetails<PuzzlePiece?> details, int row, int col) {
+    if (details.data == null) {
+      if (_enableDropDebugging && _shouldDebugPosition(row, col)) {
+        print('🎯 ❌ Rejecting: details.data is null');
+      }
+      return false;
+    }
+    
+    final piece = details.data!;
+    if (_enableDropDebugging && _shouldDebugPosition(row, col) && _shouldDebugPiece(piece.id)) {
+      print('🎯 Checking piece ${piece.id} for position ($row, $col)');
+      print('   - Piece correct position: (${piece.correctRow}, ${piece.correctCol})');
+      print('   - Enforce correct position only: $_enforceCorrectPositionOnly');
+    }
+    
+    if (_enforceCorrectPositionOnly) {
+      final isCorrectPosition = piece.correctRow == row && piece.correctCol == col;
+      if (_enableDropDebugging && _shouldDebugPosition(row, col) && _shouldDebugPiece(piece.id)) {
+        print('🎯 Correct position check: $isCorrectPosition');
+      }
+      return isCorrectPosition;
+    } else {
+      if (_enableDropDebugging && _shouldDebugPosition(row, col) && _shouldDebugPiece(piece.id)) {
+        print('🎯 Accepting any piece (lenient mode)');
+      }
+      return true;
+    }
+  }
+  
+  Future<void> _placePieceWithSnap(PuzzlePiece piece, int row, int col, double scale) async {
+    if (_enableDropDebugging && _shouldDebugPiece(piece.id)) {
+      print('🎯 _placePieceWithSnap called:');
+      print('   - Piece: ${piece.id}');
+      print('   - Target position: ($row, $col)');
+      print('   - Piece correct position: (${piece.correctRow}, ${piece.correctCol})');
+      print('   - Scale: $scale');
+    }
+    
+    setState(() {
+      final success = widget.gameSession.tryPlacePiece(piece, row, col);
+      
+      if (_enableDropDebugging) {
+        print('🎯 Placement result: ${success ? "SUCCESS" : "FAILED"}');
+      }
+      
+      if (success) {
+        _selectedPiece = null;
+        _audioService.playPieceCorrect();
+        
+        // Add haptic feedback for correct placement
+        HapticFeedback.lightImpact();
+        
+        if (_enableDropDebugging) {
+          print('🎯 ✅ Piece placed successfully, playing success audio');
+        }
+        
+        // Check if puzzle is completed
+        if (widget.gameSession.isCompleted) {
+          _audioService.playPuzzleCompleted();
+          _showCompletionDialog();
+          if (_enableDropDebugging) {
+            print('🎯 🎉 Puzzle completed!');
+          }
+        }
+      } else {
+        _audioService.playPieceIncorrect();
+        HapticFeedback.mediumImpact();
+        
+        if (_enableDropDebugging) {
+          print('🎯 ❌ Placement failed, playing error audio');
+        }
+        
+        // Show error feedback
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('This piece doesn\'t belong here!'),
+            duration: Duration(seconds: 1),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    });
+  }
   
   Future<void> _placePiece(PuzzlePiece piece, int row, int col) async {
     setState(() {
@@ -593,6 +689,405 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
     setState(() {});
   }
   
+  Size _calculateOriginalPuzzleDimensions() {
+    if (widget.gameSession.allPieces.isEmpty) {
+      return const Size(400, 400); // fallback
+    }
+    
+    // Instead of using just the first piece's original size,
+    // calculate the actual bounds needed to contain all pieces
+    double minX = double.infinity;
+    double minY = double.infinity;
+    double maxX = double.negativeInfinity;
+    double maxY = double.negativeInfinity;
+    
+    // Check bounds of all pieces to find the true puzzle dimensions
+    for (final piece in widget.gameSession.allPieces) {
+      final bounds = piece.enhancedAssetManager.getPieceBounds(piece.id);
+      if (bounds != null && bounds.hasContent) {
+        // Calculate grid position for this piece
+        final coords = piece.id.split('_');
+        final row = int.parse(coords[0]);
+        final col = int.parse(coords[1]);
+        
+        // Get the first piece's original size to calculate cell dimensions
+        final firstPieceBounds = widget.gameSession.allPieces.first.enhancedAssetManager.getPieceBounds(widget.gameSession.allPieces.first.id);
+        if (firstPieceBounds == null) continue;
+        
+        final cellWidth = firstPieceBounds.originalSize.width / widget.gameSession.gridSize;
+        final cellHeight = firstPieceBounds.originalSize.height / widget.gameSession.gridSize;
+        
+        // Calculate where this piece's content extends
+        final gridLeft = col * cellWidth;
+        final gridTop = row * cellHeight;
+        
+        final contentLeft = gridLeft + bounds.contentRect.left;
+        final contentTop = gridTop + bounds.contentRect.top;
+        final contentRight = contentLeft + bounds.contentRect.width;
+        final contentBottom = contentTop + bounds.contentRect.height;
+        
+        // Update overall bounds
+        minX = minX < contentLeft ? minX : contentLeft;
+        minY = minY < contentTop ? minY : contentTop;
+        maxX = maxX > contentRight ? maxX : contentRight;
+        maxY = maxY > contentBottom ? maxY : contentBottom;
+      }
+    }
+    
+    // If we couldn't calculate bounds, fall back to original method
+    if (minX == double.infinity || maxX == double.negativeInfinity) {
+      final firstPiece = widget.gameSession.allPieces.first;
+      final bounds = firstPiece.enhancedAssetManager.getPieceBounds(firstPiece.id);
+      if (bounds != null) {
+        return bounds.originalSize;
+      }
+      return const Size(400, 400);
+    }
+    
+    // Add some padding to ensure pieces don't get clipped
+    const padding = 20.0;
+    final width = (maxX - minX) + (padding * 2);
+    final height = (maxY - minY) + (padding * 2);
+    
+    final calculatedSize = Size(width, height);
+    
+    if (_enableDropDebugging) {
+      print('🎯 Calculated puzzle dimensions:');
+      print('   - Content bounds: ($minX, $minY) to ($maxX, $maxY)');
+      print('   - Content size: ${maxX - minX} x ${maxY - minY}');
+      print('   - With padding: ${calculatedSize.width} x ${calculatedSize.height}');
+    }
+    
+    return calculatedSize;
+  }
+
+  double _calculateGridScale(Size availableSize, Size originalSize) {
+    final scaleX = availableSize.width / originalSize.width;
+    final scaleY = availableSize.height / originalSize.height;
+    return (scaleX < scaleY ? scaleX : scaleY) * 0.9; // 90% to leave margin
+  }
+
+  List<Widget> _buildPositionedPieces(double scale) {
+    final List<Widget> positionedPieces = [];
+    
+    if (_enableDropDebugging) {
+      print('🎯 Building positioned pieces with scale: $scale');
+    }
+    
+    // Calculate cell dimensions and offset for grid-based positioning
+    final puzzleDimensions = _calculateOriginalPuzzleDimensions();
+    
+    // Get reference bounds for cell calculation
+    final firstPiece = widget.gameSession.allPieces.first;
+    final firstBounds = firstPiece.enhancedAssetManager.getPieceBounds(firstPiece.id);
+    if (firstBounds == null) return [];
+    
+    final cellWidth = firstBounds.originalSize.width / widget.gameSession.gridSize;
+    final cellHeight = firstBounds.originalSize.height / widget.gameSession.gridSize;
+    
+    // Calculate the minimum content bounds to determine offset
+    double minX = double.infinity;
+    double minY = double.infinity;
+    
+    for (final piece in widget.gameSession.allPieces) {
+      final bounds = piece.enhancedAssetManager.getPieceBounds(piece.id);
+      if (bounds != null && bounds.hasContent) {
+        final coords = piece.id.split('_');
+        final row = int.parse(coords[0]);
+        final col = int.parse(coords[1]);
+        
+        final gridLeft = col * cellWidth;
+        final gridTop = row * cellHeight;
+        final contentLeft = gridLeft + bounds.contentRect.left;
+        final contentTop = gridTop + bounds.contentRect.top;
+        
+        minX = minX < contentLeft ? minX : contentLeft;
+        minY = minY < contentTop ? minY : contentTop;
+      }
+    }
+    
+    // Add padding offset
+    const padding = 20.0;
+    final offsetX = -minX + padding;
+    final offsetY = -minY + padding;
+    
+    for (int row = 0; row < widget.gameSession.gridSize; row++) {
+      for (int col = 0; col < widget.gameSession.gridSize; col++) {
+        final piece = widget.gameSession.puzzleGrid[row][col];
+        if (piece != null) {
+          final bounds = piece.enhancedAssetManager.getPieceBounds(piece.id);
+          if (bounds != null && bounds.hasContent) {
+            // Calculate grid-based position with offset
+            final gridLeft = col * cellWidth;
+            final gridTop = row * cellHeight;
+            
+            // Add the piece's content offset within its cell plus the overall offset
+            final contentOffsetX = bounds.contentRect.left;
+            final contentOffsetY = bounds.contentRect.top;
+            
+            final finalLeft = (gridLeft + contentOffsetX + offsetX) * scale;
+            final finalTop = (gridTop + contentOffsetY + offsetY) * scale;
+            
+            final contentSize = bounds.getContentSize();
+            final scaledWidth = contentSize.width * scale;
+            final scaledHeight = contentSize.height * scale;
+            
+            if (_enableDropDebugging && _shouldDebugPiece(piece.id)) {
+              print('🎯 Rendering positioned piece ${piece.id} at ($row, $col):');
+              print('   - Grid position: ($row, $col)');
+              print('   - Cell size: ${cellWidth} x $cellHeight');
+              print('   - Grid offset: $gridLeft, $gridTop');
+              print('   - Content offset within cell: $contentOffsetX, $contentOffsetY');
+              print('   - Overall offset: $offsetX, $offsetY');
+              print('   - Final position: $finalLeft, $finalTop');
+              print('   - Content size: ${scaledWidth} x $scaledHeight');
+              print('   - Scale: $scale');
+            }
+            
+            positionedPieces.add(
+              Positioned(
+                left: finalLeft,
+                top: finalTop,
+                width: scaledWidth,
+                height: scaledHeight,
+                child: GestureDetector(
+                  onTap: () => _removePiece(row, col),
+                  child: widget.gameSession.useEnhancedRendering
+                      ? EnhancedCachedPuzzleImage(
+                          pieceId: piece.id,
+                          assetManager: piece.enhancedAssetManager,
+                          width: scaledWidth,
+                          height: scaledHeight,
+                          fit: BoxFit.contain,
+                          zoomLevel: 1.0,
+                          cropToContent: true,
+                        )
+                      : CachedPuzzleImage(
+                          pieceId: piece.id,
+                          assetManager: piece.assetManager,
+                          fit: BoxFit.cover,
+                        ),
+                ),
+              ),
+            );
+          } else {
+            if (_enableDropDebugging && _shouldDebugPiece(piece.id)) {
+              print('🎯 ❌ Piece ${piece.id} has no bounds or no content!');
+            }
+          }
+        }
+      }
+    }
+    
+    if (_enableDropDebugging) {
+      print('🎯 Total positioned pieces rendered: ${positionedPieces.length}');
+    }
+    
+    return positionedPieces;
+  }
+
+  List<Widget> _buildDragTargets(double scale) {
+    final List<Widget> dragTargets = [];
+    
+    if (_enableDropDebugging) {
+      print('🎯 Building drag targets with scale: $scale');
+      print('🎯 Grid size: ${widget.gameSession.gridSize}');
+      print('🎯 Total pieces: ${widget.gameSession.allPieces.length}');
+      print('🎯 Available viewport size: ${MediaQuery.of(context).size}');
+      
+      // Check what the puzzle dimensions calculation gives us
+      final puzzleDimensions = _calculateOriginalPuzzleDimensions();
+      print('🎯 Calculated puzzle dimensions: ${puzzleDimensions.width} x ${puzzleDimensions.height}');
+      print('🎯 Scaled puzzle size: ${puzzleDimensions.width * scale} x ${puzzleDimensions.height * scale}');
+    }
+    
+    // Calculate cell dimensions and offset for grid-based positioning
+    final firstPiece = widget.gameSession.allPieces.first;
+    final firstBounds = firstPiece.enhancedAssetManager.getPieceBounds(firstPiece.id);
+    if (firstBounds == null) return [];
+    
+    final cellWidth = firstBounds.originalSize.width / widget.gameSession.gridSize;
+    final cellHeight = firstBounds.originalSize.height / widget.gameSession.gridSize;
+    
+    // Calculate the minimum content bounds to determine offset (same as in _buildPositionedPieces)
+    double minX = double.infinity;
+    double minY = double.infinity;
+    
+    for (final piece in widget.gameSession.allPieces) {
+      final bounds = piece.enhancedAssetManager.getPieceBounds(piece.id);
+      if (bounds != null && bounds.hasContent) {
+        final coords = piece.id.split('_');
+        final row = int.parse(coords[0]);
+        final col = int.parse(coords[1]);
+        
+        final gridLeft = col * cellWidth;
+        final gridTop = row * cellHeight;
+        final contentLeft = gridLeft + bounds.contentRect.left;
+        final contentTop = gridTop + bounds.contentRect.top;
+        
+        minX = minX < contentLeft ? minX : contentLeft;
+        minY = minY < contentTop ? minY : contentTop;
+      }
+    }
+    
+    // Add padding offset
+    const padding = 20.0;
+    final offsetX = -minX + padding;
+    final offsetY = -minY + padding;
+    
+    for (int row = 0; row < widget.gameSession.gridSize; row++) {
+      for (int col = 0; col < widget.gameSession.gridSize; col++) {
+        if (widget.gameSession.puzzleGrid[row][col] == null) {
+          // Calculate grid-based position for drag target with offset
+          final gridLeft = col * cellWidth;
+          final gridTop = row * cellHeight;
+          
+          final finalLeft = (gridLeft + offsetX) * scale;
+          final finalTop = (gridTop + offsetY) * scale;
+          final scaledCellWidth = cellWidth * scale;
+          final scaledCellHeight = cellHeight * scale;
+          
+          // Expand the drop target area for better accuracy, but limit to cell size
+          final tolerance = (_dropAccuracyTolerance * scale).clamp(0.0, scaledCellWidth * 0.3).toDouble();
+          
+          final expandedLeft = finalLeft - tolerance;
+          final expandedTop = finalTop - tolerance;
+          final expandedWidth = scaledCellWidth + (tolerance * 2);
+          final expandedHeight = scaledCellHeight + (tolerance * 2);
+          
+          if (_enableDropDebugging && _shouldDebugPosition(row, col)) {
+            print('🎯 Creating drag target for position ($row, $col):');
+            print('   - Grid position: ($row, $col)');
+            print('   - Cell size: ${cellWidth} x $cellHeight');
+            print('   - Grid offset: $gridLeft, $gridTop');
+            print('   - Overall offset: $offsetX, $offsetY');
+            print('   - Final grid position: $finalLeft, $finalTop');
+            print('   - Scale: $scale');
+            print('   - Tolerance: $tolerance pixels');
+            print('   - Expanded area: $expandedLeft, $expandedTop, $expandedWidth x $expandedHeight');
+          }
+            
+          dragTargets.add(
+            Positioned(
+              left: expandedLeft,
+              top: expandedTop,
+              width: expandedWidth,
+              height: expandedHeight,
+              child: DragTarget<PuzzlePiece>(
+                onWillAcceptWithDetails: (details) {
+                  final result = _willAcceptPiece(details, row, col);
+                  if (_enableDropDebugging && _shouldDebugPosition(row, col) && details.data != null) {
+                    print('🎯 onWillAccept for ($row, $col): piece=${details.data?.id}, result=$result');
+                  }
+                  return result;
+                },
+                onAcceptWithDetails: (details) {
+                  if (_enableDropDebugging && _shouldDebugPosition(row, col)) {
+                    print('🎯 onAccept for ($row, $col): piece=${details.data.id}');
+                  }
+                  _placePieceWithSnap(details.data, row, col, scale);
+                },
+                builder: (context, candidateData, rejectedData) {
+                  final isHighlighted = candidateData.isNotEmpty;
+                  
+                  if (_enableDropDebugging && isHighlighted) {
+                    print('🎯 Highlighting drag target ($row, $col) - piece over target');
+                  }
+                  
+                  return Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: isHighlighted 
+                            ? Colors.blue.withOpacity(0.7) 
+                            : (_showTargetOutlines && kDebugMode && _shouldDebugPosition(row, col)
+                                ? Colors.purple.withOpacity(0.3) 
+                                : Colors.transparent),
+                        width: isHighlighted ? 2 : (_showTargetOutlines && kDebugMode && _shouldDebugPosition(row, col) ? 1 : 0),
+                      ),
+                      color: isHighlighted 
+                          ? Colors.blue.withOpacity(0.1)
+                          : Colors.transparent,
+                      borderRadius: isHighlighted ? BorderRadius.circular(4) : null,
+                    ),
+                    // Show simplified target outline or full debug info
+                    child: _showTargetOutlines && kDebugMode && !_showDebugVisuals && _shouldDebugPosition(row, col)
+                        ? Center(
+                            child: Text(
+                              '${row}_$col',
+                              style: TextStyle(
+                                color: Colors.purple[600],
+                                fontSize: (8 * scale).clamp(6, 12),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          )
+                        : (_showDebugVisuals && kDebugMode) ? Stack(
+                      children: [
+                        // Original target area (for debugging)
+                        Positioned(
+                          left: tolerance,
+                          top: tolerance,
+                          width: scaledCellWidth,
+                          height: scaledCellHeight,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Colors.red.withOpacity(0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${row}_$col',
+                                style: TextStyle(
+                                  color: Colors.grey[400],
+                                  fontSize: 8 * scale,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Tolerance area indicator
+                        if (isHighlighted)
+                          Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.green.withOpacity(0.5),
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ) : null,
+                  );
+                },
+              ),
+            ),
+          );
+        }
+      }
+    }
+    
+    if (_enableDropDebugging) {
+      print('🎯 Created ${dragTargets.length} drag targets total');
+      
+      // Check if specific problematic targets were created
+      final emptyPositions = <String>[];
+      for (int row = 0; row < widget.gameSession.gridSize; row++) {
+        for (int col = 0; col < widget.gameSession.gridSize; col++) {
+          if (widget.gameSession.puzzleGrid[row][col] == null) {
+            emptyPositions.add('($row, $col)');
+          }
+        }
+      }
+      print('🎯 Empty positions that should have drag targets: $emptyPositions');
+    }
+    
+    return dragTargets;
+  }
+
   void _showCompletionDialog() {
     showDialog(
       context: context,

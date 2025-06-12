@@ -16,6 +16,7 @@ class EnhancedPuzzleAssetManager {
   // Current loaded puzzle state
   String? _currentPuzzleId;
   String? _currentGridSize;
+  int? _currentGridSizeInt; // Cache the parsed grid size
   
   // Memory-efficient caches (only current grid size)
   final Map<String, ui.Image> _pieceImageCache = {};
@@ -100,6 +101,7 @@ class EnhancedPuzzleAssetManager {
       // Update current state
       _currentPuzzleId = puzzleId;
       _currentGridSize = gridSize;
+      _currentGridSizeInt = rows; // Cache the parsed grid size
 
       debugPrint('EnhancedPuzzleAssetManager: Loaded $puzzleId $gridSize with ${_pieceImageCache.length} processed pieces');
       completer.complete();
@@ -139,6 +141,11 @@ class EnhancedPuzzleAssetManager {
   /// Get current loaded puzzle info
   String? get currentPuzzleId => _currentPuzzleId;
   String? get currentGridSize => _currentGridSize;
+  
+  /// Get current grid size as integer
+  int _getCurrentGridSize() {
+    return _currentGridSizeInt ?? 12; // Default fallback
+  }
 
   /// Clear all caches to free memory
   Future<void> clearCache() async {
@@ -278,8 +285,36 @@ class EnhancedPuzzleAssetManager {
       final frame = await codec.getNextFrame();
       final originalImage = frame.image;
       
+      // Parse piece coordinates from piece ID
+      final coords = pieceId.split('_');
+      final row = int.parse(coords[0]);
+      final col = int.parse(coords[1]);
+      
+      // Calculate original location in the puzzle grid
+      // Since each piece image is the full puzzle size, we need to calculate
+      // the cell size within that image and position accordingly
+      // Parse the actual grid size from the current loaded grid size string
+      final actualGridSize = _currentGridSize?.split('x').first;
+      final gridSizeInt = actualGridSize != null ? int.parse(actualGridSize) : 8;
+      
+      final cellWidth = originalImage.width.toDouble() / gridSizeInt;
+      final cellHeight = originalImage.height.toDouble() / gridSizeInt;
+      
+      final originalLocation = Offset(
+        col * cellWidth,
+        row * cellHeight,
+      );
+      
+      debugPrint('Calculating original location for piece $pieceId:');
+      debugPrint('  - Grid position: ($row, $col)');
+      debugPrint('  - Image size: ${originalImage.width}x${originalImage.height}');
+      debugPrint('  - Current grid size string: $_currentGridSize');
+      debugPrint('  - Parsed grid size: $gridSizeInt');
+      debugPrint('  - Cell size: ${cellWidth}x$cellHeight');
+      debugPrint('  - Calculated location: ${originalLocation.dx}, ${originalLocation.dy}');
+      
       // Process the image to find bounds and create cropped version
-      final processingResult = await _processPieceImage(originalImage, pieceId);
+      final processingResult = await _processPieceImage(originalImage, pieceId, originalLocation);
       
       // Cache the processed image and bounds
       _pieceImageCache[pieceId] = processingResult.croppedImage;
@@ -295,7 +330,11 @@ class EnhancedPuzzleAssetManager {
   }
 
   /// Process a piece image to find non-transparent bounds and create a cropped version
-  Future<PieceProcessingResult> _processPieceImage(ui.Image originalImage, String pieceId) async {
+  Future<PieceProcessingResult> _processPieceImage(
+    ui.Image originalImage, 
+    String pieceId, 
+    Offset originalLocation,
+  ) async {
     // Convert image to byte data for pixel analysis
     final byteData = await originalImage.toByteData(format: ui.ImageByteFormat.rawRgba);
     if (byteData == null) {
@@ -333,6 +372,7 @@ class EnhancedPuzzleAssetManager {
         originalSize: Size(width.toDouble(), height.toDouble()),
         contentRect: Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
         hasContent: false,
+        originalLocation: originalLocation,
       );
       return PieceProcessingResult(originalImage, bounds);
     }
@@ -347,9 +387,9 @@ class EnhancedPuzzleAssetManager {
     final contentWidth = contentRight - contentLeft + 1;
     final contentHeight = contentBottom - contentTop + 1;
     
-    debugPrint('Piece $pieceId: original=${width}x$height, content=${contentWidth}x$contentHeight at ($contentLeft,$contentTop)');
+    debugPrint('Piece $pieceId: original=${width}x$height, content=${contentWidth}x$contentHeight at ($contentLeft,$contentTop), grid position=${originalLocation.dx},${originalLocation.dy}');
     
-    // Create bounds information
+    // Create bounds information with original location
     final bounds = PieceBounds(
       originalSize: Size(width.toDouble(), height.toDouble()),
       contentRect: Rect.fromLTWH(
@@ -359,6 +399,7 @@ class EnhancedPuzzleAssetManager {
         contentHeight.toDouble()
       ),
       hasContent: true,
+      originalLocation: originalLocation,
     );
     
     // Create cropped image
@@ -424,6 +465,7 @@ class EnhancedPuzzleAssetManager {
     _fullPuzzleImage?.dispose();
     _fullPuzzleImage = null;
     _outlineSvg = null;
+    _currentGridSizeInt = null; // Clear cached grid size
   }
 
   String _formatPuzzleName(String puzzleId) {
@@ -440,12 +482,28 @@ class PieceBounds {
   final Size originalSize;
   final Rect contentRect;
   final bool hasContent;
+  final Offset originalLocation;     // Where this piece should be positioned in the puzzle
   
   const PieceBounds({
     required this.originalSize,
     required this.contentRect,
     required this.hasContent,
+    required this.originalLocation,
   });
+  
+  /// Get the offset needed to position the content correctly
+  Offset getContentOffset() {
+    // The content should be positioned at the original location plus the content's offset within the bounding box
+    return Offset(
+      originalLocation.dx + contentRect.left,
+      originalLocation.dy + contentRect.top,
+    );
+  }
+  
+  /// Get the actual content size
+  Size getContentSize() {
+    return contentRect.size;
+  }
   
   /// Get the scale factor to fit the content in a given size while maintaining aspect ratio
   double getScaleFactorForSize(Size targetSize) {

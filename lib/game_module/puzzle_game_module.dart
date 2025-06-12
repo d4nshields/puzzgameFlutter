@@ -158,6 +158,7 @@ class PuzzleGameSession implements GameSession {
   List<PuzzlePiece> get trayPieces => List.unmodifiable(_trayPieces);
   List<List<PuzzlePiece?>> get puzzleGrid => _puzzleGrid.map(List<PuzzlePiece?>.from).toList();
   String get currentPuzzleId => _currentPuzzleId;
+  List<PuzzlePiece> get allPieces => List.unmodifiable(_allPieces);
   bool get isCompleted => _piecesPlaced == totalPieces;
   bool get assetsLoaded => _assetsLoaded;
   DateTime get startTime => _startTime;
