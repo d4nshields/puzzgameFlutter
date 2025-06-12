@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
 import 'package:puzzgame_flutter/core/domain/services/settings_service.dart';
+import 'package:puzzgame_flutter/core/domain/services/error_reporting_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/game_module/services/puzzle_asset_manager.dart';
 import 'package:puzzgame_flutter/game_module/services/enhanced_puzzle_asset_manager.dart';
@@ -50,30 +51,77 @@ class PuzzleGameModule implements GameModule {
   
   @override
   Future<GameSession> startGame({required int difficulty}) async {
-    if (!_isInitialized || _assetManager == null || _enhancedAssetManager == null) {
-      throw Exception('PuzzleGameModule must be initialized before starting a game');
+    final errorReporting = serviceLocator<ErrorReportingService>();
+    
+    try {
+      if (!_isInitialized || _assetManager == null || _enhancedAssetManager == null) {
+        throw Exception('PuzzleGameModule must be initialized before starting a game');
+      }
+      
+      print('PuzzleGameModule: Starting new puzzle game with difficulty $difficulty');
+      
+      // Add breadcrumb for game start
+      await errorReporting.addBreadcrumb(
+        'Starting new puzzle game',
+        category: 'game_lifecycle',
+        data: {
+          'difficulty': difficulty,
+          'enhanced_rendering': _useEnhancedRendering,
+        },
+      );
+      
+      // Get grid size from settings service
+      final settingsService = serviceLocator<SettingsService>();
+      final gridSize = settingsService.getGridSizeForDifficulty(difficulty);
+      
+      print('PuzzleGameModule: Using ${gridSize}x$gridSize grid for difficulty $difficulty');
+      
+      // Create game session with enhanced asset manager
+      final session = PuzzleGameSession(
+        sessionId: const Uuid().v4(),
+        difficulty: difficulty,
+        gridSize: gridSize,
+        assetManager: _assetManager!,
+        enhancedAssetManager: _enhancedAssetManager!,
+        useEnhancedRendering: _useEnhancedRendering,
+      );
+      
+      await session._initializePuzzle();
+      
+      // Report successful game start
+      await errorReporting.addBreadcrumb(
+        'Puzzle game started successfully',
+        category: 'game_lifecycle',
+        data: {
+          'session_id': session.sessionId,
+          'grid_size': gridSize,
+          'total_pieces': session.totalPieces,
+        },
+      );
+      
+      return session;
+    } catch (e, stackTrace) {
+      // Report the error with detailed context
+      await errorReporting.reportException(
+        e,
+        stackTrace: stackTrace,
+        context: 'game_start_failure',
+        extra: {
+          'difficulty': difficulty,
+          'enhanced_rendering': _useEnhancedRendering,
+          'is_initialized': _isInitialized,
+          'asset_manager_available': _assetManager != null,
+          'enhanced_asset_manager_available': _enhancedAssetManager != null,
+        },
+        tags: {
+          'feature': 'puzzle_game',
+          'operation': 'start_game',
+        },
+      );
+      
+      print('PuzzleGameModule: Failed to start game: $e');
+      rethrow;
     }
-    
-    print('PuzzleGameModule: Starting new puzzle game with difficulty $difficulty');
-    
-    // Get grid size from settings service
-    final settingsService = serviceLocator<SettingsService>();
-    final gridSize = settingsService.getGridSizeForDifficulty(difficulty);
-    
-    print('PuzzleGameModule: Using ${gridSize}x$gridSize grid for difficulty $difficulty');
-    
-    // Create game session with enhanced asset manager
-    final session = PuzzleGameSession(
-      sessionId: const Uuid().v4(),
-      difficulty: difficulty,
-      gridSize: gridSize,
-      assetManager: _assetManager!,
-      enhancedAssetManager: _enhancedAssetManager!,
-      useEnhancedRendering: _useEnhancedRendering,
-    );
-    
-    await session._initializePuzzle();
-    return session;
   }
   
   @override

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
+import 'package:puzzgame_flutter/core/domain/services/error_reporting_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 
 /// AppInitializer is responsible for loading necessary resources and
@@ -14,10 +15,35 @@ class AppInitializer {
     
     // Initialize services in parallel
     await Future.wait([
+      _initializeErrorReporting(),
       _initializeGameModule(),
       _preloadAssets(),
       _ensureMinimumSplashDuration(startTime),
     ]);
+  }
+  
+  /// Initialize error reporting service
+  static Future<void> _initializeErrorReporting() async {
+    try {
+      final errorReporting = serviceLocator<ErrorReportingService>();
+      await errorReporting.initialize();
+      
+      // Set basic application context
+      await errorReporting.addBreadcrumb(
+        'Application started',
+        category: 'app_lifecycle',
+        level: 'info',
+        data: {
+          'app_version': '0.1.11+12',
+          'platform': 'flutter',
+        },
+      );
+      
+      print('Error reporting service initialized successfully');
+    } catch (e) {
+      print('Error initializing error reporting service: $e');
+      // Continue app initialization even if error reporting fails
+    }
   }
   
   /// Initialize the game module
@@ -26,8 +52,32 @@ class AppInitializer {
       final gameModule = serviceLocator<GameModule>();
       await gameModule.initialize();
       print('Game module initialized successfully');
+      
+      // Report successful initialization
+      final errorReporting = serviceLocator<ErrorReportingService>();
+      await errorReporting.addBreadcrumb(
+        'Game module initialized',
+        category: 'initialization',
+        level: 'info',
+      );
     } catch (e) {
       print('Error initializing game module: $e');
+      
+      // Report the error
+      try {
+        final errorReporting = serviceLocator<ErrorReportingService>();
+        await errorReporting.reportException(
+          e,
+          context: 'game_module_initialization',
+          extra: {
+            'stage': 'app_startup',
+            'critical': true,
+          },
+        );
+      } catch (reportingError) {
+        print('Failed to report game module initialization error: $reportingError');
+      }
+      
       // Still continue app initialization - we'll handle this in the UI
     }
   }

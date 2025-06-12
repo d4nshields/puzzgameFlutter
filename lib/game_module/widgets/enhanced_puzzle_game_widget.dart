@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:puzzgame_flutter/core/application/settings_providers.dart';
 import 'package:puzzgame_flutter/core/domain/services/audio_service.dart';
 import 'package:puzzgame_flutter/core/domain/services/zoom_service.dart';
+import 'package:puzzgame_flutter/core/domain/services/error_reporting_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/game_module/puzzle_game_module.dart';
 import 'package:puzzgame_flutter/game_module/services/puzzle_asset_manager.dart';
@@ -31,6 +32,7 @@ class EnhancedPuzzleGameWidget extends ConsumerStatefulWidget {
 class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWidget> {
   late final ZoomService _zoomService;
   late final AudioService _audioService;
+  late final ErrorReportingService _errorReporting;
   PuzzlePiece? _selectedPiece;
   bool _isLoading = false;
   final TransformationController _transformationController = TransformationController();
@@ -42,15 +44,46 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
   }
   
   void _initializeServices() {
-    // Initialize zoom service
-    _zoomService = DefaultZoomService();
-    
-    // Get audio service from service locator
-    _audioService = serviceLocator<AudioService>();
-    _audioService.initialize();
-    
-    // Listen to zoom service changes and update the transformation
-    _zoomService.addListener(_updateTransformation);
+    try {
+      // Initialize zoom service
+      _zoomService = DefaultZoomService();
+      
+      // Get services from service locator
+      _audioService = serviceLocator<AudioService>();
+      _errorReporting = serviceLocator<ErrorReportingService>();
+      
+      _audioService.initialize();
+      
+      // Listen to zoom service changes and update the transformation
+      _zoomService.addListener(_updateTransformation);
+      
+      // Report successful widget initialization
+      _errorReporting.addBreadcrumb(
+        'Enhanced puzzle widget initialized',
+        category: 'ui_lifecycle',
+        data: {
+          'session_id': widget.gameSession.sessionId,
+          'grid_size': widget.gameSession.gridSize,
+        },
+      );
+    } catch (e, stackTrace) {
+      print('Failed to initialize enhanced puzzle widget services: $e');
+      
+      // Try to report the error even if error service failed to initialize
+      try {
+        _errorReporting.reportException(
+          e,
+          stackTrace: stackTrace,
+          context: 'enhanced_widget_initialization',
+          extra: {
+            'widget_type': 'EnhancedPuzzleGameWidget',
+            'session_id': widget.gameSession.sessionId,
+          },
+        );
+      } catch (reportingError) {
+        print('Failed to report widget initialization error: $reportingError');
+      }
+    }
   }
   
   void _updateTransformation() {
@@ -498,30 +531,80 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
   
   void _placePieceOnCanvas(PuzzlePiece piece) {
     setState(() {
-      final success = widget.gameSession.placePiece(piece);
-      
-      if (success) {
-        _selectedPiece = null;
-        _audioService.playPieceCorrect();
+      try {
+        final success = widget.gameSession.placePiece(piece);
         
-        // Add haptic feedback for correct placement
-        HapticFeedback.lightImpact();
-        
-        // Check if puzzle is completed
-        if (widget.gameSession.isCompleted) {
-          _audioService.playPuzzleCompleted();
-          _showCompletionDialog();
+        if (success) {
+          _selectedPiece = null;
+          _audioService.playPieceCorrect();
+          
+          // Add haptic feedback for correct placement
+          HapticFeedback.lightImpact();
+          
+          // Report successful piece placement
+          _errorReporting.addBreadcrumb(
+            'Piece placed successfully',
+            category: 'game_action',
+            data: {
+              'piece_id': piece.id,
+              'session_id': widget.gameSession.sessionId,
+              'pieces_remaining': widget.gameSession.piecesRemaining,
+            },
+          );
+          
+          // Check if puzzle is completed
+          if (widget.gameSession.isCompleted) {
+            _audioService.playPuzzleCompleted();
+            
+            // Report puzzle completion
+            _errorReporting.addBreadcrumb(
+              'Puzzle completed',
+              category: 'game_lifecycle',
+              data: {
+                'session_id': widget.gameSession.sessionId,
+                'final_score': widget.gameSession.score,
+                'completion_time_minutes': DateTime.now().difference(widget.gameSession.startTime).inMinutes,
+              },
+            );
+            
+            _showCompletionDialog();
+          }
+        } else {
+          _audioService.playPieceIncorrect();
+          HapticFeedback.mediumImpact();
+          
+          // Show error feedback
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Piece already placed!'),
+              duration: Duration(seconds: 1),
+              backgroundColor: Colors.orange,
+            ),
+          );
         }
-      } else {
-        _audioService.playPieceIncorrect();
-        HapticFeedback.mediumImpact();
+      } catch (e, stackTrace) {
+        // Report piece placement error
+        _errorReporting.reportException(
+          e,
+          stackTrace: stackTrace,
+          context: 'piece_placement_error',
+          extra: {
+            'piece_id': piece.id,
+            'session_id': widget.gameSession.sessionId,
+            'pieces_placed': widget.gameSession.piecesPlaced,
+          },
+          tags: {
+            'feature': 'puzzle_gameplay',
+            'action': 'place_piece',
+          },
+        );
         
-        // Show error feedback
+        // Show user-friendly error message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Piece already placed!'),
-            duration: Duration(seconds: 1),
-            backgroundColor: Colors.orange,
+            content: Text('An error occurred while placing the piece'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.red,
           ),
         );
       }
