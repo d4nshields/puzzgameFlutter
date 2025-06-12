@@ -2,6 +2,7 @@
 // File: lib/game_module/services/enhanced_puzzle_asset_manager.dart
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
@@ -18,7 +19,8 @@ class EnhancedPuzzleAssetManager {
   String? _currentGridSize;
   
   // Memory-efficient caches (only current grid size)
-  final Map<String, ui.Image> _pieceImageCache = {};
+  final Map<String, ui.Image> _pieceImageCache = {}; // Cropped images for tray
+  final Map<String, ui.Image> _originalImageCache = {}; // Full padded images for canvas
   final Map<String, PieceBounds> _pieceBoundsCache = {};
   final Map<String, Uint8List> _pieceDataCache = {};
   ui.Image? _fullPuzzleImage;
@@ -49,6 +51,11 @@ class EnhancedPuzzleAssetManager {
   /// Get metadata for a specific puzzle
   PuzzleMetadata? getPuzzleMetadata(String puzzleId) {
     return _availablePuzzles[puzzleId];
+  }
+
+  /// Get canvas information for a specific puzzle/grid size
+  Future<PuzzleCanvasInfo> getCanvasInfo(String puzzleId, String gridSize) async {
+    return await PuzzleCanvasInfo.loadFromAssets(puzzleId, gridSize);
   }
 
   /// Preload and cache all assets for a specific puzzle and grid size
@@ -111,9 +118,14 @@ class EnhancedPuzzleAssetManager {
     }
   }
 
-  /// Get a cached piece image (synchronous - call after loadPuzzleGridSize)
+  /// Get a cached cropped piece image for tray display (synchronous - call after loadPuzzleGridSize)
   ui.Image? getCachedPieceImage(String pieceId) {
     return _pieceImageCache[pieceId];
+  }
+
+  /// Get a cached original padded piece image for canvas placement (synchronous - call after loadPuzzleGridSize)
+  ui.Image? getCachedOriginalPieceImage(String pieceId) {
+    return _originalImageCache[pieceId];
   }
 
   /// Get the bounds information for a piece (non-transparent area)
@@ -281,12 +293,14 @@ class EnhancedPuzzleAssetManager {
       // Process the image to find bounds and create cropped version
       final processingResult = await _processPieceImage(originalImage, pieceId);
       
-      // Cache the processed image and bounds
+      // Cache original padded image for canvas use
+      _originalImageCache[pieceId] = originalImage;
+      
+      // Cache the processed (cropped) image and bounds for tray use
       _pieceImageCache[pieceId] = processingResult.croppedImage;
       _pieceBoundsCache[pieceId] = processingResult.bounds;
       
-      // Dispose the original image to free memory
-      originalImage.dispose();
+      // Don't dispose original - we need it for canvas rendering
       
     } catch (e) {
       debugPrint('Failed to load and process piece image $pieceId: $e');
@@ -417,7 +431,11 @@ class EnhancedPuzzleAssetManager {
     for (final image in _pieceImageCache.values) {
       image.dispose();
     }
+    for (final image in _originalImageCache.values) {
+      image.dispose();
+    }
     _pieceImageCache.clear();
+    _originalImageCache.clear();
     _pieceBoundsCache.clear();
     _pieceDataCache.clear();
     
@@ -526,20 +544,36 @@ class EnhancedCachedPuzzleImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final image = assetManager.getCachedPieceImage(pieceId);
-    final bounds = assetManager.getPieceBounds(pieceId);
-    
-    if (image != null && bounds != null) {
-      return CustomPaint(
-        size: Size(width ?? double.infinity, height ?? double.infinity),
-        painter: EnhancedImagePainter(
-          image: image,
-          bounds: bounds,
-          fit: fit,
-          zoomLevel: zoomLevel,
-          cropToContent: cropToContent,
-        ),
-      );
+    if (cropToContent) {
+      // Use cropped image for tray display
+      final image = assetManager.getCachedPieceImage(pieceId);
+      final bounds = assetManager.getPieceBounds(pieceId);
+      
+      if (image != null && bounds != null) {
+        return CustomPaint(
+          size: Size(width ?? double.infinity, height ?? double.infinity),
+          painter: EnhancedImagePainter(
+            image: image,
+            bounds: bounds,
+            fit: fit,
+            zoomLevel: zoomLevel,
+            cropToContent: true,
+          ),
+        );
+      }
+    } else {
+      // Use original padded image for canvas placement
+      final originalImage = assetManager.getCachedOriginalPieceImage(pieceId);
+      
+      if (originalImage != null) {
+        return CustomPaint(
+          size: Size(width ?? double.infinity, height ?? double.infinity),
+          painter: OriginalImagePainter(
+            image: originalImage,
+            fit: fit,
+          ),
+        );
+      }
     }
 
     return errorWidget ?? 
@@ -656,6 +690,84 @@ class EnhancedImagePainter extends CustomPainter {
            oldDelegate.zoomLevel != zoomLevel ||
            oldDelegate.fit != fit ||
            oldDelegate.cropToContent != cropToContent;
+  }
+}
+
+/// Custom painter for original padded images (canvas mode)
+class OriginalImagePainter extends CustomPainter {
+  final ui.Image image;
+  final BoxFit fit;
+
+  OriginalImagePainter({
+    required this.image,
+    required this.fit,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final srcRect = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
+    final destRect = _getDestRect(size);
+    
+    // Draw the full padded image - padding handles positioning
+    canvas.drawImageRect(image, srcRect, destRect, Paint()..filterQuality = FilterQuality.medium);
+    
+    // Optional: Draw debug bounds
+    if (kDebugMode && false) { // Set to true to see bounds in debug mode
+      _drawDebugBounds(canvas, destRect);
+    }
+  }
+
+  Rect _getDestRect(Size size) {
+    switch (fit) {
+      case BoxFit.fill:
+        return Rect.fromLTWH(0, 0, size.width, size.height);
+      case BoxFit.contain:
+        final scale = (size.width / image.width).clamp(0.0, size.height / image.height);
+        final scaledWidth = image.width * scale;
+        final scaledHeight = image.height * scale;
+        final dx = (size.width - scaledWidth) / 2;
+        final dy = (size.height - scaledHeight) / 2;
+        return Rect.fromLTWH(dx, dy, scaledWidth, scaledHeight);
+      case BoxFit.cover:
+      default:
+        final scale = (size.width / image.width).clamp(size.height / image.height, double.infinity);
+        final scaledWidth = image.width * scale;
+        final scaledHeight = image.height * scale;
+        final dx = (size.width - scaledWidth) / 2;
+        final dy = (size.height - scaledHeight) / 2;
+        return Rect.fromLTWH(dx, dy, scaledWidth, scaledHeight);
+    }
+  }
+
+  void _drawDebugBounds(Canvas canvas, Rect destRect) {
+    final debugPaint = Paint()
+      ..color = Colors.blue.withOpacity(0.3)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+    canvas.drawRect(destRect, debugPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant OriginalImagePainter oldDelegate) {
+    return oldDelegate.image != image || oldDelegate.fit != fit;
+  }
+}
+
+/// Canvas information for puzzle layout
+class PuzzleCanvasInfo {
+  final Size canvasSize;
+  
+  const PuzzleCanvasInfo({required this.canvasSize});
+  
+  static Future<PuzzleCanvasInfo> loadFromAssets(String puzzleId, String gridSize) async {
+    final layoutPath = 'assets/puzzles/$puzzleId/layouts/$gridSize/layout.ipuz.json';
+    final jsonString = await rootBundle.loadString(layoutPath);
+    final jsonData = json.decode(jsonString);
+    
+    final canvas = jsonData['canvas'];
+    return PuzzleCanvasInfo(
+      canvasSize: Size(canvas['width'].toDouble(), canvas['height'].toDouble()),
+    );
   }
 }
 
