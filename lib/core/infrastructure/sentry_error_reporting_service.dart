@@ -54,6 +54,13 @@ class SentryErrorReportingService implements ErrorReportingService {
       
       _isInitialized = true;
       print('SentryErrorReportingService: Initialized successfully');
+      
+      // Send a test event to verify connection
+      await Sentry.captureMessage(
+        'Sentry integration test - app started',
+        level: SentryLevel.info,
+      );
+      print('SentryErrorReportingService: Test message sent to Sentry');
     } catch (e) {
       print('SentryErrorReportingService: Failed to initialize: $e');
       _isEnabled = false;
@@ -216,19 +223,16 @@ class SentryErrorReportingService implements ErrorReportingService {
   // Private helper methods
   
   String _getDsn() {
-    // TODO: Replace with your actual Sentry DSN
-    // In production, consider loading this from environment variables
-    // or secure configuration
-    const dsn = String.fromEnvironment(
-      'SENTRY_DSN',
-      defaultValue: 'https://your-dsn@sentry.io/your-project-id',
-    );
+    // Your actual Sentry DSN from your Sentry project
+    const dsn = 'https://bad7dd46cda8efe8c1d48e06a893a048@o4509486679195648.ingest.de.sentry.io/4509486690467920';
     
-    if (dsn.contains('your-dsn') || dsn.contains('your-project-id')) {
-      print('WARNING: Using placeholder Sentry DSN. Please configure your actual DSN.');
-      return ''; // Return empty DSN to disable Sentry in development
-    }
+    // For environment variable approach, uncomment below and comment above:
+    // const dsn = String.fromEnvironment(
+    //   'SENTRY_DSN',
+    //   defaultValue: 'https://bad7dd46cda8efe8c1d48e06a893a048@o4509486679195648.ingest.de.sentry.io/4509486690467920',
+    // );
     
+    print('Sentry DSN configured: ${dsn.substring(0, 30)}...'); // Log partial DSN for verification
     return dsn;
   }
   
@@ -238,6 +242,13 @@ class SentryErrorReportingService implements ErrorReportingService {
   }
   
   FutureOr<SentryEvent?> _filterEvent(SentryEvent event, Hint hint) {
+    // Temporarily disable filtering for debugging
+    // TODO: Re-enable filtering after confirming Sentry works
+    print('Sentry: Allowing event - ${event.exceptions?.first?.type}');
+    return event;
+    
+    // Original filtering code (commented out for debugging):
+    /*
     // Filter out events we don't want to report
     
     // Skip debug mode events unless explicitly enabled
@@ -263,6 +274,7 @@ class SentryErrorReportingService implements ErrorReportingService {
     }
     
     return event;
+    */
   }
   
   Breadcrumb? _filterBreadcrumb(Breadcrumb? breadcrumb, Hint? hint) {
