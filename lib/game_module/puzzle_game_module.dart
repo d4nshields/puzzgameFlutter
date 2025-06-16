@@ -95,7 +95,9 @@ class PuzzleGameModule implements GameModule {
         gridSize: gridSize,
         assetManager: _assetManager!,
         enhancedAssetManager: _enhancedAssetManager!,
+        memoryOptimizedAssetManager: _memoryOptimizedAssetManager!, // Add memory-optimized manager
         useEnhancedRendering: _useEnhancedRendering,
+        useMemoryOptimization: _useMemoryOptimization, // Add flag
       );
       
       await session._initializePuzzle();
@@ -183,13 +185,17 @@ class PuzzleGameSession implements GameSession {
     required int gridSize,
     required PuzzleAssetManager assetManager,
     required EnhancedPuzzleAssetManager enhancedAssetManager,
+    required MemoryOptimizedAssetManager memoryOptimizedAssetManager,
     required bool useEnhancedRendering,
+    required bool useMemoryOptimization,
   }) : _sessionId = sessionId,
        _difficulty = difficulty,
        _gridSize = gridSize,
        _assetManager = assetManager,
        _enhancedAssetManager = enhancedAssetManager,
-       _useEnhancedRendering = useEnhancedRendering;
+       _memoryOptimizedAssetManager = memoryOptimizedAssetManager,
+       _useEnhancedRendering = useEnhancedRendering,
+       _useMemoryOptimization = useMemoryOptimization;
 
   // Core session data
   final String _sessionId;
@@ -197,7 +203,9 @@ class PuzzleGameSession implements GameSession {
   final int _gridSize;
   final PuzzleAssetManager _assetManager;
   final EnhancedPuzzleAssetManager _enhancedAssetManager;
+  final MemoryOptimizedAssetManager _memoryOptimizedAssetManager;
   final bool _useEnhancedRendering;
+  final bool _useMemoryOptimization;
   
   int _score = 0;
   final int _level = 1;
@@ -239,7 +247,9 @@ class PuzzleGameSession implements GameSession {
   DateTime get startTime => _startTime;
   PuzzleAssetManager get assetManager => _assetManager;
   EnhancedPuzzleAssetManager get enhancedAssetManager => _enhancedAssetManager;
+  MemoryOptimizedAssetManager get memoryOptimizedAssetManager => _memoryOptimizedAssetManager;
   bool get useEnhancedRendering => _useEnhancedRendering;
+  bool get useMemoryOptimization => _useMemoryOptimization;
   
   /// Initialize the puzzle with high-performance asset loading
   Future<void> _initializePuzzle() async {
@@ -262,12 +272,19 @@ class PuzzleGameSession implements GameSession {
     
     print('PuzzleGameSession: Loading assets for puzzle $_currentPuzzleId, grid size $gridSizeStr');
     
-    // Load all assets for this puzzle/grid size combination
-    await _assetManager.loadPuzzleGridSize(_currentPuzzleId, gridSizeStr);
-    
-    // Also load enhanced assets if enhanced rendering is enabled
-    if (_useEnhancedRendering) {
+    // Load assets using the appropriate manager based on settings
+    if (_useMemoryOptimization) {
+      // Use memory-optimized asset manager (auto-detects optimized assets)
+      await _memoryOptimizedAssetManager.loadPuzzleGridSize(_currentPuzzleId, gridSizeStr);
+      print('PuzzleGameSession: Memory-optimized assets loaded');
+    } else if (_useEnhancedRendering) {
+      // Use enhanced asset manager (runtime optimization)
       await _enhancedAssetManager.loadPuzzleGridSize(_currentPuzzleId, gridSizeStr);
+      print('PuzzleGameSession: Enhanced assets loaded');
+    } else {
+      // Use basic asset manager
+      await _assetManager.loadPuzzleGridSize(_currentPuzzleId, gridSizeStr);
+      print('PuzzleGameSession: Basic assets loaded');
     }
     
     // Load canvas info
@@ -283,6 +300,7 @@ class PuzzleGameSession implements GameSession {
           correctCol: col,
           assetManager: _assetManager,
           enhancedAssetManager: _enhancedAssetManager,
+          memoryOptimizedAssetManager: _memoryOptimizedAssetManager,
         );
         _allPieces.add(piece);
       }
@@ -349,6 +367,7 @@ class PuzzleGameSession implements GameSession {
           correctCol: col,
           assetManager: _assetManager,
           enhancedAssetManager: _enhancedAssetManager,
+          memoryOptimizedAssetManager: _memoryOptimizedAssetManager,
         );
         _allPieces.add(piece);
       }
@@ -411,6 +430,7 @@ class PuzzleGameSession implements GameSession {
           correctCol: col,
           assetManager: _assetManager,
           enhancedAssetManager: _enhancedAssetManager,
+          memoryOptimizedAssetManager: _memoryOptimizedAssetManager,
         );
         _allPieces.add(piece);
       }
@@ -599,6 +619,7 @@ class PuzzlePiece {
     required this.correctCol,
     required this.assetManager,
     required this.enhancedAssetManager,
+    required this.memoryOptimizedAssetManager,
   });
   
   final String id;
@@ -606,6 +627,7 @@ class PuzzlePiece {
   final int correctCol;
   final PuzzleAssetManager assetManager;
   final EnhancedPuzzleAssetManager enhancedAssetManager;
+  final MemoryOptimizedAssetManager memoryOptimizedAssetManager;
   
   @override
   String toString() => 'PuzzlePiece(id: $id, correctPos: ($correctRow, $correctCol))';
@@ -741,19 +763,25 @@ class _PuzzleGameWidgetState extends State<PuzzleGameWidget> {
                       color: piece != null ? null : Colors.grey[50],
                     ),
                     child: piece != null
-                        ? (widget.gameSession.useEnhancedRendering
-                            ? EnhancedCachedPuzzleImage(
+                        ? (widget.gameSession.useMemoryOptimization
+                            ? MemoryOptimizedPuzzleImage(
                                 pieceId: piece.id,
-                                assetManager: piece.enhancedAssetManager,
+                                assetManager: piece.memoryOptimizedAssetManager,
                                 fit: BoxFit.cover,
                                 cropToContent: false, // Canvas mode
                               )
-                            : MemoryOptimizedPuzzleImage(
-                                pieceId: piece.id,
-                                assetManager: serviceLocator<MemoryOptimizedAssetManager>(),
-                                fit: BoxFit.cover,
-                                cropToContent: false, // Canvas mode
-                              ))
+                            : widget.gameSession.useEnhancedRendering
+                                ? EnhancedCachedPuzzleImage(
+                                    pieceId: piece.id,
+                                    assetManager: piece.enhancedAssetManager,
+                                    fit: BoxFit.cover,
+                                    cropToContent: false, // Canvas mode
+                                  )
+                                : CachedPuzzleImage(
+                                    pieceId: piece.id,
+                                    assetManager: piece.assetManager,
+                                    fit: BoxFit.cover,
+                                  ))
                         : widget.gameSession.gridSize <= 12
                             ? Center(
                                 child: Text(
@@ -811,19 +839,25 @@ class _PuzzleGameWidgetState extends State<PuzzleGameWidget> {
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.blue, width: 2),
                     ),
-                    child: widget.gameSession.useEnhancedRendering
-                        ? EnhancedCachedPuzzleImage(
-                            pieceId: piece.id,
-                            assetManager: piece.enhancedAssetManager,
-                            fit: BoxFit.cover,
-                            cropToContent: true, // Tray mode - crop to content
-                          )
-                        : MemoryOptimizedPuzzleImage(
-                            pieceId: piece.id,
-                            assetManager: serviceLocator<MemoryOptimizedAssetManager>(),
-                            fit: BoxFit.cover,
-                            cropToContent: true, // Tray mode - crop to content
-                          ),
+                    child: widget.gameSession.useMemoryOptimization
+                    ? MemoryOptimizedPuzzleImage(
+                    pieceId: piece.id,
+                    assetManager: piece.memoryOptimizedAssetManager,
+                    fit: BoxFit.cover,
+                    cropToContent: true, // Tray mode - crop to content
+                    )
+                    : widget.gameSession.useEnhancedRendering
+                    ? EnhancedCachedPuzzleImage(
+                    pieceId: piece.id,
+                    assetManager: piece.enhancedAssetManager,
+                    fit: BoxFit.cover,
+                    cropToContent: true, // Tray mode - crop to content
+                    )
+                    : CachedPuzzleImage(
+                    pieceId: piece.id,
+                    assetManager: piece.assetManager,
+                    fit: BoxFit.cover,
+                    ),
                   ),
                   childWhenDragging: Container(
                     decoration: BoxDecoration(
@@ -840,19 +874,25 @@ class _PuzzleGameWidgetState extends State<PuzzleGameWidget> {
                           width: isSelected ? 2 : 1,
                         ),
                       ),
-                      child: widget.gameSession.useEnhancedRendering
-                          ? EnhancedCachedPuzzleImage(
+                      child: widget.gameSession.useMemoryOptimization
+                          ? MemoryOptimizedPuzzleImage(
                               pieceId: piece.id,
-                              assetManager: piece.enhancedAssetManager,
+                              assetManager: piece.memoryOptimizedAssetManager,
                               fit: BoxFit.cover,
                               cropToContent: true, // Tray mode - crop to content
                             )
-                          : MemoryOptimizedPuzzleImage(
-                              pieceId: piece.id,
-                              assetManager: serviceLocator<MemoryOptimizedAssetManager>(),
-                              fit: BoxFit.cover,
-                              cropToContent: true, // Tray mode - crop to content
-                            ),
+                          : widget.gameSession.useEnhancedRendering
+                              ? EnhancedCachedPuzzleImage(
+                                  pieceId: piece.id,
+                                  assetManager: piece.enhancedAssetManager,
+                                  fit: BoxFit.cover,
+                                  cropToContent: true, // Tray mode - crop to content
+                                )
+                              : CachedPuzzleImage(
+                                  pieceId: piece.id,
+                                  assetManager: piece.assetManager,
+                                  fit: BoxFit.cover,
+                                ),
                     ),
                   ),
                 );

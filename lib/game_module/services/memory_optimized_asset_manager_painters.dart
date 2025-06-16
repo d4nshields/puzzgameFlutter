@@ -45,11 +45,6 @@ class OptimizedCroppedImagePainter extends CustomPainter {
     );
     
     canvas.drawImageRect(image, srcRect, centeredRect, Paint()..filterQuality = FilterQuality.medium);
-    
-    // Optional debug bounds
-    if (kDebugMode && false) {
-      _drawDebugBounds(canvas, centeredRect, Colors.green);
-    }
   }
 
   Rect _calculateDestRect(Size size) {

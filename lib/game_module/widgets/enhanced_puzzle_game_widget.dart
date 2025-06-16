@@ -12,6 +12,7 @@ import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/game_module/puzzle_game_module.dart';
 import 'package:puzzgame_flutter/game_module/services/puzzle_asset_manager.dart';
 import 'package:puzzgame_flutter/game_module/services/enhanced_puzzle_asset_manager.dart';
+import 'package:puzzgame_flutter/game_module/services/memory_optimized_asset_manager.dart';
 import 'package:puzzgame_flutter/game_module/widgets/zoom_control.dart';
 
 /// Enhanced puzzle game widget with zoom, pan, and audio feedback
@@ -453,19 +454,27 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
               border: Border.all(color: Colors.blue, width: 2),
               borderRadius: BorderRadius.circular(4),
             ),
-            child: widget.gameSession.useEnhancedRendering
-                ? EnhancedCachedPuzzleImage(
+            child: widget.gameSession.useMemoryOptimization
+                ? MemoryOptimizedPuzzleImage(
                     pieceId: piece.id,
-                    assetManager: piece.enhancedAssetManager,
+                    assetManager: piece.memoryOptimizedAssetManager,
                     fit: BoxFit.contain,
                     zoomLevel: 1.0, // Don't double-apply zoom to feedback
                     cropToContent: true, // Crop for feedback display
                   )
-                : CachedPuzzleImage(
-                    pieceId: piece.id,
-                    assetManager: piece.assetManager,
-                    fit: BoxFit.cover,
-                  ),
+                : widget.gameSession.useEnhancedRendering
+                    ? EnhancedCachedPuzzleImage(
+                        pieceId: piece.id,
+                        assetManager: piece.enhancedAssetManager,
+                        fit: BoxFit.contain,
+                        zoomLevel: 1.0, // Don't double-apply zoom to feedback
+                        cropToContent: true, // Crop for feedback display
+                      )
+                    : CachedPuzzleImage(
+                        pieceId: piece.id,
+                        assetManager: piece.assetManager,
+                        fit: BoxFit.cover,
+                      ),
           ),
           childWhenDragging: Container(
             decoration: BoxDecoration(
@@ -484,19 +493,27 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
                 ),
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: widget.gameSession.useEnhancedRendering
-                  ? EnhancedCachedPuzzleImage(
+              child: widget.gameSession.useMemoryOptimization
+                  ? MemoryOptimizedPuzzleImage(
                       pieceId: piece.id,
-                      assetManager: piece.enhancedAssetManager,
+                      assetManager: piece.memoryOptimizedAssetManager,
                       fit: BoxFit.contain,
                       zoomLevel: 1.0, // Don't apply zoom here - grid cells handle sizing
                       cropToContent: true, // Crop for tray display
                     )
-                  : CachedPuzzleImage(
-                      pieceId: piece.id,
-                      assetManager: piece.assetManager,
-                      fit: BoxFit.cover,
-                    ),
+                  : widget.gameSession.useEnhancedRendering
+                      ? EnhancedCachedPuzzleImage(
+                          pieceId: piece.id,
+                          assetManager: piece.enhancedAssetManager,
+                          fit: BoxFit.contain,
+                          zoomLevel: 1.0, // Don't apply zoom here - grid cells handle sizing
+                          cropToContent: true, // Crop for tray display
+                        )
+                      : CachedPuzzleImage(
+                          pieceId: piece.id,
+                          assetManager: piece.assetManager,
+                          fit: BoxFit.cover,
+                        ),
             ),
           ),
         );
@@ -634,23 +651,33 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
         child: SizedBox(
           width: scaledCanvasSize.width,
           height: scaledCanvasSize.height,
-          child: widget.gameSession.useEnhancedRendering
-              ? EnhancedCachedPuzzleImage(
+          child: widget.gameSession.useMemoryOptimization
+              ? MemoryOptimizedPuzzleImage(
                   pieceId: piece.id,
-                  assetManager: piece.enhancedAssetManager,
+                  assetManager: piece.memoryOptimizedAssetManager,
                   width: scaledCanvasSize.width,
                   height: scaledCanvasSize.height,
                   fit: BoxFit.fill, // Use exact size - no scaling needed
                   zoomLevel: 1.0,   // Scale handled by container size
-                  cropToContent: false, // Use full padded PNG
+                  cropToContent: false, // Use full padded PNG for canvas
                 )
-              : CachedPuzzleImage(
-                  pieceId: piece.id,
-                  assetManager: piece.assetManager,
-                  width: scaledCanvasSize.width,
-                  height: scaledCanvasSize.height,
-                  fit: BoxFit.fill, // Use exact size
-                ),
+              : widget.gameSession.useEnhancedRendering
+                  ? EnhancedCachedPuzzleImage(
+                      pieceId: piece.id,
+                      assetManager: piece.enhancedAssetManager,
+                      width: scaledCanvasSize.width,
+                      height: scaledCanvasSize.height,
+                      fit: BoxFit.fill, // Use exact size - no scaling needed
+                      zoomLevel: 1.0,   // Scale handled by container size
+                      cropToContent: false, // Use full padded PNG
+                    )
+                  : CachedPuzzleImage(
+                      pieceId: piece.id,
+                      assetManager: piece.assetManager,
+                      width: scaledCanvasSize.width,
+                      height: scaledCanvasSize.height,
+                      fit: BoxFit.fill, // Use exact size
+                    ),
         ),
       ),
     );
