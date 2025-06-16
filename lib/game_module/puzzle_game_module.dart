@@ -7,17 +7,20 @@ import 'package:puzzgame_flutter/core/domain/services/error_reporting_service.da
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/game_module/services/puzzle_asset_manager.dart';
 import 'package:puzzgame_flutter/game_module/services/enhanced_puzzle_asset_manager.dart';
+import 'package:puzzgame_flutter/game_module/services/memory_optimized_asset_manager.dart';
 import 'package:uuid/uuid.dart';
 
 /// Implementation of the GameModule interface for jigsaw puzzle game
-/// Now with integrated high-performance asset management
+/// Now with integrated memory optimization for large grids
 class PuzzleGameModule implements GameModule {
-  static const String _version = '1.0.0';
+  static const String _version = '2.0.0';
   
   PuzzleAssetManager? _assetManager;
   EnhancedPuzzleAssetManager? _enhancedAssetManager;
+  MemoryOptimizedAssetManager? _memoryOptimizedAssetManager;
   bool _isInitialized = false;
   bool _useEnhancedRendering = true; // Flag to enable enhanced rendering
+  bool _useMemoryOptimization = true; // Flag to enable memory optimization
   
   @override
   Future<bool> initialize() async {
@@ -26,7 +29,7 @@ class PuzzleGameModule implements GameModule {
       return true;
     }
     
-    print('PuzzleGameModule: Initializing puzzle game...');
+    print('PuzzleGameModule: Initializing puzzle game with memory optimization...');
     
     // Initialize asset managers
     _assetManager = PuzzleAssetManager();
@@ -35,6 +38,9 @@ class PuzzleGameModule implements GameModule {
     _enhancedAssetManager = EnhancedPuzzleAssetManager();
     await _enhancedAssetManager!.initialize();
     
+    _memoryOptimizedAssetManager = MemoryOptimizedAssetManager();
+    await _memoryOptimizedAssetManager!.initialize();
+    
     // Register asset managers in service locator for easy access
     if (!serviceLocator.isRegistered<PuzzleAssetManager>()) {
       serviceLocator.registerSingleton<PuzzleAssetManager>(_assetManager!);
@@ -42,10 +48,15 @@ class PuzzleGameModule implements GameModule {
     if (!serviceLocator.isRegistered<EnhancedPuzzleAssetManager>()) {
       serviceLocator.registerSingleton<EnhancedPuzzleAssetManager>(_enhancedAssetManager!);
     }
+    if (!serviceLocator.isRegistered<MemoryOptimizedAssetManager>()) {
+      serviceLocator.registerSingleton<MemoryOptimizedAssetManager>(_memoryOptimizedAssetManager!);
+    }
     
     _isInitialized = true;
-    print('PuzzleGameModule: Asset managers initialized with ${(await _assetManager!.getAvailablePuzzles()).length} puzzles');
+    final puzzleCount = (await _memoryOptimizedAssetManager!.getAvailablePuzzles()).length;
+    print('PuzzleGameModule: Memory-optimized asset manager initialized with $puzzleCount puzzles');
     print('PuzzleGameModule: Enhanced rendering enabled: $_useEnhancedRendering');
+    print('PuzzleGameModule: Memory optimization enabled: $_useMemoryOptimization');
     return true;
   }
   
@@ -54,19 +65,20 @@ class PuzzleGameModule implements GameModule {
     final errorReporting = serviceLocator<ErrorReportingService>();
     
     try {
-      if (!_isInitialized || _assetManager == null || _enhancedAssetManager == null) {
+      if (!_isInitialized || _memoryOptimizedAssetManager == null) {
         throw Exception('PuzzleGameModule must be initialized before starting a game');
       }
       
-      print('PuzzleGameModule: Starting new puzzle game with difficulty $difficulty');
+      print('PuzzleGameModule: Starting new memory-optimized puzzle game with difficulty $difficulty');
       
       // Add breadcrumb for game start
       await errorReporting.addBreadcrumb(
-        'Starting new puzzle game',
+        'Starting new memory-optimized puzzle game',
         category: 'game_lifecycle',
         data: {
           'difficulty': difficulty,
           'enhanced_rendering': _useEnhancedRendering,
+          'memory_optimization': _useMemoryOptimization,
         },
       );
       
@@ -76,7 +88,7 @@ class PuzzleGameModule implements GameModule {
       
       print('PuzzleGameModule: Using ${gridSize}x$gridSize grid for difficulty $difficulty');
       
-      // Create game session with enhanced asset manager
+      // Create game session with memory optimization
       final session = PuzzleGameSession(
         sessionId: const Uuid().v4(),
         difficulty: difficulty,
@@ -140,13 +152,25 @@ class PuzzleGameModule implements GameModule {
   /// Get enhanced asset manager for external access
   EnhancedPuzzleAssetManager? get enhancedAssetManager => _enhancedAssetManager;
   
+  /// Get memory-optimized asset manager for external access
+  MemoryOptimizedAssetManager? get memoryOptimizedAssetManager => _memoryOptimizedAssetManager;
+  
   /// Check if enhanced rendering is enabled
   bool get useEnhancedRendering => _useEnhancedRendering;
+  
+  /// Check if memory optimization is enabled
+  bool get useMemoryOptimization => _useMemoryOptimization;
   
   /// Toggle enhanced rendering mode
   void setEnhancedRendering(bool enabled) {
     _useEnhancedRendering = enabled;
     print('PuzzleGameModule: Enhanced rendering ${enabled ? 'enabled' : 'disabled'}');
+  }
+  
+  /// Toggle memory optimization mode
+  void setMemoryOptimization(bool enabled) {
+    _useMemoryOptimization = enabled;
+    print('PuzzleGameModule: Memory optimization ${enabled ? 'enabled' : 'disabled'}');
   }
 }
 
@@ -717,11 +741,19 @@ class _PuzzleGameWidgetState extends State<PuzzleGameWidget> {
                       color: piece != null ? null : Colors.grey[50],
                     ),
                     child: piece != null
-                        ? CachedPuzzleImage(
-                            pieceId: piece.id,
-                            assetManager: piece.assetManager,
-                            fit: BoxFit.cover,
-                          )
+                        ? (widget.gameSession.useEnhancedRendering
+                            ? EnhancedCachedPuzzleImage(
+                                pieceId: piece.id,
+                                assetManager: piece.enhancedAssetManager,
+                                fit: BoxFit.cover,
+                                cropToContent: false, // Canvas mode
+                              )
+                            : MemoryOptimizedPuzzleImage(
+                                pieceId: piece.id,
+                                assetManager: serviceLocator<MemoryOptimizedAssetManager>(),
+                                fit: BoxFit.cover,
+                                cropToContent: false, // Canvas mode
+                              ))
                         : widget.gameSession.gridSize <= 12
                             ? Center(
                                 child: Text(
@@ -779,11 +811,19 @@ class _PuzzleGameWidgetState extends State<PuzzleGameWidget> {
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.blue, width: 2),
                     ),
-                    child: CachedPuzzleImage(
-                      pieceId: piece.id,
-                      assetManager: piece.assetManager,
-                      fit: BoxFit.cover,
-                    ),
+                    child: widget.gameSession.useEnhancedRendering
+                        ? EnhancedCachedPuzzleImage(
+                            pieceId: piece.id,
+                            assetManager: piece.enhancedAssetManager,
+                            fit: BoxFit.cover,
+                            cropToContent: true, // Tray mode - crop to content
+                          )
+                        : MemoryOptimizedPuzzleImage(
+                            pieceId: piece.id,
+                            assetManager: serviceLocator<MemoryOptimizedAssetManager>(),
+                            fit: BoxFit.cover,
+                            cropToContent: true, // Tray mode - crop to content
+                          ),
                   ),
                   childWhenDragging: Container(
                     decoration: BoxDecoration(
@@ -800,11 +840,19 @@ class _PuzzleGameWidgetState extends State<PuzzleGameWidget> {
                           width: isSelected ? 2 : 1,
                         ),
                       ),
-                      child: CachedPuzzleImage(
-                        pieceId: piece.id,
-                        assetManager: piece.assetManager,
-                        fit: BoxFit.cover,
-                      ),
+                      child: widget.gameSession.useEnhancedRendering
+                          ? EnhancedCachedPuzzleImage(
+                              pieceId: piece.id,
+                              assetManager: piece.enhancedAssetManager,
+                              fit: BoxFit.cover,
+                              cropToContent: true, // Tray mode - crop to content
+                            )
+                          : MemoryOptimizedPuzzleImage(
+                              pieceId: piece.id,
+                              assetManager: serviceLocator<MemoryOptimizedAssetManager>(),
+                              fit: BoxFit.cover,
+                              cropToContent: true, // Tray mode - crop to content
+                            ),
                     ),
                   ),
                 );

@@ -1,0 +1,3616 @@
+{
+  "version": "1.0",
+  "canvas_size": {
+    "width": 2048,
+    "height": 2048
+  },
+  "pieces": {
+    "0_0": {
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 172,
+        "bottom": 169,
+        "width": 173,
+        "height": 170
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "2cd65f2e",
+      "cropped_filename": "0_0.png"
+    },
+    "0_1": {
+      "bounds": {
+        "left": 132,
+        "top": 0,
+        "right": 273,
+        "bottom": 170,
+        "width": 142,
+        "height": 171
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "27a8be18",
+      "cropped_filename": "0_1.png"
+    },
+    "0_10": {
+      "bounds": {
+        "left": 1361,
+        "top": 0,
+        "right": 1505,
+        "bottom": 138,
+        "width": 145,
+        "height": 139
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "6aada0cc",
+      "cropped_filename": "0_10.png"
+    },
+    "0_11": {
+      "bounds": {
+        "left": 1469,
+        "top": 0,
+        "right": 1674,
+        "bottom": 169,
+        "width": 206,
+        "height": 170
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "95f6a456",
+      "cropped_filename": "0_11.png"
+    },
+    "0_12": {
+      "bounds": {
+        "left": 1634,
+        "top": 0,
+        "right": 1779,
+        "bottom": 138,
+        "width": 146,
+        "height": 139
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "4303cbbe",
+      "cropped_filename": "0_12.png"
+    },
+    "0_13": {
+      "bounds": {
+        "left": 1740,
+        "top": 0,
+        "right": 1942,
+        "bottom": 170,
+        "width": 203,
+        "height": 171
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "9150e060",
+      "cropped_filename": "0_13.png"
+    },
+    "0_14": {
+      "bounds": {
+        "left": 1906,
+        "top": 0,
+        "right": 2046,
+        "bottom": 175,
+        "width": 141,
+        "height": 176
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "9fa35b91",
+      "cropped_filename": "0_14.png"
+    },
+    "0_2": {
+      "bounds": {
+        "left": 234,
+        "top": 0,
+        "right": 440,
+        "bottom": 142,
+        "width": 207,
+        "height": 143
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "4f8f2086",
+      "cropped_filename": "0_2.png"
+    },
+    "0_3": {
+      "bounds": {
+        "left": 403,
+        "top": 0,
+        "right": 578,
+        "bottom": 164,
+        "width": 176,
+        "height": 165
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "3ed945f6",
+      "cropped_filename": "0_3.png"
+    },
+    "0_4": {
+      "bounds": {
+        "left": 542,
+        "top": 0,
+        "right": 715,
+        "bottom": 140,
+        "width": 174,
+        "height": 141
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "dcf2a7c8",
+      "cropped_filename": "0_4.png"
+    },
+    "0_5": {
+      "bounds": {
+        "left": 680,
+        "top": 0,
+        "right": 847,
+        "bottom": 173,
+        "width": 168,
+        "height": 174
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "9da10503",
+      "cropped_filename": "0_5.png"
+    },
+    "0_6": {
+      "bounds": {
+        "left": 811,
+        "top": 0,
+        "right": 959,
+        "bottom": 139,
+        "width": 149,
+        "height": 140
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "133d30f3",
+      "cropped_filename": "0_6.png"
+    },
+    "0_7": {
+      "bounds": {
+        "left": 921,
+        "top": 0,
+        "right": 1121,
+        "bottom": 140,
+        "width": 201,
+        "height": 141
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "fb51af3b",
+      "cropped_filename": "0_7.png"
+    },
+    "0_8": {
+      "bounds": {
+        "left": 1086,
+        "top": 0,
+        "right": 1260,
+        "bottom": 167,
+        "width": 175,
+        "height": 168
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "db9eb0f2",
+      "cropped_filename": "0_8.png"
+    },
+    "0_9": {
+      "bounds": {
+        "left": 1223,
+        "top": 0,
+        "right": 1399,
+        "bottom": 142,
+        "width": 177,
+        "height": 143
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "ab3a8349",
+      "cropped_filename": "0_9.png"
+    },
+    "10_0": {
+      "bounds": {
+        "left": 0,
+        "top": 1362,
+        "right": 174,
+        "bottom": 1506,
+        "width": 175,
+        "height": 145
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "33d9db3a",
+      "cropped_filename": "10_0.png"
+    },
+    "10_1": {
+      "bounds": {
+        "left": 135,
+        "top": 1336,
+        "right": 307,
+        "bottom": 1505,
+        "width": 173,
+        "height": 170
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "9c410db4",
+      "cropped_filename": "10_1.png"
+    },
+    "10_10": {
+      "bounds": {
+        "left": 1334,
+        "top": 1359,
+        "right": 1505,
+        "bottom": 1501,
+        "width": 172,
+        "height": 143
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "a9f49835",
+      "cropped_filename": "10_10.png"
+    },
+    "10_11": {
+      "bounds": {
+        "left": 1469,
+        "top": 1361,
+        "right": 1669,
+        "bottom": 1540,
+        "width": 201,
+        "height": 180
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "baffee2f",
+      "cropped_filename": "10_11.png"
+    },
+    "10_12": {
+      "bounds": {
+        "left": 1635,
+        "top": 1333,
+        "right": 1777,
+        "bottom": 1506,
+        "width": 143,
+        "height": 174
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "ef50e56e",
+      "cropped_filename": "10_12.png"
+    },
+    "10_13": {
+      "bounds": {
+        "left": 1743,
+        "top": 1327,
+        "right": 1913,
+        "bottom": 1503,
+        "width": 171,
+        "height": 177
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "f866ddc6",
+      "cropped_filename": "10_13.png"
+    },
+    "10_14": {
+      "bounds": {
+        "left": 1873,
+        "top": 1326,
+        "right": 2046,
+        "bottom": 1529,
+        "width": 174,
+        "height": 204
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "01803966",
+      "cropped_filename": "10_14.png"
+    },
+    "10_2": {
+      "bounds": {
+        "left": 269,
+        "top": 1362,
+        "right": 415,
+        "bottom": 1502,
+        "width": 147,
+        "height": 141
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "e1b6484d",
+      "cropped_filename": "10_2.png"
+    },
+    "10_3": {
+      "bounds": {
+        "left": 379,
+        "top": 1361,
+        "right": 546,
+        "bottom": 1537,
+        "width": 168,
+        "height": 177
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "47a57153",
+      "cropped_filename": "10_3.png"
+    },
+    "10_4": {
+      "bounds": {
+        "left": 507,
+        "top": 1336,
+        "right": 716,
+        "bottom": 1536,
+        "width": 210,
+        "height": 201
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "ed027e7e",
+      "cropped_filename": "10_4.png"
+    },
+    "10_5": {
+      "bounds": {
+        "left": 680,
+        "top": 1326,
+        "right": 821,
+        "bottom": 1502,
+        "width": 142,
+        "height": 177
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "666ad3f1",
+      "cropped_filename": "10_5.png"
+    },
+    "10_6": {
+      "bounds": {
+        "left": 784,
+        "top": 1363,
+        "right": 956,
+        "bottom": 1502,
+        "width": 173,
+        "height": 140
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "cba19f1a",
+      "cropped_filename": "10_6.png"
+    },
+    "10_7": {
+      "bounds": {
+        "left": 916,
+        "top": 1332,
+        "right": 1122,
+        "bottom": 1537,
+        "width": 207,
+        "height": 206
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "fdc69ef1",
+      "cropped_filename": "10_7.png"
+    },
+    "10_8": {
+      "bounds": {
+        "left": 1085,
+        "top": 1363,
+        "right": 1261,
+        "bottom": 1532,
+        "width": 177,
+        "height": 170
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "13017285",
+      "cropped_filename": "10_8.png"
+    },
+    "10_9": {
+      "bounds": {
+        "left": 1223,
+        "top": 1361,
+        "right": 1371,
+        "bottom": 1506,
+        "width": 149,
+        "height": 146
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "1980b992",
+      "cropped_filename": "10_9.png"
+    },
+    "11_0": {
+      "bounds": {
+        "left": 0,
+        "top": 1469,
+        "right": 173,
+        "bottom": 1668,
+        "width": 174,
+        "height": 200
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "a89af6fa",
+      "cropped_filename": "11_0.png"
+    },
+    "11_1": {
+      "bounds": {
+        "left": 133,
+        "top": 1469,
+        "right": 277,
+        "bottom": 1676,
+        "width": 145,
+        "height": 208
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "8a8ffb48",
+      "cropped_filename": "11_1.png"
+    },
+    "11_10": {
+      "bounds": {
+        "left": 1329,
+        "top": 1462,
+        "right": 1506,
+        "bottom": 1643,
+        "width": 178,
+        "height": 182
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "61b9a08f",
+      "cropped_filename": "11_10.png"
+    },
+    "11_11": {
+      "bounds": {
+        "left": 1470,
+        "top": 1501,
+        "right": 1675,
+        "bottom": 1672,
+        "width": 206,
+        "height": 172
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "c1af1722",
+      "cropped_filename": "11_11.png"
+    },
+    "11_12": {
+      "bounds": {
+        "left": 1635,
+        "top": 1468,
+        "right": 1776,
+        "bottom": 1674,
+        "width": 142,
+        "height": 207
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "327ea701",
+      "cropped_filename": "11_12.png"
+    },
+    "11_13": {
+      "bounds": {
+        "left": 1736,
+        "top": 1465,
+        "right": 1947,
+        "bottom": 1671,
+        "width": 212,
+        "height": 207
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "ff0583fd",
+      "cropped_filename": "11_13.png"
+    },
+    "11_14": {
+      "bounds": {
+        "left": 1908,
+        "top": 1494,
+        "right": 2046,
+        "bottom": 1668,
+        "width": 139,
+        "height": 175
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "28b64729",
+      "cropped_filename": "11_14.png"
+    },
+    "11_2": {
+      "bounds": {
+        "left": 241,
+        "top": 1463,
+        "right": 445,
+        "bottom": 1642,
+        "width": 205,
+        "height": 180
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "f08ba3bb",
+      "cropped_filename": "11_2.png"
+    },
+    "11_3": {
+      "bounds": {
+        "left": 407,
+        "top": 1500,
+        "right": 575,
+        "bottom": 1638,
+        "width": 169,
+        "height": 139
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "8e2a410f",
+      "cropped_filename": "11_3.png"
+    },
+    "11_4": {
+      "bounds": {
+        "left": 541,
+        "top": 1498,
+        "right": 713,
+        "bottom": 1672,
+        "width": 173,
+        "height": 175
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "bfcbca91",
+      "cropped_filename": "11_4.png"
+    },
+    "11_5": {
+      "bounds": {
+        "left": 676,
+        "top": 1463,
+        "right": 824,
+        "bottom": 1668,
+        "width": 149,
+        "height": 206
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "d7a0d54e",
+      "cropped_filename": "11_5.png"
+    },
+    "11_6": {
+      "bounds": {
+        "left": 787,
+        "top": 1464,
+        "right": 957,
+        "bottom": 1675,
+        "width": 171,
+        "height": 212
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "61c2b2f6",
+      "cropped_filename": "11_6.png"
+    },
+    "11_7": {
+      "bounds": {
+        "left": 919,
+        "top": 1497,
+        "right": 1097,
+        "bottom": 1673,
+        "width": 179,
+        "height": 177
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "9070eaef",
+      "cropped_filename": "11_7.png"
+    },
+    "11_8": {
+      "bounds": {
+        "left": 1060,
+        "top": 1496,
+        "right": 1258,
+        "bottom": 1670,
+        "width": 199,
+        "height": 175
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "622dc700",
+      "cropped_filename": "11_8.png"
+    },
+    "11_9": {
+      "bounds": {
+        "left": 1222,
+        "top": 1471,
+        "right": 1367,
+        "bottom": 1640,
+        "width": 146,
+        "height": 170
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "c2d159b3",
+      "cropped_filename": "11_9.png"
+    },
+    "12_0": {
+      "bounds": {
+        "left": 0,
+        "top": 1632,
+        "right": 140,
+        "bottom": 1811,
+        "width": 141,
+        "height": 180
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "9b642246",
+      "cropped_filename": "12_0.png"
+    },
+    "12_1": {
+      "bounds": {
+        "left": 105,
+        "top": 1635,
+        "right": 277,
+        "bottom": 1777,
+        "width": 173,
+        "height": 143
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "19804a8e",
+      "cropped_filename": "12_1.png"
+    },
+    "12_10": {
+      "bounds": {
+        "left": 1331,
+        "top": 1605,
+        "right": 1532,
+        "bottom": 1779,
+        "width": 202,
+        "height": 175
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "844af7ee",
+      "cropped_filename": "12_10.png"
+    },
+    "12_11": {
+      "bounds": {
+        "left": 1496,
+        "top": 1634,
+        "right": 1672,
+        "bottom": 1810,
+        "width": 177,
+        "height": 177
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "419dfb06",
+      "cropped_filename": "12_11.png"
+    },
+    "12_12": {
+      "bounds": {
+        "left": 1636,
+        "top": 1634,
+        "right": 1777,
+        "bottom": 1807,
+        "width": 142,
+        "height": 174
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "da0e597d",
+      "cropped_filename": "12_12.png"
+    },
+    "12_13": {
+      "bounds": {
+        "left": 1735,
+        "top": 1633,
+        "right": 1914,
+        "bottom": 1809,
+        "width": 180,
+        "height": 177
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "fe38666a",
+      "cropped_filename": "12_13.png"
+    },
+    "12_14": {
+      "bounds": {
+        "left": 1874,
+        "top": 1632,
+        "right": 2046,
+        "bottom": 1804,
+        "width": 173,
+        "height": 173
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "7a56e0c1",
+      "cropped_filename": "12_14.png"
+    },
+    "12_2": {
+      "bounds": {
+        "left": 243,
+        "top": 1604,
+        "right": 415,
+        "bottom": 1808,
+        "width": 173,
+        "height": 205
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "0a597824",
+      "cropped_filename": "12_2.png"
+    },
+    "12_3": {
+      "bounds": {
+        "left": 379,
+        "top": 1599,
+        "right": 547,
+        "bottom": 1775,
+        "width": 169,
+        "height": 177
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "607f45e8",
+      "cropped_filename": "12_3.png"
+    },
+    "12_4": {
+      "bounds": {
+        "left": 507,
+        "top": 1634,
+        "right": 688,
+        "bottom": 1781,
+        "width": 182,
+        "height": 148
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "01804200",
+      "cropped_filename": "12_4.png"
+    },
+    "12_5": {
+      "bounds": {
+        "left": 652,
+        "top": 1633,
+        "right": 854,
+        "bottom": 1777,
+        "width": 203,
+        "height": 145
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "a40dca2b",
+      "cropped_filename": "12_5.png"
+    },
+    "12_6": {
+      "bounds": {
+        "left": 817,
+        "top": 1635,
+        "right": 956,
+        "bottom": 1774,
+        "width": 140,
+        "height": 140
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "c6adbb34",
+      "cropped_filename": "12_6.png"
+    },
+    "12_7": {
+      "bounds": {
+        "left": 916,
+        "top": 1633,
+        "right": 1126,
+        "bottom": 1777,
+        "width": 211,
+        "height": 145
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "935a3716",
+      "cropped_filename": "12_7.png"
+    },
+    "12_8": {
+      "bounds": {
+        "left": 1090,
+        "top": 1633,
+        "right": 1265,
+        "bottom": 1775,
+        "width": 176,
+        "height": 143
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "841d4f11",
+      "cropped_filename": "12_8.png"
+    },
+    "12_9": {
+      "bounds": {
+        "left": 1228,
+        "top": 1600,
+        "right": 1368,
+        "bottom": 1778,
+        "width": 141,
+        "height": 179
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "0f194527",
+      "cropped_filename": "12_9.png"
+    },
+    "13_0": {
+      "bounds": {
+        "left": 0,
+        "top": 1771,
+        "right": 173,
+        "bottom": 1943,
+        "width": 174,
+        "height": 173
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "9807e527",
+      "cropped_filename": "13_0.png"
+    },
+    "13_1": {
+      "bounds": {
+        "left": 135,
+        "top": 1737,
+        "right": 278,
+        "bottom": 1949,
+        "width": 144,
+        "height": 213
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "ec2b1acd",
+      "cropped_filename": "13_1.png"
+    },
+    "13_10": {
+      "bounds": {
+        "left": 1332,
+        "top": 1743,
+        "right": 1501,
+        "bottom": 1916,
+        "width": 170,
+        "height": 174
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "dbbd3232",
+      "cropped_filename": "13_10.png"
+    },
+    "13_11": {
+      "bounds": {
+        "left": 1465,
+        "top": 1771,
+        "right": 1642,
+        "bottom": 1912,
+        "width": 178,
+        "height": 142
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "e5543576",
+      "cropped_filename": "13_11.png"
+    },
+    "13_12": {
+      "bounds": {
+        "left": 1604,
+        "top": 1769,
+        "right": 1775,
+        "bottom": 1941,
+        "width": 172,
+        "height": 173
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "429d4b21",
+      "cropped_filename": "13_12.png"
+    },
+    "13_13": {
+      "bounds": {
+        "left": 1740,
+        "top": 1772,
+        "right": 1916,
+        "bottom": 1948,
+        "width": 177,
+        "height": 177
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "36fda74c",
+      "cropped_filename": "13_13.png"
+    },
+    "13_14": {
+      "bounds": {
+        "left": 1877,
+        "top": 1769,
+        "right": 2046,
+        "bottom": 1949,
+        "width": 170,
+        "height": 181
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "8bd488c7",
+      "cropped_filename": "13_14.png"
+    },
+    "13_2": {
+      "bounds": {
+        "left": 243,
+        "top": 1771,
+        "right": 412,
+        "bottom": 1948,
+        "width": 170,
+        "height": 178
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "539fc3fa",
+      "cropped_filename": "13_2.png"
+    },
+    "13_3": {
+      "bounds": {
+        "left": 374,
+        "top": 1736,
+        "right": 582,
+        "bottom": 1912,
+        "width": 209,
+        "height": 177
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "afaa00a5",
+      "cropped_filename": "13_3.png"
+    },
+    "13_4": {
+      "bounds": {
+        "left": 543,
+        "top": 1746,
+        "right": 714,
+        "bottom": 1916,
+        "width": 172,
+        "height": 171
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "b848dd93",
+      "cropped_filename": "13_4.png"
+    },
+    "13_5": {
+      "bounds": {
+        "left": 678,
+        "top": 1738,
+        "right": 854,
+        "bottom": 1915,
+        "width": 177,
+        "height": 178
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "8be17dba",
+      "cropped_filename": "13_5.png"
+    },
+    "13_6": {
+      "bounds": {
+        "left": 815,
+        "top": 1736,
+        "right": 962,
+        "bottom": 1939,
+        "width": 148,
+        "height": 204
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "ff57f6c8",
+      "cropped_filename": "13_6.png"
+    },
+    "13_7": {
+      "bounds": {
+        "left": 925,
+        "top": 1736,
+        "right": 1096,
+        "bottom": 1946,
+        "width": 172,
+        "height": 211
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "c43498cb",
+      "cropped_filename": "13_7.png"
+    },
+    "13_8": {
+      "bounds": {
+        "left": 1063,
+        "top": 1736,
+        "right": 1261,
+        "bottom": 1914,
+        "width": 199,
+        "height": 179
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "9b7a1c02",
+      "cropped_filename": "13_8.png"
+    },
+    "13_9": {
+      "bounds": {
+        "left": 1223,
+        "top": 1743,
+        "right": 1369,
+        "bottom": 1948,
+        "width": 147,
+        "height": 206
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "90837ec8",
+      "cropped_filename": "13_9.png"
+    },
+    "14_0": {
+      "bounds": {
+        "left": 0,
+        "top": 1905,
+        "right": 137,
+        "bottom": 2046,
+        "width": 138,
+        "height": 142
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "a18a38ab",
+      "cropped_filename": "14_0.png"
+    },
+    "14_1": {
+      "bounds": {
+        "left": 100,
+        "top": 1911,
+        "right": 308,
+        "bottom": 2046,
+        "width": 209,
+        "height": 136
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "ef087b6c",
+      "cropped_filename": "14_1.png"
+    },
+    "14_10": {
+      "bounds": {
+        "left": 1326,
+        "top": 1879,
+        "right": 1505,
+        "bottom": 2046,
+        "width": 180,
+        "height": 168
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "405f5448",
+      "cropped_filename": "14_10.png"
+    },
+    "14_11": {
+      "bounds": {
+        "left": 1468,
+        "top": 1877,
+        "right": 1640,
+        "bottom": 2046,
+        "width": 173,
+        "height": 170
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "59ae7e43",
+      "cropped_filename": "14_11.png"
+    },
+    "14_12": {
+      "bounds": {
+        "left": 1603,
+        "top": 1905,
+        "right": 1802,
+        "bottom": 2046,
+        "width": 200,
+        "height": 142
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "e6ceaff1",
+      "cropped_filename": "14_12.png"
+    },
+    "14_13": {
+      "bounds": {
+        "left": 1769,
+        "top": 1910,
+        "right": 1942,
+        "bottom": 2046,
+        "width": 174,
+        "height": 137
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "69b4d222",
+      "cropped_filename": "14_13.png"
+    },
+    "14_14": {
+      "bounds": {
+        "left": 1905,
+        "top": 1909,
+        "right": 2046,
+        "bottom": 2046,
+        "width": 142,
+        "height": 138
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "fd8806b7",
+      "cropped_filename": "14_14.png"
+    },
+    "14_2": {
+      "bounds": {
+        "left": 269,
+        "top": 1908,
+        "right": 438,
+        "bottom": 2046,
+        "width": 170,
+        "height": 139
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "b05792f9",
+      "cropped_filename": "14_2.png"
+    },
+    "14_3": {
+      "bounds": {
+        "left": 403,
+        "top": 1876,
+        "right": 573,
+        "bottom": 2046,
+        "width": 171,
+        "height": 171
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "ceb92687",
+      "cropped_filename": "14_3.png"
+    },
+    "14_4": {
+      "bounds": {
+        "left": 538,
+        "top": 1880,
+        "right": 711,
+        "bottom": 2046,
+        "width": 174,
+        "height": 167
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "88db662a",
+      "cropped_filename": "14_4.png"
+    },
+    "14_5": {
+      "bounds": {
+        "left": 675,
+        "top": 1877,
+        "right": 848,
+        "bottom": 2046,
+        "width": 174,
+        "height": 170
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "71bd89db",
+      "cropped_filename": "14_5.png"
+    },
+    "14_6": {
+      "bounds": {
+        "left": 812,
+        "top": 1904,
+        "right": 957,
+        "bottom": 2046,
+        "width": 146,
+        "height": 143
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "dce5f18a",
+      "cropped_filename": "14_6.png"
+    },
+    "14_7": {
+      "bounds": {
+        "left": 916,
+        "top": 1908,
+        "right": 1123,
+        "bottom": 2046,
+        "width": 208,
+        "height": 139
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "c0d76546",
+      "cropped_filename": "14_7.png"
+    },
+    "14_8": {
+      "bounds": {
+        "left": 1087,
+        "top": 1878,
+        "right": 1232,
+        "bottom": 2046,
+        "width": 146,
+        "height": 169
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "daa4e174",
+      "cropped_filename": "14_8.png"
+    },
+    "14_9": {
+      "bounds": {
+        "left": 1200,
+        "top": 1907,
+        "right": 1365,
+        "bottom": 2046,
+        "width": 166,
+        "height": 140
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "a9c9cb36",
+      "cropped_filename": "14_9.png"
+    },
+    "1_0": {
+      "bounds": {
+        "left": 0,
+        "top": 131,
+        "right": 140,
+        "bottom": 277,
+        "width": 141,
+        "height": 147
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "4037988d",
+      "cropped_filename": "1_0.png"
+    },
+    "1_1": {
+      "bounds": {
+        "left": 102,
+        "top": 131,
+        "right": 308,
+        "bottom": 303,
+        "width": 207,
+        "height": 173
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "b1e1fd8d",
+      "cropped_filename": "1_1.png"
+    },
+    "1_10": {
+      "bounds": {
+        "left": 1331,
+        "top": 97,
+        "right": 1534,
+        "bottom": 309,
+        "width": 204,
+        "height": 213
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "d00fd6b2",
+      "cropped_filename": "1_10.png"
+    },
+    "1_11": {
+      "bounds": {
+        "left": 1497,
+        "top": 132,
+        "right": 1666,
+        "bottom": 276,
+        "width": 170,
+        "height": 145
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "0143ba78",
+      "cropped_filename": "1_11.png"
+    },
+    "1_12": {
+      "bounds": {
+        "left": 1631,
+        "top": 97,
+        "right": 1809,
+        "bottom": 301,
+        "width": 179,
+        "height": 205
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "957f033b",
+      "cropped_filename": "1_12.png"
+    },
+    "1_13": {
+      "bounds": {
+        "left": 1770,
+        "top": 131,
+        "right": 1949,
+        "bottom": 276,
+        "width": 180,
+        "height": 146
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "39ed24ed",
+      "cropped_filename": "1_13.png"
+    },
+    "1_14": {
+      "bounds": {
+        "left": 1909,
+        "top": 134,
+        "right": 2046,
+        "bottom": 273,
+        "width": 138,
+        "height": 140
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "a9b7a853",
+      "cropped_filename": "1_14.png"
+    },
+    "1_2": {
+      "bounds": {
+        "left": 269,
+        "top": 105,
+        "right": 439,
+        "bottom": 276,
+        "width": 171,
+        "height": 172
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "8fe0c8be",
+      "cropped_filename": "1_2.png"
+    },
+    "1_3": {
+      "bounds": {
+        "left": 406,
+        "top": 130,
+        "right": 549,
+        "bottom": 276,
+        "width": 144,
+        "height": 147
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "0c3730e0",
+      "cropped_filename": "1_3.png"
+    },
+    "1_4": {
+      "bounds": {
+        "left": 514,
+        "top": 104,
+        "right": 717,
+        "bottom": 302,
+        "width": 204,
+        "height": 199
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "76d4d151",
+      "cropped_filename": "1_4.png"
+    },
+    "1_5": {
+      "bounds": {
+        "left": 678,
+        "top": 133,
+        "right": 823,
+        "bottom": 310,
+        "width": 146,
+        "height": 178
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "f952a81a",
+      "cropped_filename": "1_5.png"
+    },
+    "1_6": {
+      "bounds": {
+        "left": 785,
+        "top": 104,
+        "right": 994,
+        "bottom": 277,
+        "width": 210,
+        "height": 174
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "e0509e35",
+      "cropped_filename": "1_6.png"
+    },
+    "1_7": {
+      "bounds": {
+        "left": 955,
+        "top": 104,
+        "right": 1123,
+        "bottom": 303,
+        "width": 169,
+        "height": 200
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "cb4d6327",
+      "cropped_filename": "1_7.png"
+    },
+    "1_8": {
+      "bounds": {
+        "left": 1088,
+        "top": 130,
+        "right": 1265,
+        "bottom": 301,
+        "width": 178,
+        "height": 172
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "f56b0ebb",
+      "cropped_filename": "1_8.png"
+    },
+    "1_9": {
+      "bounds": {
+        "left": 1227,
+        "top": 107,
+        "right": 1369,
+        "bottom": 301,
+        "width": 143,
+        "height": 195
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "a4edc43b",
+      "cropped_filename": "1_9.png"
+    },
+    "2_0": {
+      "bounds": {
+        "left": 0,
+        "top": 243,
+        "right": 169,
+        "bottom": 443,
+        "width": 170,
+        "height": 201
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "30edba75",
+      "cropped_filename": "2_0.png"
+    },
+    "2_1": {
+      "bounds": {
+        "left": 132,
+        "top": 266,
+        "right": 306,
+        "bottom": 447,
+        "width": 175,
+        "height": 182
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "8c9aa507",
+      "cropped_filename": "2_1.png"
+    },
+    "2_10": {
+      "bounds": {
+        "left": 1329,
+        "top": 269,
+        "right": 1532,
+        "bottom": 413,
+        "width": 204,
+        "height": 145
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "98799471",
+      "cropped_filename": "2_10.png"
+    },
+    "2_11": {
+      "bounds": {
+        "left": 1495,
+        "top": 238,
+        "right": 1643,
+        "bottom": 414,
+        "width": 149,
+        "height": 177
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "d22d4dc7",
+      "cropped_filename": "2_11.png"
+    },
+    "2_12": {
+      "bounds": {
+        "left": 1608,
+        "top": 265,
+        "right": 1774,
+        "bottom": 411,
+        "width": 167,
+        "height": 147
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "2a345dca",
+      "cropped_filename": "2_12.png"
+    },
+    "2_13": {
+      "bounds": {
+        "left": 1739,
+        "top": 235,
+        "right": 1914,
+        "bottom": 413,
+        "width": 176,
+        "height": 179
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "16b8d963",
+      "cropped_filename": "2_13.png"
+    },
+    "2_14": {
+      "bounds": {
+        "left": 1877,
+        "top": 233,
+        "right": 2046,
+        "bottom": 440,
+        "width": 170,
+        "height": 208
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "3b1de8f4",
+      "cropped_filename": "2_14.png"
+    },
+    "2_2": {
+      "bounds": {
+        "left": 270,
+        "top": 236,
+        "right": 441,
+        "bottom": 441,
+        "width": 172,
+        "height": 206
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "ffdcca8b",
+      "cropped_filename": "2_2.png"
+    },
+    "2_3": {
+      "bounds": {
+        "left": 403,
+        "top": 237,
+        "right": 547,
+        "bottom": 413,
+        "width": 145,
+        "height": 177
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "fba32d7b",
+      "cropped_filename": "2_3.png"
+    },
+    "2_4": {
+      "bounds": {
+        "left": 508,
+        "top": 265,
+        "right": 710,
+        "bottom": 411,
+        "width": 203,
+        "height": 147
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "23d35384",
+      "cropped_filename": "2_4.png"
+    },
+    "2_5": {
+      "bounds": {
+        "left": 675,
+        "top": 270,
+        "right": 819,
+        "bottom": 415,
+        "width": 145,
+        "height": 146
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "f48daec9",
+      "cropped_filename": "2_5.png"
+    },
+    "2_6": {
+      "bounds": {
+        "left": 780,
+        "top": 240,
+        "right": 992,
+        "bottom": 413,
+        "width": 213,
+        "height": 174
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "05fbc676",
+      "cropped_filename": "2_6.png"
+    },
+    "2_7": {
+      "bounds": {
+        "left": 953,
+        "top": 267,
+        "right": 1126,
+        "bottom": 411,
+        "width": 174,
+        "height": 145
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "cf611a0c",
+      "cropped_filename": "2_7.png"
+    },
+    "2_8": {
+      "bounds": {
+        "left": 1088,
+        "top": 266,
+        "right": 1265,
+        "bottom": 414,
+        "width": 178,
+        "height": 149
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "044c181a",
+      "cropped_filename": "2_8.png"
+    },
+    "2_9": {
+      "bounds": {
+        "left": 1226,
+        "top": 267,
+        "right": 1366,
+        "bottom": 410,
+        "width": 141,
+        "height": 144
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "2a315d5d",
+      "cropped_filename": "2_9.png"
+    },
+    "3_0": {
+      "bounds": {
+        "left": 0,
+        "top": 406,
+        "right": 167,
+        "bottom": 577,
+        "width": 168,
+        "height": 172
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "b995c600",
+      "cropped_filename": "3_0.png"
+    },
+    "3_1": {
+      "bounds": {
+        "left": 131,
+        "top": 407,
+        "right": 307,
+        "bottom": 579,
+        "width": 177,
+        "height": 173
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "adf54992",
+      "cropped_filename": "3_1.png"
+    },
+    "3_10": {
+      "bounds": {
+        "left": 1363,
+        "top": 375,
+        "right": 1505,
+        "bottom": 574,
+        "width": 143,
+        "height": 200
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "8d501726",
+      "cropped_filename": "3_10.png"
+    },
+    "3_11": {
+      "bounds": {
+        "left": 1466,
+        "top": 378,
+        "right": 1641,
+        "bottom": 582,
+        "width": 176,
+        "height": 205
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "47bd5070",
+      "cropped_filename": "3_11.png"
+    },
+    "3_12": {
+      "bounds": {
+        "left": 1607,
+        "top": 370,
+        "right": 1804,
+        "bottom": 552,
+        "width": 198,
+        "height": 183
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "529e63fc",
+      "cropped_filename": "3_12.png"
+    },
+    "3_13": {
+      "bounds": {
+        "left": 1769,
+        "top": 378,
+        "right": 1945,
+        "bottom": 578,
+        "width": 177,
+        "height": 201
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "c10204ec",
+      "cropped_filename": "3_13.png"
+    },
+    "3_14": {
+      "bounds": {
+        "left": 1907,
+        "top": 405,
+        "right": 2046,
+        "bottom": 584,
+        "width": 140,
+        "height": 180
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "5e0d86b1",
+      "cropped_filename": "3_14.png"
+    },
+    "3_2": {
+      "bounds": {
+        "left": 269,
+        "top": 403,
+        "right": 411,
+        "bottom": 583,
+        "width": 143,
+        "height": 181
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "794edfc8",
+      "cropped_filename": "3_2.png"
+    },
+    "3_3": {
+      "bounds": {
+        "left": 372,
+        "top": 375,
+        "right": 549,
+        "bottom": 548,
+        "width": 178,
+        "height": 174
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "3c360e1a",
+      "cropped_filename": "3_3.png"
+    },
+    "3_4": {
+      "bounds": {
+        "left": 511,
+        "top": 374,
+        "right": 711,
+        "bottom": 577,
+        "width": 201,
+        "height": 204
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "7da2b918",
+      "cropped_filename": "3_4.png"
+    },
+    "3_5": {
+      "bounds": {
+        "left": 675,
+        "top": 378,
+        "right": 819,
+        "bottom": 581,
+        "width": 145,
+        "height": 204
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "15d5d6af",
+      "cropped_filename": "3_5.png"
+    },
+    "3_6": {
+      "bounds": {
+        "left": 780,
+        "top": 378,
+        "right": 989,
+        "bottom": 550,
+        "width": 210,
+        "height": 173
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "a560a125",
+      "cropped_filename": "3_6.png"
+    },
+    "3_7": {
+      "bounds": {
+        "left": 952,
+        "top": 371,
+        "right": 1121,
+        "bottom": 582,
+        "width": 170,
+        "height": 212
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "a12281a1",
+      "cropped_filename": "3_7.png"
+    },
+    "3_8": {
+      "bounds": {
+        "left": 1087,
+        "top": 379,
+        "right": 1257,
+        "bottom": 573,
+        "width": 171,
+        "height": 195
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "02570196",
+      "cropped_filename": "3_8.png"
+    },
+    "3_9": {
+      "bounds": {
+        "left": 1221,
+        "top": 373,
+        "right": 1400,
+        "bottom": 551,
+        "width": 180,
+        "height": 179
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "607e8ab4",
+      "cropped_filename": "3_9.png"
+    },
+    "4_0": {
+      "bounds": {
+        "left": 0,
+        "top": 539,
+        "right": 168,
+        "bottom": 716,
+        "width": 169,
+        "height": 178
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "27a7f628",
+      "cropped_filename": "4_0.png"
+    },
+    "4_1": {
+      "bounds": {
+        "left": 130,
+        "top": 540,
+        "right": 302,
+        "bottom": 718,
+        "width": 173,
+        "height": 179
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "f445348b",
+      "cropped_filename": "4_1.png"
+    },
+    "4_10": {
+      "bounds": {
+        "left": 1359,
+        "top": 539,
+        "right": 1530,
+        "bottom": 712,
+        "width": 172,
+        "height": 174
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "de2ef2a4",
+      "cropped_filename": "4_10.png"
+    },
+    "4_11": {
+      "bounds": {
+        "left": 1495,
+        "top": 542,
+        "right": 1644,
+        "bottom": 688,
+        "width": 150,
+        "height": 147
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "38e619f6",
+      "cropped_filename": "4_11.png"
+    },
+    "4_12": {
+      "bounds": {
+        "left": 1608,
+        "top": 516,
+        "right": 1779,
+        "bottom": 716,
+        "width": 172,
+        "height": 201
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "3bf89a18",
+      "cropped_filename": "4_12.png"
+    },
+    "4_13": {
+      "bounds": {
+        "left": 1740,
+        "top": 540,
+        "right": 1947,
+        "bottom": 688,
+        "width": 208,
+        "height": 149
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "de7e89a5",
+      "cropped_filename": "4_13.png"
+    },
+    "4_14": {
+      "bounds": {
+        "left": 1908,
+        "top": 546,
+        "right": 2046,
+        "bottom": 717,
+        "width": 139,
+        "height": 172
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "bebd6e16",
+      "cropped_filename": "4_14.png"
+    },
+    "4_2": {
+      "bounds": {
+        "left": 268,
+        "top": 545,
+        "right": 445,
+        "bottom": 689,
+        "width": 178,
+        "height": 145
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "8159987b",
+      "cropped_filename": "4_2.png"
+    },
+    "4_3": {
+      "bounds": {
+        "left": 406,
+        "top": 511,
+        "right": 581,
+        "bottom": 712,
+        "width": 176,
+        "height": 202
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "a59bb3fa",
+      "cropped_filename": "4_3.png"
+    },
+    "4_4": {
+      "bounds": {
+        "left": 544,
+        "top": 541,
+        "right": 683,
+        "bottom": 714,
+        "width": 140,
+        "height": 174
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "5e172d7e",
+      "cropped_filename": "4_4.png"
+    },
+    "4_5": {
+      "bounds": {
+        "left": 645,
+        "top": 542,
+        "right": 825,
+        "bottom": 684,
+        "width": 181,
+        "height": 143
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "3d564b7f",
+      "cropped_filename": "4_5.png"
+    },
+    "4_6": {
+      "bounds": {
+        "left": 789,
+        "top": 511,
+        "right": 961,
+        "bottom": 685,
+        "width": 173,
+        "height": 175
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "560df7b6",
+      "cropped_filename": "4_6.png"
+    },
+    "4_7": {
+      "bounds": {
+        "left": 925,
+        "top": 541,
+        "right": 1091,
+        "bottom": 714,
+        "width": 167,
+        "height": 174
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "03ea89b5",
+      "cropped_filename": "4_7.png"
+    },
+    "4_8": {
+      "bounds": {
+        "left": 1053,
+        "top": 540,
+        "right": 1233,
+        "bottom": 712,
+        "width": 181,
+        "height": 173
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "fc4ccfef",
+      "cropped_filename": "4_8.png"
+    },
+    "4_9": {
+      "bounds": {
+        "left": 1197,
+        "top": 517,
+        "right": 1395,
+        "bottom": 685,
+        "width": 199,
+        "height": 169
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "0de35495",
+      "cropped_filename": "4_9.png"
+    },
+    "5_0": {
+      "bounds": {
+        "left": 0,
+        "top": 679,
+        "right": 140,
+        "bottom": 825,
+        "width": 141,
+        "height": 147
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "129f731e",
+      "cropped_filename": "5_0.png"
+    },
+    "5_1": {
+      "bounds": {
+        "left": 101,
+        "top": 678,
+        "right": 309,
+        "bottom": 822,
+        "width": 209,
+        "height": 145
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "76ad46dd",
+      "cropped_filename": "5_1.png"
+    },
+    "5_10": {
+      "bounds": {
+        "left": 1359,
+        "top": 675,
+        "right": 1501,
+        "bottom": 820,
+        "width": 143,
+        "height": 146
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "9b8c714d",
+      "cropped_filename": "5_10.png"
+    },
+    "5_11": {
+      "bounds": {
+        "left": 1465,
+        "top": 652,
+        "right": 1673,
+        "bottom": 857,
+        "width": 209,
+        "height": 206
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "5cd1e7ed",
+      "cropped_filename": "5_11.png"
+    },
+    "5_12": {
+      "bounds": {
+        "left": 1634,
+        "top": 677,
+        "right": 1805,
+        "bottom": 849,
+        "width": 172,
+        "height": 173
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "ebc65061",
+      "cropped_filename": "5_12.png"
+    },
+    "5_13": {
+      "bounds": {
+        "left": 1768,
+        "top": 651,
+        "right": 1940,
+        "bottom": 825,
+        "width": 173,
+        "height": 175
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "54b60584",
+      "cropped_filename": "5_13.png"
+    },
+    "5_14": {
+      "bounds": {
+        "left": 1905,
+        "top": 679,
+        "right": 2046,
+        "bottom": 847,
+        "width": 142,
+        "height": 169
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "16cb7064",
+      "cropped_filename": "5_14.png"
+    },
+    "5_2": {
+      "bounds": {
+        "left": 269,
+        "top": 652,
+        "right": 415,
+        "bottom": 856,
+        "width": 147,
+        "height": 205
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "a4083dad",
+      "cropped_filename": "5_2.png"
+    },
+    "5_3": {
+      "bounds": {
+        "left": 378,
+        "top": 677,
+        "right": 584,
+        "bottom": 823,
+        "width": 207,
+        "height": 147
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "150b7f75",
+      "cropped_filename": "5_3.png"
+    },
+    "5_4": {
+      "bounds": {
+        "left": 543,
+        "top": 678,
+        "right": 716,
+        "bottom": 850,
+        "width": 174,
+        "height": 173
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "22561b78",
+      "cropped_filename": "5_4.png"
+    },
+    "5_5": {
+      "bounds": {
+        "left": 680,
+        "top": 650,
+        "right": 855,
+        "bottom": 857,
+        "width": 176,
+        "height": 208
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "982db513",
+      "cropped_filename": "5_5.png"
+    },
+    "5_6": {
+      "bounds": {
+        "left": 815,
+        "top": 645,
+        "right": 990,
+        "bottom": 857,
+        "width": 176,
+        "height": 213
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "56d8767e",
+      "cropped_filename": "5_6.png"
+    },
+    "5_7": {
+      "bounds": {
+        "left": 951,
+        "top": 677,
+        "right": 1126,
+        "bottom": 822,
+        "width": 176,
+        "height": 146
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "a4d06029",
+      "cropped_filename": "5_7.png"
+    },
+    "5_8": {
+      "bounds": {
+        "left": 1090,
+        "top": 676,
+        "right": 1262,
+        "bottom": 851,
+        "width": 173,
+        "height": 176
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "6473177c",
+      "cropped_filename": "5_8.png"
+    },
+    "5_9": {
+      "bounds": {
+        "left": 1225,
+        "top": 649,
+        "right": 1395,
+        "bottom": 856,
+        "width": 171,
+        "height": 208
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "3885201c",
+      "cropped_filename": "5_9.png"
+    },
+    "6_0": {
+      "bounds": {
+        "left": 0,
+        "top": 789,
+        "right": 172,
+        "bottom": 956,
+        "width": 173,
+        "height": 168
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "d2c39986",
+      "cropped_filename": "6_0.png"
+    },
+    "6_1": {
+      "bounds": {
+        "left": 132,
+        "top": 788,
+        "right": 306,
+        "bottom": 984,
+        "width": 175,
+        "height": 197
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "de837737",
+      "cropped_filename": "6_1.png"
+    },
+    "6_10": {
+      "bounds": {
+        "left": 1358,
+        "top": 782,
+        "right": 1504,
+        "bottom": 956,
+        "width": 147,
+        "height": 175
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "2962dce5",
+      "cropped_filename": "6_10.png"
+    },
+    "6_11": {
+      "bounds": {
+        "left": 1464,
+        "top": 816,
+        "right": 1639,
+        "bottom": 959,
+        "width": 176,
+        "height": 144
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "94a8092e",
+      "cropped_filename": "6_11.png"
+    },
+    "6_12": {
+      "bounds": {
+        "left": 1603,
+        "top": 813,
+        "right": 1802,
+        "bottom": 988,
+        "width": 200,
+        "height": 176
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "30aa4d4e",
+      "cropped_filename": "6_12.png"
+    },
+    "6_13": {
+      "bounds": {
+        "left": 1767,
+        "top": 790,
+        "right": 1916,
+        "bottom": 991,
+        "width": 150,
+        "height": 202
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "8a7e5082",
+      "cropped_filename": "6_13.png"
+    },
+    "6_14": {
+      "bounds": {
+        "left": 1880,
+        "top": 812,
+        "right": 2046,
+        "bottom": 959,
+        "width": 167,
+        "height": 148
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "4ae3cd09",
+      "cropped_filename": "6_14.png"
+    },
+    "6_2": {
+      "bounds": {
+        "left": 270,
+        "top": 817,
+        "right": 415,
+        "bottom": 993,
+        "width": 146,
+        "height": 177
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "34ddb8b0",
+      "cropped_filename": "6_2.png"
+    },
+    "6_3": {
+      "bounds": {
+        "left": 380,
+        "top": 783,
+        "right": 581,
+        "bottom": 988,
+        "width": 202,
+        "height": 206
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "a5bbd73c",
+      "cropped_filename": "6_3.png"
+    },
+    "6_4": {
+      "bounds": {
+        "left": 541,
+        "top": 812,
+        "right": 686,
+        "bottom": 960,
+        "width": 146,
+        "height": 149
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "01d6f209",
+      "cropped_filename": "6_4.png"
+    },
+    "6_5": {
+      "bounds": {
+        "left": 652,
+        "top": 817,
+        "right": 848,
+        "bottom": 959,
+        "width": 197,
+        "height": 143
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "4c797e50",
+      "cropped_filename": "6_5.png"
+    },
+    "6_6": {
+      "bounds": {
+        "left": 812,
+        "top": 816,
+        "right": 989,
+        "bottom": 992,
+        "width": 178,
+        "height": 177
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "ee5ae6a5",
+      "cropped_filename": "6_6.png"
+    },
+    "6_7": {
+      "bounds": {
+        "left": 951,
+        "top": 787,
+        "right": 1126,
+        "bottom": 961,
+        "width": 176,
+        "height": 175
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "a1596181",
+      "cropped_filename": "6_7.png"
+    },
+    "6_8": {
+      "bounds": {
+        "left": 1088,
+        "top": 814,
+        "right": 1233,
+        "bottom": 961,
+        "width": 146,
+        "height": 148
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "f849b1a0",
+      "cropped_filename": "6_8.png"
+    },
+    "6_9": {
+      "bounds": {
+        "left": 1198,
+        "top": 817,
+        "right": 1395,
+        "bottom": 958,
+        "width": 198,
+        "height": 142
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "4bdb1a6e",
+      "cropped_filename": "6_9.png"
+    },
+    "7_0": {
+      "bounds": {
+        "left": 0,
+        "top": 916,
+        "right": 139,
+        "bottom": 1122,
+        "width": 140,
+        "height": 207
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "67190eea",
+      "cropped_filename": "7_0.png"
+    },
+    "7_1": {
+      "bounds": {
+        "left": 103,
+        "top": 950,
+        "right": 302,
+        "bottom": 1093,
+        "width": 200,
+        "height": 144
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "22106eb1",
+      "cropped_filename": "7_1.png"
+    },
+    "7_10": {
+      "bounds": {
+        "left": 1362,
+        "top": 916,
+        "right": 1533,
+        "bottom": 1095,
+        "width": 172,
+        "height": 180
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "5e8e58a0",
+      "cropped_filename": "7_10.png"
+    },
+    "7_11": {
+      "bounds": {
+        "left": 1495,
+        "top": 924,
+        "right": 1640,
+        "bottom": 1096,
+        "width": 146,
+        "height": 173
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "5f5d6205",
+      "cropped_filename": "7_11.png"
+    },
+    "7_12": {
+      "bounds": {
+        "left": 1602,
+        "top": 950,
+        "right": 1777,
+        "bottom": 1095,
+        "width": 176,
+        "height": 146
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "6de0cd39",
+      "cropped_filename": "7_12.png"
+    },
+    "7_13": {
+      "bounds": {
+        "left": 1736,
+        "top": 954,
+        "right": 1917,
+        "bottom": 1094,
+        "width": 182,
+        "height": 141
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "7969c948",
+      "cropped_filename": "7_13.png"
+    },
+    "7_14": {
+      "bounds": {
+        "left": 1882,
+        "top": 923,
+        "right": 2046,
+        "bottom": 1120,
+        "width": 165,
+        "height": 198
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "04597667",
+      "cropped_filename": "7_14.png"
+    },
+    "7_2": {
+      "bounds": {
+        "left": 265,
+        "top": 952,
+        "right": 439,
+        "bottom": 1122,
+        "width": 175,
+        "height": 171
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "eb13f762",
+      "cropped_filename": "7_2.png"
+    },
+    "7_3": {
+      "bounds": {
+        "left": 403,
+        "top": 951,
+        "right": 548,
+        "bottom": 1120,
+        "width": 146,
+        "height": 170
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "c4f186b7",
+      "cropped_filename": "7_3.png"
+    },
+    "7_4": {
+      "bounds": {
+        "left": 506,
+        "top": 925,
+        "right": 686,
+        "bottom": 1127,
+        "width": 181,
+        "height": 203
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "bd7b61a8",
+      "cropped_filename": "7_4.png"
+    },
+    "7_5": {
+      "bounds": {
+        "left": 647,
+        "top": 922,
+        "right": 852,
+        "bottom": 1120,
+        "width": 206,
+        "height": 199
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "7d28a977",
+      "cropped_filename": "7_5.png"
+    },
+    "7_6": {
+      "bounds": {
+        "left": 814,
+        "top": 951,
+        "right": 959,
+        "bottom": 1128,
+        "width": 146,
+        "height": 178
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "ab12d2fb",
+      "cropped_filename": "7_6.png"
+    },
+    "7_7": {
+      "bounds": {
+        "left": 923,
+        "top": 923,
+        "right": 1127,
+        "bottom": 1098,
+        "width": 205,
+        "height": 176
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "6357f6cc",
+      "cropped_filename": "7_7.png"
+    },
+    "7_8": {
+      "bounds": {
+        "left": 1087,
+        "top": 925,
+        "right": 1259,
+        "bottom": 1094,
+        "width": 173,
+        "height": 170
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "76a36143",
+      "cropped_filename": "7_8.png"
+    },
+    "7_9": {
+      "bounds": {
+        "left": 1223,
+        "top": 917,
+        "right": 1397,
+        "bottom": 1127,
+        "width": 175,
+        "height": 211
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "2887ab6c",
+      "cropped_filename": "7_9.png"
+    },
+    "8_0": {
+      "bounds": {
+        "left": 0,
+        "top": 1087,
+        "right": 138,
+        "bottom": 1231,
+        "width": 139,
+        "height": 145
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "5ead42d9",
+      "cropped_filename": "8_0.png"
+    },
+    "8_1": {
+      "bounds": {
+        "left": 98,
+        "top": 1056,
+        "right": 279,
+        "bottom": 1259,
+        "width": 182,
+        "height": 204
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "684e8140",
+      "cropped_filename": "8_1.png"
+    },
+    "8_10": {
+      "bounds": {
+        "left": 1328,
+        "top": 1058,
+        "right": 1535,
+        "bottom": 1230,
+        "width": 208,
+        "height": 173
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "03c5c383",
+      "cropped_filename": "8_10.png"
+    },
+    "8_11": {
+      "bounds": {
+        "left": 1498,
+        "top": 1060,
+        "right": 1667,
+        "bottom": 1267,
+        "width": 170,
+        "height": 208
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "fc4e9e23",
+      "cropped_filename": "8_11.png"
+    },
+    "8_12": {
+      "bounds": {
+        "left": 1632,
+        "top": 1061,
+        "right": 1806,
+        "bottom": 1265,
+        "width": 175,
+        "height": 205
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "06986e0b",
+      "cropped_filename": "8_12.png"
+    },
+    "8_13": {
+      "bounds": {
+        "left": 1769,
+        "top": 1054,
+        "right": 1915,
+        "bottom": 1260,
+        "width": 147,
+        "height": 207
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "75065b80",
+      "cropped_filename": "8_13.png"
+    },
+    "8_14": {
+      "bounds": {
+        "left": 1876,
+        "top": 1086,
+        "right": 2046,
+        "bottom": 1257,
+        "width": 171,
+        "height": 172
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "7b04a840",
+      "cropped_filename": "8_14.png"
+    },
+    "8_2": {
+      "bounds": {
+        "left": 242,
+        "top": 1086,
+        "right": 414,
+        "bottom": 1258,
+        "width": 173,
+        "height": 173
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "9011eadf",
+      "cropped_filename": "8_2.png"
+    },
+    "8_3": {
+      "bounds": {
+        "left": 378,
+        "top": 1085,
+        "right": 545,
+        "bottom": 1264,
+        "width": 168,
+        "height": 180
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "02bed0b5",
+      "cropped_filename": "8_3.png"
+    },
+    "8_4": {
+      "bounds": {
+        "left": 508,
+        "top": 1090,
+        "right": 715,
+        "bottom": 1230,
+        "width": 208,
+        "height": 141
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "afc914a3",
+      "cropped_filename": "8_4.png"
+    },
+    "8_5": {
+      "bounds": {
+        "left": 677,
+        "top": 1085,
+        "right": 825,
+        "bottom": 1229,
+        "width": 149,
+        "height": 145
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "dee64bff",
+      "cropped_filename": "8_5.png"
+    },
+    "8_6": {
+      "bounds": {
+        "left": 789,
+        "top": 1088,
+        "right": 992,
+        "bottom": 1233,
+        "width": 204,
+        "height": 146
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "0621f41e",
+      "cropped_filename": "8_6.png"
+    },
+    "8_7": {
+      "bounds": {
+        "left": 954,
+        "top": 1062,
+        "right": 1097,
+        "bottom": 1229,
+        "width": 144,
+        "height": 168
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "29d1e8ad",
+      "cropped_filename": "8_7.png"
+    },
+    "8_8": {
+      "bounds": {
+        "left": 1059,
+        "top": 1054,
+        "right": 1263,
+        "bottom": 1232,
+        "width": 205,
+        "height": 179
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "b92256d5",
+      "cropped_filename": "8_8.png"
+    },
+    "8_9": {
+      "bounds": {
+        "left": 1226,
+        "top": 1088,
+        "right": 1367,
+        "bottom": 1228,
+        "width": 142,
+        "height": 141
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "af4d229e",
+      "cropped_filename": "8_9.png"
+    },
+    "9_0": {
+      "bounds": {
+        "left": 0,
+        "top": 1192,
+        "right": 138,
+        "bottom": 1399,
+        "width": 139,
+        "height": 208
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "380017b2",
+      "cropped_filename": "9_0.png"
+    },
+    "9_1": {
+      "bounds": {
+        "left": 99,
+        "top": 1222,
+        "right": 301,
+        "bottom": 1370,
+        "width": 203,
+        "height": 149
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "98bd4e2b",
+      "cropped_filename": "9_1.png"
+    },
+    "9_10": {
+      "bounds": {
+        "left": 1361,
+        "top": 1190,
+        "right": 1534,
+        "bottom": 1396,
+        "width": 174,
+        "height": 207
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "ee91932c",
+      "cropped_filename": "9_10.png"
+    },
+    "9_11": {
+      "bounds": {
+        "left": 1498,
+        "top": 1227,
+        "right": 1640,
+        "bottom": 1396,
+        "width": 143,
+        "height": 170
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "1d198c02",
+      "cropped_filename": "9_11.png"
+    },
+    "9_12": {
+      "bounds": {
+        "left": 1605,
+        "top": 1225,
+        "right": 1780,
+        "bottom": 1369,
+        "width": 176,
+        "height": 145
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "8cb2ad78",
+      "cropped_filename": "9_12.png"
+    },
+    "9_13": {
+      "bounds": {
+        "left": 1744,
+        "top": 1222,
+        "right": 1940,
+        "bottom": 1364,
+        "width": 197,
+        "height": 143
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "af8642b1",
+      "cropped_filename": "9_13.png"
+    },
+    "9_14": {
+      "bounds": {
+        "left": 1904,
+        "top": 1223,
+        "right": 2046,
+        "bottom": 1367,
+        "width": 143,
+        "height": 145
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "a468f8d7",
+      "cropped_filename": "9_14.png"
+    },
+    "9_2": {
+      "bounds": {
+        "left": 265,
+        "top": 1223,
+        "right": 443,
+        "bottom": 1400,
+        "width": 179,
+        "height": 178
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "ade07b89",
+      "cropped_filename": "9_2.png"
+    },
+    "9_3": {
+      "bounds": {
+        "left": 404,
+        "top": 1226,
+        "right": 576,
+        "bottom": 1400,
+        "width": 173,
+        "height": 175
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "94cf99a4",
+      "cropped_filename": "9_3.png"
+    },
+    "9_4": {
+      "bounds": {
+        "left": 541,
+        "top": 1191,
+        "right": 714,
+        "bottom": 1369,
+        "width": 174,
+        "height": 179
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "f05742ce",
+      "cropped_filename": "9_4.png"
+    },
+    "9_5": {
+      "bounds": {
+        "left": 677,
+        "top": 1191,
+        "right": 824,
+        "bottom": 1367,
+        "width": 148,
+        "height": 177
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "2c0c00d4",
+      "cropped_filename": "9_5.png"
+    },
+    "9_6": {
+      "bounds": {
+        "left": 785,
+        "top": 1196,
+        "right": 961,
+        "bottom": 1398,
+        "width": 177,
+        "height": 203
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "d0079e64",
+      "cropped_filename": "9_6.png"
+    },
+    "9_7": {
+      "bounds": {
+        "left": 925,
+        "top": 1193,
+        "right": 1123,
+        "bottom": 1367,
+        "width": 199,
+        "height": 175
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "043f3f63",
+      "cropped_filename": "9_7.png"
+    },
+    "9_8": {
+      "bounds": {
+        "left": 1087,
+        "top": 1193,
+        "right": 1256,
+        "bottom": 1400,
+        "width": 170,
+        "height": 208
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "e209628c",
+      "cropped_filename": "9_8.png"
+    },
+    "9_9": {
+      "bounds": {
+        "left": 1221,
+        "top": 1190,
+        "right": 1401,
+        "bottom": 1400,
+        "width": 181,
+        "height": 211
+      },
+      "canvas_size": {
+        "width": 2048,
+        "height": 2048
+      },
+      "content_hash": "e8adfbaa",
+      "cropped_filename": "9_9.png"
+    }
+  },
+  "statistics": {
+    "memory_reduction_percent": 99.26119454701741,
+    "total_pieces": 225,
+    "original_total_bytes": 3774873600,
+    "optimized_total_bytes": 27888972,
+    "bytes_saved": 3746984628
+  }
+}
