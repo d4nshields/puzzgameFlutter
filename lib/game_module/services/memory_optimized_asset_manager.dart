@@ -191,8 +191,10 @@ class MemoryOptimizedAssetManager {
       // Try to load optimization metadata to verify optimized assets exist
       final metadataPath = '$optimizedPath/optimization_metadata.json';
       await rootBundle.loadString(metadataPath);
+      debugPrint('MemoryOptimizedAssetManager: ✅ Found optimized assets at $optimizedPath');
       return true;
     } catch (e) {
+      debugPrint('MemoryOptimizedAssetManager: ❌ No optimized assets at $optimizedPath: $e');
       return false;
     }
   }

@@ -65,6 +65,13 @@ flutter:
     - assets/puzzles/sample_puzzle_01/layouts/12x12/pieces/
     - assets/puzzles/sample_puzzle_01/layouts/15x15/
     - assets/puzzles/sample_puzzle_01/layouts/15x15/pieces/
+    # Optimized assets for memory reduction
+    - assets/puzzles/sample_puzzle_01/layouts/8x8_optimized/
+    - assets/puzzles/sample_puzzle_01/layouts/8x8_optimized/pieces/
+    - assets/puzzles/sample_puzzle_01/layouts/12x12_optimized/
+    - assets/puzzles/sample_puzzle_01/layouts/12x12_optimized/pieces/
+    - assets/puzzles/sample_puzzle_01/layouts/15x15_optimized/
+    - assets/puzzles/sample_puzzle_01/layouts/15x15_optimized/pieces/
 
 # Splash screen configuration
 flutter_native_splash:
