@@ -45,6 +45,18 @@ class HomeScreen extends StatelessWidget {
                 child: const Text('Settings'),
               ),
               const SizedBox(height: 16),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(200, 50),
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () {
+                  Navigator.pushNamed(context, '/auto-solve');
+                },
+                child: const Text('Auto-Solve (Debug)'),
+              ),
+              const SizedBox(height: 16),
               OutlinedButton(
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(200, 50),

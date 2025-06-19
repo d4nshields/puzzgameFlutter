@@ -294,42 +294,74 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
       child: LayoutBuilder(
         builder: (context, constraints) {
           final canvasInfo = widget.gameSession.canvasInfo;
+          
+          // For memory-optimized rendering, we want to use native pixel coordinates
+          // to avoid scaling artifacts that create gaps
+          if (widget.gameSession.useMemoryOptimization) {
+          // Calculate scale for display but render pieces at exact pixel coordinates
           final scale = _calculateCanvasScale(canvasInfo.canvasSize, constraints.biggest);
-          final scaledSize = canvasInfo.canvasSize * scale;
+          final displaySize = canvasInfo.canvasSize * scale;
           
           return Center(
-            child: SizedBox(
-              width: scaledSize.width,
-              height: scaledSize.height,
-              child: Stack(
-                children: [
-                  // Canvas background
-                  Container(
-                    width: scaledSize.width,
-                    height: scaledSize.height,
-                    color: Colors.grey[50],
-                    child: Center(
-                      child: Text(
-                        'Canvas ${canvasInfo.canvasSize.width.toInt()}x${canvasInfo.canvasSize.height.toInt()}',
-                        style: TextStyle(
-                          color: Colors.grey[300],
-                          fontSize: 12,
+          child: SizedBox(
+          width: displaySize.width,
+          height: displaySize.height,
+          child: Stack(
+          children: [
+            // Custom painter for rendering all pieces
+          CustomPaint(
+            size: displaySize,
+            painter: MemoryOptimizedPuzzlePainter(
+                pieces: widget.gameSession.placedPieces,
+                canvasSize: canvasInfo.canvasSize,
+                  displaySize: displaySize,
+                  ),
+                  ),
+                      // Drop zone overlay (now properly inside Stack)
+                      _buildDropZoneOverlay(displaySize),
+                    ],
+                  ),
+                ),
+              );
+          } else {
+            // Legacy scaled rendering for non-memory-optimized mode
+            final scale = _calculateCanvasScale(canvasInfo.canvasSize, constraints.biggest);
+            final scaledSize = canvasInfo.canvasSize * scale;
+            
+            return Center(
+              child: SizedBox(
+                width: scaledSize.width,
+                height: scaledSize.height,
+                child: Stack(
+                  children: [
+                    // Canvas background
+                    Container(
+                      width: scaledSize.width,
+                      height: scaledSize.height,
+                      color: Colors.grey[50],
+                      child: Center(
+                        child: Text(
+                          'Canvas ${canvasInfo.canvasSize.width.toInt()}x${canvasInfo.canvasSize.height.toInt()}',
+                          style: TextStyle(
+                            color: Colors.grey[300],
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  
-                  // Placed pieces - each PNG is layered at full canvas scale
-                  ...widget.gameSession.placedPieces.map((piece) =>
-                    _buildCanvasPiece(piece, scaledSize)
-                  ),
-                  
-                  // Drop zone overlay for drag targets
-                  _buildDropZoneOverlay(scaledSize),
-                ],
+                    
+                    // Placed pieces - each PNG is layered at full canvas scale
+                    ...widget.gameSession.placedPieces.map((piece) =>
+                      _buildCanvasPiece(piece, scaledSize)
+                    ),
+                    
+                    // Drop zone overlay for drag targets
+                    _buildDropZoneOverlay(scaledSize),
+                  ],
+                ),
               ),
-            ),
-          );
+            );
+          }
         },
       ),
     );
@@ -643,7 +675,49 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
     });
   }
   
-  /// Build a canvas piece (full padded PNG)
+  /// Build a canvas piece at native pixel coordinates (for memory optimization)
+  Widget _buildNativeCanvasPiece(PuzzlePiece piece, Size nativeCanvasSize) {
+    return Positioned.fill(
+      child: GestureDetector(
+        onTap: () => _removePiece(piece),
+        child: SizedBox(
+          width: nativeCanvasSize.width,
+          height: nativeCanvasSize.height,
+          child: MemoryOptimizedPuzzleImage(
+            pieceId: piece.id,
+            assetManager: piece.memoryOptimizedAssetManager,
+            width: nativeCanvasSize.width,
+            height: nativeCanvasSize.height,
+            fit: BoxFit.fill, // Use exact native size
+            zoomLevel: 1.0,   // No zoom - native coordinates
+            cropToContent: false, // Use positioned cropped content
+          ),
+        ),
+      ),
+    );
+  }
+  
+  /// Build drop zone overlay at native coordinates
+  Widget _buildNativeDropZoneOverlay(Size nativeCanvasSize) {
+    return Positioned.fill(
+      child: DragTarget<PuzzlePiece>(
+        onWillAcceptWithDetails: (details) => details.data != null,
+        onAcceptWithDetails: (details) => _placePieceOnCanvas(details.data),
+        builder: (context, candidateData, rejectedData) {
+          return Container(
+            decoration: candidateData.isNotEmpty
+                ? BoxDecoration(
+                    border: Border.all(color: Colors.blue, width: 3),
+                    color: Colors.blue.withOpacity(0.1),
+                  )
+                : null,
+          );
+        },
+      ),
+    );
+  }
+  
+  /// Build a canvas piece (full padded PNG) - legacy method
   Widget _buildCanvasPiece(PuzzlePiece piece, Size scaledCanvasSize) {
     return Positioned.fill(
       child: GestureDetector(
@@ -790,5 +864,67 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
         ],
       ),
     );
+  }
+}
+
+/// Custom painter that renders all memory-optimized pieces in a single paint operation
+class MemoryOptimizedPuzzlePainter extends CustomPainter {
+  final List<PuzzlePiece> pieces;
+  final Size canvasSize;
+  final Size displaySize;
+  
+  MemoryOptimizedPuzzlePainter({
+    required this.pieces,
+    required this.canvasSize,
+    required this.displaySize,
+  });
+  
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Draw background
+    final backgroundPaint = Paint()..color = Colors.grey[50]!;
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), backgroundPaint);
+    
+    // Calculate scale from native canvas to display
+    final scaleX = displaySize.width / canvasSize.width;
+    final scaleY = displaySize.height / canvasSize.height;
+    
+    // Render each piece at its exact position
+    for (final piece in pieces) {
+      final assetManager = piece.memoryOptimizedAssetManager;
+      final metadata = assetManager.getPieceMetadata(piece.id);
+      final image = assetManager.getCachedPieceImage(piece.id);
+      
+      if (metadata != null && image != null) {
+        // Calculate exact pixel position on display
+        final destRect = Rect.fromLTWH(
+          metadata.contentBounds.left * scaleX,
+          metadata.contentBounds.top * scaleY,
+          metadata.contentBounds.width * scaleX,
+          metadata.contentBounds.height * scaleY,
+        );
+        
+        final srcRect = Rect.fromLTWH(
+          0, 0, 
+          image.width.toDouble(), 
+          image.height.toDouble()
+        );
+        
+        // Draw with high quality filtering
+        canvas.drawImageRect(
+          image, 
+          srcRect, 
+          destRect, 
+          Paint()..filterQuality = FilterQuality.high
+        );
+      }
+    }
+  }
+  
+  @override
+  bool shouldRepaint(covariant MemoryOptimizedPuzzlePainter oldDelegate) {
+    return oldDelegate.pieces.length != pieces.length ||
+           oldDelegate.canvasSize != canvasSize ||
+           oldDelegate.displaySize != displaySize;
   }
 }
