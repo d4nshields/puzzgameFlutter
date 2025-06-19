@@ -43,11 +43,11 @@ class BoundingBox(NamedTuple):
     
     @property
     def width(self) -> int:
-        return int(self.right - self.left + 1)
+        return int(self.right - self.left)
     
     @property
     def height(self) -> int:
-        return int(self.bottom - self.top + 1)
+        return int(self.bottom - self.top)
     
     def to_dict(self) -> Dict:
         return {

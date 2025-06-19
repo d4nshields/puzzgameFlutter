@@ -7,6 +7,32 @@ import 'package:flutter/material.dart';
 import 'enhanced_puzzle_asset_manager.dart';
 import 'memory_optimized_asset_manager.dart';
 
+/// Global debug settings for puzzle rendering
+class PuzzleDebugSettings {
+  /// Whether to show debug bounding boxes around pieces
+  static bool showDebugBounds = false;
+  
+  /// Whether to show debug info overlays
+  static bool showDebugInfo = false;
+  
+  /// Toggle debug bounds on/off
+  static void toggleDebugBounds() {
+    showDebugBounds = !showDebugBounds;
+  }
+  
+  /// Enable debug mode (shows bounds and info)
+  static void enableDebugMode() {
+    showDebugBounds = true;
+    showDebugInfo = true;
+  }
+  
+  /// Disable debug mode (hides all debug visualizations)
+  static void disableDebugMode() {
+    showDebugBounds = false;
+    showDebugInfo = false;
+  }
+}
+
 /// Painter for optimized cropped images (tray display)
 class OptimizedCroppedImagePainter extends CustomPainter {
   final ui.Image image;
@@ -101,24 +127,57 @@ class OptimizedCanvasImagePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Position the cropped image according to its original canvas position
-    final canvasScale = size.width / metadata.originalCanvasSize.width;
+    // For memory-optimized pieces, we should render at 1:1 pixel coordinates
+    // and let the widget handle display scaling
     
-    // Calculate where the cropped content should be positioned
-    final scaledBounds = Rect.fromLTWH(
-      metadata.contentBounds.left * canvasScale,
-      metadata.contentBounds.top * canvasScale,
-      metadata.contentBounds.width * canvasScale,
-      metadata.contentBounds.height * canvasScale,
-    );
+    // Check if we're rendering at native canvas size (2048x2048)
+    final isNativeSize = size.width == metadata.originalCanvasSize.width && 
+                        size.height == metadata.originalCanvasSize.height;
     
-    final srcRect = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
+    if (isNativeSize) {
+      // Render at 1:1 pixel coordinates - no scaling needed
+      final destRect = Rect.fromLTWH(
+        metadata.contentBounds.left,
+        metadata.contentBounds.top,
+        metadata.contentBounds.width,
+        metadata.contentBounds.height,
+      );
+      
+      final srcRect = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
+      
+      canvas.drawImageRect(image, srcRect, destRect, Paint()..filterQuality = FilterQuality.high);
+    } else {
+      // Legacy scaling for non-native canvas sizes
+      final canvasScale = size.width / metadata.originalCanvasSize.width;
+      
+      final scaledBounds = Rect.fromLTWH(
+        metadata.contentBounds.left * canvasScale,
+        metadata.contentBounds.top * canvasScale,
+        metadata.contentBounds.width * canvasScale,
+        metadata.contentBounds.height * canvasScale,
+      );
+      
+      final srcRect = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
+      
+      canvas.drawImageRect(image, srcRect, scaledBounds, Paint()..filterQuality = FilterQuality.high);
+    }
     
-    canvas.drawImageRect(image, srcRect, scaledBounds, Paint()..filterQuality = FilterQuality.medium);
-    
-    // Optional debug bounds
-    if (kDebugMode && false) {
-      _drawDebugBounds(canvas, scaledBounds, Colors.blue);
+    // Optional debug bounds (only when explicitly enabled)
+    if (kDebugMode && PuzzleDebugSettings.showDebugBounds) {
+      final bounds = isNativeSize 
+          ? Rect.fromLTWH(
+              metadata.contentBounds.left,
+              metadata.contentBounds.top,
+              metadata.contentBounds.width,
+              metadata.contentBounds.height,
+            )
+          : Rect.fromLTWH(
+              metadata.contentBounds.left * (size.width / metadata.originalCanvasSize.width),
+              metadata.contentBounds.top * (size.width / metadata.originalCanvasSize.width),
+              metadata.contentBounds.width * (size.width / metadata.originalCanvasSize.width),
+              metadata.contentBounds.height * (size.width / metadata.originalCanvasSize.width),
+            );
+      _drawDebugBounds(canvas, bounds, Colors.blue);
     }
   }
 
@@ -183,8 +242,8 @@ class RuntimeCroppedImagePainter extends CustomPainter {
     
     canvas.drawImageRect(image, srcRect, centeredRect, Paint()..filterQuality = FilterQuality.medium);
     
-    // Optional debug bounds
-    if (kDebugMode && false) {
+    // Optional debug bounds (only when explicitly enabled)
+    if (kDebugMode && PuzzleDebugSettings.showDebugBounds) {
       _drawDebugBounds(canvas, centeredRect, Colors.orange);
     }
   }
@@ -247,8 +306,8 @@ class RuntimeOriginalImagePainter extends CustomPainter {
     // Draw the full padded image - padding handles positioning
     canvas.drawImageRect(image, srcRect, destRect, Paint()..filterQuality = FilterQuality.medium);
     
-    // Optional debug bounds
-    if (kDebugMode && false) {
+    // Optional debug bounds (only when explicitly enabled)
+    if (kDebugMode && PuzzleDebugSettings.showDebugBounds) {
       _drawDebugBounds(canvas, destRect, Colors.purple);
     }
   }

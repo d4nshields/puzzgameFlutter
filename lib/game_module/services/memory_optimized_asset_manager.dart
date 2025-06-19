@@ -242,6 +242,8 @@ class MemoryOptimizedAssetManager {
       
       // Store metadata for positioning
       final bounds = pieceData['bounds'];
+      
+      // Use the bounds as-is from the JSON (already fixed in Python script)
       _pieceMetadataCache[pieceId] = OptimizedPieceMetadata(
         pieceId: pieceId,
         originalCanvasSize: Size(

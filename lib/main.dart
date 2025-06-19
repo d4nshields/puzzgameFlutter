@@ -6,6 +6,7 @@ import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/presentation/screens/game_screen.dart';
 import 'package:puzzgame_flutter/presentation/screens/home_screen.dart';
 import 'package:puzzgame_flutter/presentation/screens/settings_screen.dart';
+import 'package:puzzgame_flutter/presentation/screens/auto_solve_screen.dart';
 
 void main() async {
   // Ensure Flutter is initialized
@@ -59,6 +60,7 @@ class PuzzleBazaarGameApp extends StatelessWidget {
         '/': (context) => const HomeScreen(),
         '/game': (context) => const GameScreen(),
         '/settings': (context) => const SettingsScreen(),
+        '/auto-solve': (context) => const AutoSolveScreen(),
       },
     );
   }
