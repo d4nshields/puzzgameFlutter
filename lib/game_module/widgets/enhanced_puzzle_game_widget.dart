@@ -2,6 +2,7 @@
 // File: lib/game_module/widgets/enhanced_puzzle_game_widget.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:puzzgame_flutter/core/application/settings_providers.dart';
@@ -14,6 +15,8 @@ import 'package:puzzgame_flutter/game_module/services/puzzle_asset_manager.dart'
 import 'package:puzzgame_flutter/game_module/services/enhanced_puzzle_asset_manager.dart';
 import 'package:puzzgame_flutter/game_module/services/memory_optimized_asset_manager.dart';
 import 'package:puzzgame_flutter/game_module/widgets/zoom_control.dart';
+import 'package:puzzgame_flutter/game_module/widgets/tray_scroll_stick.dart';
+import 'package:puzzgame_flutter/core/infrastructure/desktop_window_config.dart';
 
 /// Enhanced puzzle game widget with zoom, pan, and audio feedback
 class EnhancedPuzzleGameWidget extends ConsumerStatefulWidget {
@@ -37,6 +40,9 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
   PuzzlePiece? _selectedPiece;
   bool _isLoading = false;
   final TransformationController _transformationController = TransformationController();
+  
+  // Scroll controller for pieces tray accessibility
+  final ScrollController _trayScrollController = ScrollController();
   
   @override
   void initState() {
@@ -99,13 +105,21 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
     _zoomService.removeListener(_updateTransformation);
     _zoomService.dispose();
     _transformationController.dispose();
+    _trayScrollController.dispose();
     super.dispose();
   }
   
   @override
   Widget build(BuildContext context) {
     final orientation = MediaQuery.of(context).orientation;
+    final screenSize = MediaQuery.of(context).size;
     final isLandscape = orientation == Orientation.landscape;
+    
+    // Debug info for desktop portrait layout
+    if (DesktopWindowConfig.isDesktop && kDebugMode) {
+      print('Enhanced Puzzle Widget: Size=${screenSize.aspectRatioString}, '
+           'Orientation=$orientation, IsLandscape=$isLandscape');
+    }
     
     if (isLandscape) {
       return _buildLandscapeLayout();
@@ -408,11 +422,24 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
           ),
           const SizedBox(height: 8),
           Expanded(
-            child: ListenableBuilder(
-              listenable: _zoomService,
-              builder: (context, child) {
-                return _buildTrayGrid();
-              },
+            child: Stack(
+              children: [
+                // Main tray grid with scroll controller
+                ListenableBuilder(
+                  listenable: _zoomService,
+                  builder: (context, child) {
+                    return _buildTrayGridWithScroll();
+                  },
+                ),
+                
+                // Accessible scroll stick positioned on the right edge
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: _buildAccessibleScrollStick(),
+                ),
+              ],
             ),
           ),
         ],
@@ -421,6 +448,11 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
   }
   
   Widget _buildTrayGrid() {
+    // This method is replaced by _buildTrayGridWithScroll for accessibility
+    return _buildTrayGridWithScroll();
+  }
+  
+  Widget _buildTrayGridWithScroll() {
     // Get sorted pieces using the piece sorting service
     final sortingService = ref.watch(pieceSortingServiceProvider);
     final sortedPieces = sortingService.sortPieces(
@@ -451,78 +483,43 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
     final totalCellSize = zoomedPieceSize + cellPadding;
     
     // Calculate how many pieces can fit based on available space and zoomed piece size
+    // Leave space for scroll stick (24px)
     int piecesPerRow;
     if (isLandscape) {
       // In landscape, tray is vertical on the right side
-      final availableWidth = MediaQuery.of(context).size.width * 0.25 - 32; // Tray width minus padding
-      piecesPerRow = (availableWidth / totalCellSize).floor().clamp(1, 4);
+      final availableWidth = MediaQuery.of(context).size.width * 0.25 - 32 - 24; // Minus scroll stick
+      piecesPerRow = (availableWidth / totalCellSize).floor().clamp(1, 3);
     } else {
       // In portrait, tray is horizontal at bottom
-      final availableWidth = MediaQuery.of(context).size.width - 32; // Screen width minus padding
+      final availableWidth = MediaQuery.of(context).size.width - 32 - 24; // Minus scroll stick
       piecesPerRow = (availableWidth / totalCellSize).floor().clamp(2, 8);
     }
     
     // Ensure we don't have more columns than pieces
     piecesPerRow = piecesPerRow.clamp(1, sortedPieces.length);
     
-    return GridView.builder(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: piecesPerRow,
-        mainAxisSpacing: cellPadding,
-        crossAxisSpacing: cellPadding,
-        childAspectRatio: 1.0, // Keep pieces square
-      ),
-      itemCount: sortedPieces.length,
-      itemBuilder: (context, index) {
-        final piece = sortedPieces[index];
-        final isSelected = _selectedPiece == piece;
-        
-        return Draggable<PuzzlePiece>(
-          data: piece,
-          feedback: Container(
-            width: zoomedPieceSize,
-            height: zoomedPieceSize,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.blue, width: 2),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: widget.gameSession.useMemoryOptimization
-                ? MemoryOptimizedPuzzleImage(
-                    pieceId: piece.id,
-                    assetManager: piece.memoryOptimizedAssetManager,
-                    fit: BoxFit.contain,
-                    zoomLevel: 1.0, // Don't double-apply zoom to feedback
-                    cropToContent: true, // Crop for feedback display
-                  )
-                : widget.gameSession.useEnhancedRendering
-                    ? EnhancedCachedPuzzleImage(
-                        pieceId: piece.id,
-                        assetManager: piece.enhancedAssetManager,
-                        fit: BoxFit.contain,
-                        zoomLevel: 1.0, // Don't double-apply zoom to feedback
-                        cropToContent: true, // Crop for feedback display
-                      )
-                    : CachedPuzzleImage(
-                        pieceId: piece.id,
-                        assetManager: piece.assetManager,
-                        fit: BoxFit.cover,
-                      ),
-          ),
-          childWhenDragging: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-          child: GestureDetector(
-            onTap: () => _selectPiece(piece),
-            child: Container(
+    return Container(
+      margin: const EdgeInsets.only(right: 24), // Space for scroll stick
+      child: GridView.builder(
+        controller: _trayScrollController,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: piecesPerRow,
+          mainAxisSpacing: cellPadding,
+          crossAxisSpacing: cellPadding,
+          childAspectRatio: 1.0, // Keep pieces square
+        ),
+        itemCount: sortedPieces.length,
+        itemBuilder: (context, index) {
+          final piece = sortedPieces[index];
+          final isSelected = _selectedPiece == piece;
+          
+          return Draggable<PuzzlePiece>(
+            data: piece,
+            feedback: Container(
+              width: zoomedPieceSize,
+              height: zoomedPieceSize,
               decoration: BoxDecoration(
-                border: Border.all(
-                  color: isSelected ? Colors.blue : Colors.grey,
-                  width: isSelected ? 2 : 1,
-                ),
+                border: Border.all(color: Colors.blue, width: 2),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: widget.gameSession.useMemoryOptimization
@@ -530,16 +527,16 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
                       pieceId: piece.id,
                       assetManager: piece.memoryOptimizedAssetManager,
                       fit: BoxFit.contain,
-                      zoomLevel: 1.0, // Don't apply zoom here - grid cells handle sizing
-                      cropToContent: true, // Crop for tray display
+                      zoomLevel: 1.0, // Don't double-apply zoom to feedback
+                      cropToContent: true, // Crop for feedback display
                     )
                   : widget.gameSession.useEnhancedRendering
                       ? EnhancedCachedPuzzleImage(
                           pieceId: piece.id,
                           assetManager: piece.enhancedAssetManager,
                           fit: BoxFit.contain,
-                          zoomLevel: 1.0, // Don't apply zoom here - grid cells handle sizing
-                          cropToContent: true, // Crop for tray display
+                          zoomLevel: 1.0, // Don't double-apply zoom to feedback
+                          cropToContent: true, // Crop for feedback display
                         )
                       : CachedPuzzleImage(
                           pieceId: piece.id,
@@ -547,8 +544,97 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
                           fit: BoxFit.cover,
                         ),
             ),
-          ),
-        );
+            childWhenDragging: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            child: GestureDetector(
+              onTap: () => _selectPiece(piece),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: isSelected ? Colors.blue : Colors.grey,
+                    width: isSelected ? 2 : 1,
+                  ),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: widget.gameSession.useMemoryOptimization
+                    ? MemoryOptimizedPuzzleImage(
+                        pieceId: piece.id,
+                        assetManager: piece.memoryOptimizedAssetManager,
+                        fit: BoxFit.contain,
+                        zoomLevel: 1.0, // Don't apply zoom here - grid cells handle sizing
+                        cropToContent: true, // Crop for tray display
+                      )
+                    : widget.gameSession.useEnhancedRendering
+                        ? EnhancedCachedPuzzleImage(
+                            pieceId: piece.id,
+                            assetManager: piece.enhancedAssetManager,
+                            fit: BoxFit.contain,
+                            zoomLevel: 1.0, // Don't apply zoom here - grid cells handle sizing
+                            cropToContent: true, // Crop for tray display
+                          )
+                        : CachedPuzzleImage(
+                            pieceId: piece.id,
+                            assetManager: piece.assetManager,
+                            fit: BoxFit.cover,
+                          ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+  
+  Widget _buildAccessibleScrollStick() {
+    // Get sorted pieces for scroll stick calculations
+    final sortingService = ref.watch(pieceSortingServiceProvider);
+    final sortedPieces = sortingService.sortPieces(
+      widget.gameSession.trayPieces,
+      widget.gameSession.gridSize,
+    );
+    
+    final orientation = MediaQuery.of(context).orientation;
+    final isLandscape = orientation == Orientation.landscape;
+    
+    // Calculate visible item count based on grid layout
+    final baseSize = 60.0;
+    final zoomedPieceSize = baseSize * _zoomService.zoomLevel;
+    final cellPadding = 4.0;
+    final totalCellSize = zoomedPieceSize + cellPadding;
+    
+    int piecesPerRow;
+    if (isLandscape) {
+      final availableWidth = MediaQuery.of(context).size.width * 0.25 - 32 - 24;
+      piecesPerRow = (availableWidth / totalCellSize).floor().clamp(1, 3);
+    } else {
+      final availableWidth = MediaQuery.of(context).size.width - 32 - 24;
+      piecesPerRow = (availableWidth / totalCellSize).floor().clamp(2, 8);
+    }
+    
+    // Calculate approximate visible rows
+    final trayHeight = isLandscape 
+        ? MediaQuery.of(context).size.height * 0.3 
+        : MediaQuery.of(context).size.height * 0.2;
+    final visibleRows = (trayHeight / totalCellSize).floor();
+    final visibleItemCount = visibleRows * piecesPerRow;
+    
+    return TrayScrollStick(
+      scrollController: _trayScrollController,
+      itemCount: sortedPieces.length,
+      visibleItemCount: visibleItemCount,
+      stickWidth: 20.0, // Very narrow to save space
+      stickHeight: 80.0, // Tall enough for easy thumb control
+      onScrollChanged: () {
+        // Optional: Add audio feedback for scroll
+        _audioService.playUIClick();
+        
+        // Optional: Provide haptic feedback
+        HapticFeedback.selectionClick();
       },
     );
   }

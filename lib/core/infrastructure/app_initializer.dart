@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
 import 'package:puzzgame_flutter/core/domain/services/error_reporting_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
+import 'package:puzzgame_flutter/core/infrastructure/desktop_window_config.dart';
 
 /// AppInitializer is responsible for loading necessary resources and
 /// initializing components during the splash screen display.
@@ -17,6 +18,7 @@ class AppInitializer {
     await Future.wait([
       _initializeErrorReporting(),
       _initializeGameModule(),
+      _initializeDesktopWindow(),
       _preloadAssets(),
       _ensureMinimumSplashDuration(startTime),
     ]);
@@ -43,6 +45,17 @@ class AppInitializer {
     } catch (e) {
       print('Error initializing error reporting service: $e');
       // Continue app initialization even if error reporting fails
+    }
+  }
+  
+  /// Initialize desktop window configuration for portrait layout
+  static Future<void> _initializeDesktopWindow() async {
+    try {
+      await DesktopWindowConfig.initialize();
+      print('Desktop window configuration initialized successfully');
+    } catch (e) {
+      print('Error initializing desktop window configuration: $e');
+      // Continue anyway - non-critical error
     }
   }
   
