@@ -13,7 +13,7 @@ class TrayScrollStick extends StatefulWidget {
     required this.scrollController,
     required this.itemCount,
     required this.visibleItemCount,
-    this.stickWidth = 24.0,
+    this.stickWidth = 30.0,
     this.stickHeight = 80.0,
     this.onScrollChanged,
   });
@@ -226,13 +226,27 @@ class _TrayScrollStickState extends State<TrayScrollStick>
                   ],
                 ),
                 child: Center(
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isActive ? Colors.white : Colors.grey[600],
-                    ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Up triangle
+                      CustomPaint(
+                        size: const Size(10, 6),
+                        painter: _TrianglePainter(
+                          color: isActive ? Colors.white : Colors.grey[600]!,
+                          direction: TriangleDirection.up,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      // Down triangle
+                      CustomPaint(
+                        size: const Size(10, 6),
+                        painter: _TrianglePainter(
+                          color: isActive ? Colors.white : Colors.grey[600]!,
+                          direction: TriangleDirection.down,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -423,4 +437,51 @@ enum StickPosition {
   up,
   center,
   down,
+}
+
+/// Triangle direction for the stick indicator
+enum TriangleDirection {
+  up,
+  down,
+}
+
+/// Custom painter for drawing directional triangles
+class _TrianglePainter extends CustomPainter {
+  const _TrianglePainter({
+    required this.color,
+    required this.direction,
+  });
+  
+  final Color color;
+  final TriangleDirection direction;
+  
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+    
+    final path = Path();
+    
+    if (direction == TriangleDirection.up) {
+      // Up-pointing triangle
+      path.moveTo(size.width / 2, 0); // Top center
+      path.lineTo(0, size.height); // Bottom left
+      path.lineTo(size.width, size.height); // Bottom right
+      path.close();
+    } else {
+      // Down-pointing triangle
+      path.moveTo(0, 0); // Top left
+      path.lineTo(size.width, 0); // Top right
+      path.lineTo(size.width / 2, size.height); // Bottom center
+      path.close();
+    }
+    
+    canvas.drawPath(path, paint);
+  }
+  
+  @override
+  bool shouldRepaint(covariant _TrianglePainter oldDelegate) {
+    return oldDelegate.color != color || oldDelegate.direction != direction;
+  }
 }
