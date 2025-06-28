@@ -117,14 +117,14 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
   Widget _buildPortraitLayout() {
     return Column(
       children: [
-        // Game info
+        // Compact game info
         _buildGameInfo(),
         
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         
-        // Main game area with zoom controls (takes most space in portrait)
+        // Main game area with zoom controls (maximized space for phones)
         Expanded(
-          flex: 3,
+          flex: 4,
           child: Stack(
             children: [
               // Main viewport with zoom and pan
@@ -143,16 +143,16 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
           ),
         ),
         
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         
         // Pieces tray below in portrait
         Expanded(
           child: _buildScaledPiecesTray(),
         ),
         
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         
-        // Control buttons
+        // Compact control buttons
         _buildControlButtons(),
       ],
     );
@@ -161,10 +161,10 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
   Widget _buildLandscapeLayout() {
     return Column(
       children: [
-        // Game info
+        // Compact game info
         _buildGameInfo(),
         
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         
         // Main content area - side by side in landscape
         Expanded(
@@ -189,7 +189,7 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
                           _syncZoomFromInteractiveViewer();
                         },
                         child: Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(12),
                           child: _buildPuzzleGrid(),
                         ),
                       ),
@@ -208,7 +208,7 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
                 ),
               ),
               
-              const SizedBox(width: 8),
+              const SizedBox(width: 4),
               
               // Pieces tray on the right side in landscape
               Expanded(
@@ -219,9 +219,9 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
           ),
         ),
         
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         
-        // Control buttons
+        // Compact control buttons
         _buildControlButtons(),
       ],
     );
@@ -229,20 +229,20 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
   
   Widget _buildGameInfo() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          Text('Score: ${widget.gameSession.score}'),
-          Text('Progress: ${widget.gameSession.piecesPlaced}/${widget.gameSession.totalPieces}'),
+          Text('Score: ${widget.gameSession.score}', style: const TextStyle(fontSize: 13)),
+          Text('${widget.gameSession.piecesPlaced}/${widget.gameSession.totalPieces}', style: const TextStyle(fontSize: 13)),
           ListenableBuilder(
             listenable: _zoomService,
             builder: (context, child) {
-              return Text('Zoom: ${(_zoomService.zoomLevel * 100).round()}%');
+              return Text('${(_zoomService.zoomLevel * 100).round()}%', style: const TextStyle(fontSize: 13));
             },
           ),
         ],
@@ -264,7 +264,7 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
           _syncZoomFromInteractiveViewer();
         },
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: _buildPuzzleGrid(),
         ),
       ),
@@ -554,25 +554,41 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
   }
   
   Widget _buildControlButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        ElevatedButton.icon(
-          onPressed: _getHint,
-          icon: const Icon(Icons.lightbulb_outline),
-          label: const Text('Hint'),
-        ),
-        ElevatedButton.icon(
-          onPressed: widget.gameSession.isActive ? _pauseGame : _resumeGame,
-          icon: Icon(widget.gameSession.isActive ? Icons.pause : Icons.play_arrow),
-          label: Text(widget.gameSession.isActive ? 'Pause' : 'Resume'),
-        ),
-        ElevatedButton.icon(
-          onPressed: () => _zoomService.reset(),
-          icon: const Icon(Icons.center_focus_strong),
-          label: const Text('Reset View'),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          // More compact buttons with smaller text and icons
+          ElevatedButton.icon(
+            onPressed: _getHint,
+            icon: const Icon(Icons.lightbulb_outline, size: 16),
+            label: const Text('Hint', style: TextStyle(fontSize: 12)),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              minimumSize: const Size(0, 32),
+            ),
+          ),
+          ElevatedButton.icon(
+            onPressed: widget.gameSession.isActive ? _pauseGame : _resumeGame,
+            icon: Icon(widget.gameSession.isActive ? Icons.pause : Icons.play_arrow, size: 16),
+            label: Text(widget.gameSession.isActive ? 'Pause' : 'Resume', style: const TextStyle(fontSize: 12)),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              minimumSize: const Size(0, 32),
+            ),
+          ),
+          ElevatedButton.icon(
+            onPressed: () => _zoomService.reset(),
+            icon: const Icon(Icons.center_focus_strong, size: 16),
+            label: const Text('Reset', style: TextStyle(fontSize: 12)),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              minimumSize: const Size(0, 32),
+            ),
+          ),
+        ],
+      ),
     );
   }
   
