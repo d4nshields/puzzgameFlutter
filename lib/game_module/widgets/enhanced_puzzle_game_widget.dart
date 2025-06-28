@@ -483,15 +483,15 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
     final totalCellSize = zoomedPieceSize + cellPadding;
     
     // Calculate how many pieces can fit based on available space and zoomed piece size
-    // Leave space for scroll stick (24px)
+    // Leave space for scroll stick (30px)
     int piecesPerRow;
     if (isLandscape) {
       // In landscape, tray is vertical on the right side
-      final availableWidth = MediaQuery.of(context).size.width * 0.25 - 32 - 24; // Minus scroll stick
+      final availableWidth = MediaQuery.of(context).size.width * 0.25 - 32 - 30; // Minus scroll stick
       piecesPerRow = (availableWidth / totalCellSize).floor().clamp(1, 3);
     } else {
       // In portrait, tray is horizontal at bottom
-      final availableWidth = MediaQuery.of(context).size.width - 32 - 24; // Minus scroll stick
+      final availableWidth = MediaQuery.of(context).size.width - 32 - 30; // Minus scroll stick
       piecesPerRow = (availableWidth / totalCellSize).floor().clamp(2, 8);
     }
     
@@ -499,7 +499,7 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
     piecesPerRow = piecesPerRow.clamp(1, sortedPieces.length);
     
     return Container(
-      margin: const EdgeInsets.only(right: 24), // Space for scroll stick
+      margin: const EdgeInsets.only(right: 30), // Space for scroll stick
       child: GridView.builder(
         controller: _trayScrollController,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -609,10 +609,10 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
     
     int piecesPerRow;
     if (isLandscape) {
-      final availableWidth = MediaQuery.of(context).size.width * 0.25 - 32 - 24;
+      final availableWidth = MediaQuery.of(context).size.width * 0.25 - 32 - 30;
       piecesPerRow = (availableWidth / totalCellSize).floor().clamp(1, 3);
     } else {
-      final availableWidth = MediaQuery.of(context).size.width - 32 - 24;
+      final availableWidth = MediaQuery.of(context).size.width - 32 - 30;
       piecesPerRow = (availableWidth / totalCellSize).floor().clamp(2, 8);
     }
     
@@ -627,7 +627,7 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
       scrollController: _trayScrollController,
       itemCount: sortedPieces.length,
       visibleItemCount: visibleItemCount,
-      stickWidth: 20.0, // Very narrow to save space
+      stickWidth: 25.0, // Wider for better phone visibility
       stickHeight: 80.0, // Tall enough for easy thumb control
       onScrollChanged: () {
         // Optional: Add audio feedback for scroll
