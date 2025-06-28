@@ -224,12 +224,12 @@ class GameScreen extends ConsumerWidget {
           // Show current puzzle info
           _buildPuzzleInfo(context, gameSession, difficulty, gridSize, ref),
           
-          // Enhanced puzzle game widget with zoom and audio
+          // Enhanced puzzle game widget with zoom and audio - more space on phones
           Expanded(
-            child: EnhancedPuzzleGameWidget(
-              gameSession: gameSession,
-              onGameCompleted: () => _onPuzzleCompleted(context, ref),
-            ),
+          child: EnhancedPuzzleGameWidget(
+          gameSession: gameSession,
+          onGameCompleted: () => _onPuzzleCompleted(context, ref),
+          ),
           ),
         ],
       );
@@ -265,8 +265,8 @@ class GameScreen extends ConsumerWidget {
     WidgetRef ref,
   ) {
     return Container(
-      padding: const EdgeInsets.all(12),
-      margin: const EdgeInsets.all(8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -274,51 +274,39 @@ class GameScreen extends ConsumerWidget {
             _getDifficultyColor(difficulty).withOpacity(0.05),
           ],
         ),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
         border: Border.all(color: _getDifficultyColor(difficulty).withOpacity(0.3)),
       ),
       child: Row(
         children: [
-          // Puzzle info
+          // Compact puzzle info
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Puzzle: ${_formatPuzzleName(gameSession.currentPuzzleId)}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                Text(
-                  'Grid: ${gameSession.gridSize}×${gameSession.gridSize} (${gameSession.totalPieces} pieces)',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+            child: Text(
+              '${_formatPuzzleName(gameSession.currentPuzzleId)} • ${gameSession.gridSize}×${gameSession.gridSize}',
+              style: const TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 13,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
           
-          // Quick actions
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                onPressed: () => _showPuzzleSelection(context, ref),
-                icon: const Icon(Icons.palette),
-                tooltip: 'Change Puzzle',
-                iconSize: 20,
-              ),
-              IconButton(
-                onPressed: () => _restartCurrentPuzzle(context, ref),
-                icon: const Icon(Icons.refresh),
-                tooltip: 'Restart Puzzle',
-                iconSize: 20,
-              ),
-            ],
+          // Compact quick actions
+          IconButton(
+            onPressed: () => _showPuzzleSelection(context, ref),
+            icon: const Icon(Icons.palette),
+            tooltip: 'Change Puzzle',
+            iconSize: 18,
+            padding: const EdgeInsets.all(4),
+            constraints: const BoxConstraints(),
+          ),
+          IconButton(
+            onPressed: () => _restartCurrentPuzzle(context, ref),
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Restart Puzzle',
+            iconSize: 18,
+            padding: const EdgeInsets.all(4),
+            constraints: const BoxConstraints(),
           ),
         ],
       ),
