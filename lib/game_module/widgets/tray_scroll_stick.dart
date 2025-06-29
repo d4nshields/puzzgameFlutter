@@ -274,10 +274,13 @@ class _TrayScrollStickState extends State<TrayScrollStick>
   }
   
   Widget _buildAccessibilityLabel() {
+    // Use static values to avoid scroll position access during initialization
     return Semantics(
       label: 'Scroll control for pieces tray',
       hint: 'Push up to scroll up, push down to scroll down, or use increase/decrease',
-      value: _getScrollPosition(),
+      value: 'Ready',
+      increasedValue: 'Scrolled down more',
+      decreasedValue: 'Scrolled up more',
       onIncrease: _scrollDown,
       onDecrease: _scrollUp,
       child: const SizedBox(),
@@ -385,19 +388,24 @@ class _TrayScrollStickState extends State<TrayScrollStick>
   String _getScrollPosition() {
     if (!widget.scrollController.hasClients) return 'Beginning';
     
-    final maxScroll = widget.scrollController.position.maxScrollExtent;
-    final currentScroll = widget.scrollController.offset;
-    
-    if (maxScroll == 0) return 'All items visible';
-    
-    final percentage = ((currentScroll / maxScroll) * 100).round();
-    return 'Scrolled $percentage%';
+    try {
+      final position = widget.scrollController.position;
+      final maxScroll = position.maxScrollExtent;
+      final currentScroll = position.pixels;
+      
+      if (maxScroll == 0) return 'All items visible';
+      
+      final percentage = ((currentScroll / maxScroll) * 100).round();
+      return 'Scrolled $percentage%';
+    } catch (e) {
+      return 'Loading';
+    }
   }
   
   void _scrollUp() {
     if (!widget.scrollController.hasClients) return;
     
-    final currentOffset = widget.scrollController.offset;
+    final currentOffset = widget.scrollController.position.pixels;
     final newOffset = (currentOffset - _scrollAmount).clamp(0.0, double.infinity);
     
     widget.scrollController.animateTo(
@@ -416,7 +424,7 @@ class _TrayScrollStickState extends State<TrayScrollStick>
     if (!widget.scrollController.hasClients) return;
     
     final maxScrollExtent = widget.scrollController.position.maxScrollExtent;
-    final currentOffset = widget.scrollController.offset;
+    final currentOffset = widget.scrollController.position.pixels;
     final newOffset = (currentOffset + _scrollAmount).clamp(0.0, maxScrollExtent);
     
     widget.scrollController.animateTo(
