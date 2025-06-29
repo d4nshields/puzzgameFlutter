@@ -77,12 +77,12 @@ flutter:
     - assets/puzzles/sample_puzzle_01/layouts/15x15_optimized/
     - assets/puzzles/sample_puzzle_01/layouts/15x15_optimized/pieces/
 
-# Splash screen configuration
-flutter_native_splash:
-  color: "#FFFFFF"
-  image: assets/images/splashscreen-portrait.png
-  android: true
-  ios: true
+# Splash screen configuration (disabled - using custom loading screen)
+# flutter_native_splash:
+#   color: "#FFFFFF"
+#   image: assets/images/splashscreen-portrait.png
+#   android: true
+#   ios: true
 
 # App icon configuration
 flutter_launcher_icons:
