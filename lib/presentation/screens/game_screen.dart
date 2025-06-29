@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lottie/lottie.dart';
 import 'package:puzzgame_flutter/core/application/game_use_cases.dart';
 import 'package:puzzgame_flutter/core/application/settings_providers.dart';
 import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
@@ -128,44 +129,38 @@ class GameScreen extends ConsumerWidget {
   ) {
     // Handle loading state
     if (gameSessionAsync.isLoading || difficultyAsync.isLoading) {
-      return Column(
-        children: [
-          // Show loading info
-          Container(
-            padding: const EdgeInsets.all(16),
-            margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.blue[50],
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.blue[200]!),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Lottie loading animation
+            Lottie.asset(
+              'assets/animations/loading_puzzle_pieces.json',
+              width: 150,
+              height: 150,
+              repeat: true,
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  gameSessionAsync.isLoading 
-                    ? 'Starting game...' 
-                    : 'Loading settings...',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    color: Colors.blue[700],
-                  ),
-                ),
-              ],
+            const SizedBox(height: 24),
+            Text(
+              gameSessionAsync.isLoading 
+                ? 'Starting puzzle game...' 
+                : 'Loading settings...',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[700],
+              ),
             ),
-          ),
-          const Expanded(
-            child: Center(
-              child: CircularProgressIndicator(),
+            const SizedBox(height: 8),
+            Text(
+              'Preparing your puzzle experience',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[500],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       );
     }
 

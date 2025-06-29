@@ -38,6 +38,18 @@ class HomeScreen extends StatelessWidget {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(200, 50),
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () {
+                  Navigator.pushNamed(context, '/lottie-test');
+                },
+                child: const Text('Test Animation'),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(200, 50),
                 ),
                 onPressed: () {
                   Navigator.pushNamed(context, '/settings');
