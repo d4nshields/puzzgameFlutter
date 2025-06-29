@@ -47,7 +47,12 @@ static void my_application_activate(GApplication* application) {
     gtk_window_set_title(window, "puzzgame_flutter");
   }
 
-  gtk_window_set_default_size(window, 1280, 720);
+  // Set window to portrait dimensions to match phone layout
+  // This forces the app to use portrait layout on Linux desktop
+  gtk_window_set_default_size(window, 480, 800);  // Portrait: width < height
+  
+  // Optional: Set minimum size to maintain portrait aspect ratio
+  gtk_widget_set_size_request(GTK_WIDGET(window), 360, 640);
   gtk_widget_show(GTK_WIDGET(window));
 
   g_autoptr(FlDartProject) project = fl_dart_project_new();
