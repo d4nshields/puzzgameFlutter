@@ -2,6 +2,7 @@
 // File: lib/game_module/widgets/enhanced_puzzle_game_widget.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:puzzgame_flutter/core/application/settings_providers.dart';
@@ -14,6 +15,8 @@ import 'package:puzzgame_flutter/game_module/services/puzzle_asset_manager.dart'
 import 'package:puzzgame_flutter/game_module/services/enhanced_puzzle_asset_manager.dart';
 import 'package:puzzgame_flutter/game_module/services/memory_optimized_asset_manager.dart';
 import 'package:puzzgame_flutter/game_module/widgets/zoom_control.dart';
+import 'package:puzzgame_flutter/game_module/widgets/tray_scroll_stick.dart';
+import 'package:puzzgame_flutter/core/infrastructure/desktop_window_config.dart';
 
 /// Enhanced puzzle game widget with zoom, pan, and audio feedback
 class EnhancedPuzzleGameWidget extends ConsumerStatefulWidget {
@@ -37,6 +40,9 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
   PuzzlePiece? _selectedPiece;
   bool _isLoading = false;
   final TransformationController _transformationController = TransformationController();
+  
+  // Scroll controller for pieces tray accessibility
+  final ScrollController _trayScrollController = ScrollController();
   
   @override
   void initState() {
@@ -99,13 +105,21 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
     _zoomService.removeListener(_updateTransformation);
     _zoomService.dispose();
     _transformationController.dispose();
+    _trayScrollController.dispose();
     super.dispose();
   }
   
   @override
   Widget build(BuildContext context) {
     final orientation = MediaQuery.of(context).orientation;
+    final screenSize = MediaQuery.of(context).size;
     final isLandscape = orientation == Orientation.landscape;
+    
+    // Debug info for desktop portrait layout
+    if (DesktopWindowConfig.isDesktop && kDebugMode) {
+      print('Enhanced Puzzle Widget: Size=${screenSize.aspectRatioString}, '
+           'Orientation=$orientation, IsLandscape=$isLandscape');
+    }
     
     if (isLandscape) {
       return _buildLandscapeLayout();
@@ -117,14 +131,14 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
   Widget _buildPortraitLayout() {
     return Column(
       children: [
-        // Game info
+        // Compact game info
         _buildGameInfo(),
         
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         
-        // Main game area with zoom controls (takes most space in portrait)
+        // Main game area with zoom controls (maximized space for phones)
         Expanded(
-          flex: 3,
+          flex: 4,
           child: Stack(
             children: [
               // Main viewport with zoom and pan
@@ -143,16 +157,16 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
           ),
         ),
         
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         
         // Pieces tray below in portrait
         Expanded(
           child: _buildScaledPiecesTray(),
         ),
         
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         
-        // Control buttons
+        // Compact control buttons
         _buildControlButtons(),
       ],
     );
@@ -161,10 +175,10 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
   Widget _buildLandscapeLayout() {
     return Column(
       children: [
-        // Game info
+        // Compact game info
         _buildGameInfo(),
         
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         
         // Main content area - side by side in landscape
         Expanded(
@@ -189,7 +203,7 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
                           _syncZoomFromInteractiveViewer();
                         },
                         child: Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(12),
                           child: _buildPuzzleGrid(),
                         ),
                       ),
@@ -208,7 +222,7 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
                 ),
               ),
               
-              const SizedBox(width: 8),
+              const SizedBox(width: 4),
               
               // Pieces tray on the right side in landscape
               Expanded(
@@ -219,9 +233,9 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
           ),
         ),
         
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         
-        // Control buttons
+        // Compact control buttons
         _buildControlButtons(),
       ],
     );
@@ -229,20 +243,20 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
   
   Widget _buildGameInfo() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          Text('Score: ${widget.gameSession.score}'),
-          Text('Progress: ${widget.gameSession.piecesPlaced}/${widget.gameSession.totalPieces}'),
+          Text('Score: ${widget.gameSession.score}', style: const TextStyle(fontSize: 13)),
+          Text('${widget.gameSession.piecesPlaced}/${widget.gameSession.totalPieces}', style: const TextStyle(fontSize: 13)),
           ListenableBuilder(
             listenable: _zoomService,
             builder: (context, child) {
-              return Text('Zoom: ${(_zoomService.zoomLevel * 100).round()}%');
+              return Text('${(_zoomService.zoomLevel * 100).round()}%', style: const TextStyle(fontSize: 13));
             },
           ),
         ],
@@ -264,7 +278,7 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
           _syncZoomFromInteractiveViewer();
         },
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: _buildPuzzleGrid(),
         ),
       ),
@@ -408,11 +422,24 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
           ),
           const SizedBox(height: 8),
           Expanded(
-            child: ListenableBuilder(
-              listenable: _zoomService,
-              builder: (context, child) {
-                return _buildTrayGrid();
-              },
+            child: Stack(
+              children: [
+                // Main tray grid with scroll controller
+                ListenableBuilder(
+                  listenable: _zoomService,
+                  builder: (context, child) {
+                    return _buildTrayGridWithScroll();
+                  },
+                ),
+                
+                // Accessible scroll stick positioned on the right edge
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: _buildAccessibleScrollStick(),
+                ),
+              ],
             ),
           ),
         ],
@@ -421,6 +448,11 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
   }
   
   Widget _buildTrayGrid() {
+    // This method is replaced by _buildTrayGridWithScroll for accessibility
+    return _buildTrayGridWithScroll();
+  }
+  
+  Widget _buildTrayGridWithScroll() {
     // Get sorted pieces using the piece sorting service
     final sortingService = ref.watch(pieceSortingServiceProvider);
     final sortedPieces = sortingService.sortPieces(
@@ -451,78 +483,43 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
     final totalCellSize = zoomedPieceSize + cellPadding;
     
     // Calculate how many pieces can fit based on available space and zoomed piece size
+    // Leave space for scroll stick (30px)
     int piecesPerRow;
     if (isLandscape) {
       // In landscape, tray is vertical on the right side
-      final availableWidth = MediaQuery.of(context).size.width * 0.25 - 32; // Tray width minus padding
-      piecesPerRow = (availableWidth / totalCellSize).floor().clamp(1, 4);
+      final availableWidth = MediaQuery.of(context).size.width * 0.25 - 32 - 30; // Minus scroll stick
+      piecesPerRow = (availableWidth / totalCellSize).floor().clamp(1, 3);
     } else {
       // In portrait, tray is horizontal at bottom
-      final availableWidth = MediaQuery.of(context).size.width - 32; // Screen width minus padding
+      final availableWidth = MediaQuery.of(context).size.width - 32 - 30; // Minus scroll stick
       piecesPerRow = (availableWidth / totalCellSize).floor().clamp(2, 8);
     }
     
     // Ensure we don't have more columns than pieces
     piecesPerRow = piecesPerRow.clamp(1, sortedPieces.length);
     
-    return GridView.builder(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: piecesPerRow,
-        mainAxisSpacing: cellPadding,
-        crossAxisSpacing: cellPadding,
-        childAspectRatio: 1.0, // Keep pieces square
-      ),
-      itemCount: sortedPieces.length,
-      itemBuilder: (context, index) {
-        final piece = sortedPieces[index];
-        final isSelected = _selectedPiece == piece;
-        
-        return Draggable<PuzzlePiece>(
-          data: piece,
-          feedback: Container(
-            width: zoomedPieceSize,
-            height: zoomedPieceSize,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.blue, width: 2),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: widget.gameSession.useMemoryOptimization
-                ? MemoryOptimizedPuzzleImage(
-                    pieceId: piece.id,
-                    assetManager: piece.memoryOptimizedAssetManager,
-                    fit: BoxFit.contain,
-                    zoomLevel: 1.0, // Don't double-apply zoom to feedback
-                    cropToContent: true, // Crop for feedback display
-                  )
-                : widget.gameSession.useEnhancedRendering
-                    ? EnhancedCachedPuzzleImage(
-                        pieceId: piece.id,
-                        assetManager: piece.enhancedAssetManager,
-                        fit: BoxFit.contain,
-                        zoomLevel: 1.0, // Don't double-apply zoom to feedback
-                        cropToContent: true, // Crop for feedback display
-                      )
-                    : CachedPuzzleImage(
-                        pieceId: piece.id,
-                        assetManager: piece.assetManager,
-                        fit: BoxFit.cover,
-                      ),
-          ),
-          childWhenDragging: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-          child: GestureDetector(
-            onTap: () => _selectPiece(piece),
-            child: Container(
+    return Container(
+      margin: const EdgeInsets.only(right: 30), // Space for scroll stick
+      child: GridView.builder(
+        controller: _trayScrollController,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: piecesPerRow,
+          mainAxisSpacing: cellPadding,
+          crossAxisSpacing: cellPadding,
+          childAspectRatio: 1.0, // Keep pieces square
+        ),
+        itemCount: sortedPieces.length,
+        itemBuilder: (context, index) {
+          final piece = sortedPieces[index];
+          final isSelected = _selectedPiece == piece;
+          
+          return Draggable<PuzzlePiece>(
+            data: piece,
+            feedback: Container(
+              width: zoomedPieceSize,
+              height: zoomedPieceSize,
               decoration: BoxDecoration(
-                border: Border.all(
-                  color: isSelected ? Colors.blue : Colors.grey,
-                  width: isSelected ? 2 : 1,
-                ),
+                border: Border.all(color: Colors.blue, width: 2),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: widget.gameSession.useMemoryOptimization
@@ -530,16 +527,16 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
                       pieceId: piece.id,
                       assetManager: piece.memoryOptimizedAssetManager,
                       fit: BoxFit.contain,
-                      zoomLevel: 1.0, // Don't apply zoom here - grid cells handle sizing
-                      cropToContent: true, // Crop for tray display
+                      zoomLevel: 1.0, // Don't double-apply zoom to feedback
+                      cropToContent: true, // Crop for feedback display
                     )
                   : widget.gameSession.useEnhancedRendering
                       ? EnhancedCachedPuzzleImage(
                           pieceId: piece.id,
                           assetManager: piece.enhancedAssetManager,
                           fit: BoxFit.contain,
-                          zoomLevel: 1.0, // Don't apply zoom here - grid cells handle sizing
-                          cropToContent: true, // Crop for tray display
+                          zoomLevel: 1.0, // Don't double-apply zoom to feedback
+                          cropToContent: true, // Crop for feedback display
                         )
                       : CachedPuzzleImage(
                           pieceId: piece.id,
@@ -547,32 +544,137 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
                           fit: BoxFit.cover,
                         ),
             ),
-          ),
-        );
+            childWhenDragging: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            child: GestureDetector(
+              onTap: () => _selectPiece(piece),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: isSelected ? Colors.blue : Colors.grey,
+                    width: isSelected ? 2 : 1,
+                  ),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: widget.gameSession.useMemoryOptimization
+                    ? MemoryOptimizedPuzzleImage(
+                        pieceId: piece.id,
+                        assetManager: piece.memoryOptimizedAssetManager,
+                        fit: BoxFit.contain,
+                        zoomLevel: 1.0, // Don't apply zoom here - grid cells handle sizing
+                        cropToContent: true, // Crop for tray display
+                      )
+                    : widget.gameSession.useEnhancedRendering
+                        ? EnhancedCachedPuzzleImage(
+                            pieceId: piece.id,
+                            assetManager: piece.enhancedAssetManager,
+                            fit: BoxFit.contain,
+                            zoomLevel: 1.0, // Don't apply zoom here - grid cells handle sizing
+                            cropToContent: true, // Crop for tray display
+                          )
+                        : CachedPuzzleImage(
+                            pieceId: piece.id,
+                            assetManager: piece.assetManager,
+                            fit: BoxFit.cover,
+                          ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+  
+  Widget _buildAccessibleScrollStick() {
+    // Get sorted pieces for scroll stick calculations
+    final sortingService = ref.watch(pieceSortingServiceProvider);
+    final sortedPieces = sortingService.sortPieces(
+      widget.gameSession.trayPieces,
+      widget.gameSession.gridSize,
+    );
+    
+    final orientation = MediaQuery.of(context).orientation;
+    final isLandscape = orientation == Orientation.landscape;
+    
+    // Calculate visible item count based on grid layout
+    final baseSize = 60.0;
+    final zoomedPieceSize = baseSize * _zoomService.zoomLevel;
+    final cellPadding = 4.0;
+    final totalCellSize = zoomedPieceSize + cellPadding;
+    
+    int piecesPerRow;
+    if (isLandscape) {
+      final availableWidth = MediaQuery.of(context).size.width * 0.25 - 32 - 30;
+      piecesPerRow = (availableWidth / totalCellSize).floor().clamp(1, 3);
+    } else {
+      final availableWidth = MediaQuery.of(context).size.width - 32 - 30;
+      piecesPerRow = (availableWidth / totalCellSize).floor().clamp(2, 8);
+    }
+    
+    // Calculate approximate visible rows
+    final trayHeight = isLandscape 
+        ? MediaQuery.of(context).size.height * 0.3 
+        : MediaQuery.of(context).size.height * 0.2;
+    final visibleRows = (trayHeight / totalCellSize).floor();
+    final visibleItemCount = visibleRows * piecesPerRow;
+    
+    return TrayScrollStick(
+      scrollController: _trayScrollController,
+      itemCount: sortedPieces.length,
+      visibleItemCount: visibleItemCount,
+      stickWidth: 25.0, // Wider for better phone visibility
+      stickHeight: 80.0, // Tall enough for easy thumb control
+      onScrollChanged: () {
+        // Optional: Add audio feedback for scroll
+        _audioService.playUIClick();
+        
+        // Optional: Provide haptic feedback
+        HapticFeedback.selectionClick();
       },
     );
   }
   
   Widget _buildControlButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        ElevatedButton.icon(
-          onPressed: _getHint,
-          icon: const Icon(Icons.lightbulb_outline),
-          label: const Text('Hint'),
-        ),
-        ElevatedButton.icon(
-          onPressed: widget.gameSession.isActive ? _pauseGame : _resumeGame,
-          icon: Icon(widget.gameSession.isActive ? Icons.pause : Icons.play_arrow),
-          label: Text(widget.gameSession.isActive ? 'Pause' : 'Resume'),
-        ),
-        ElevatedButton.icon(
-          onPressed: () => _zoomService.reset(),
-          icon: const Icon(Icons.center_focus_strong),
-          label: const Text('Reset View'),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          // More compact buttons with smaller text and icons
+          ElevatedButton.icon(
+            onPressed: _getHint,
+            icon: const Icon(Icons.lightbulb_outline, size: 16),
+            label: const Text('Hint', style: TextStyle(fontSize: 12)),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              minimumSize: const Size(0, 32),
+            ),
+          ),
+          ElevatedButton.icon(
+            onPressed: widget.gameSession.isActive ? _pauseGame : _resumeGame,
+            icon: Icon(widget.gameSession.isActive ? Icons.pause : Icons.play_arrow, size: 16),
+            label: Text(widget.gameSession.isActive ? 'Pause' : 'Resume', style: const TextStyle(fontSize: 12)),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              minimumSize: const Size(0, 32),
+            ),
+          ),
+          ElevatedButton.icon(
+            onPressed: () => _zoomService.reset(),
+            icon: const Icon(Icons.center_focus_strong, size: 16),
+            label: const Text('Reset', style: TextStyle(fontSize: 12)),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              minimumSize: const Size(0, 32),
+            ),
+          ),
+        ],
+      ),
     );
   }
   
