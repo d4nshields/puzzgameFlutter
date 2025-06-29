@@ -8,6 +8,7 @@ import 'package:puzzgame_flutter/presentation/screens/home_screen.dart';
 import 'package:puzzgame_flutter/presentation/screens/settings_screen.dart';
 import 'package:puzzgame_flutter/presentation/screens/auto_solve_screen.dart';
 import 'package:puzzgame_flutter/presentation/screens/lottie_test_screen.dart';
+import 'package:puzzgame_flutter/presentation/screens/loading_screen.dart';
 
 void main() async {
   // Ensure Flutter is initialized
@@ -22,15 +23,16 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
   
-  // Initialize app services and resources (including Sentry)
-  // The native splash screen will be shown during this time
-  await AppInitializer.initialize();
+  // Start app initialization (async)
+  final initializationFuture = AppInitializer.initialize();
   
-  // Run the app
+  // Run the app immediately with loading screen
   runApp(
-    // Wrap the app with ProviderScope for Riverpod state management
-    const ProviderScope(
-      child: PuzzleBazaarGameApp(),
+    ProviderScope(
+      child: LoadingScreen(
+        initializationFuture: initializationFuture,
+        child: const PuzzleBazaarGameApp(),
+      ),
     ),
   );
 }

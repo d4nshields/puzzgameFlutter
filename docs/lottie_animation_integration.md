@@ -24,11 +24,12 @@ dependencies:
 ```
 assets/
   animations/
-    loading_puzzle_pieces.json  # Placeholder puzzle piece animation
+    loading_puzzle_pieces.json  # App startup animation
 ```
 
 ### Integration Points
-- **GameScreen loading states**: Replaced CircularProgressIndicator with Lottie animation
+- **App startup loading**: Custom LoadingScreen shown during AppInitializer.initialize()
+- **Native splash disabled**: Using custom animated loading instead
 - **Asset management**: Added animations folder to pubspec.yaml
 - **Future expansion**: Ready for additional animations across multiple games
 
@@ -43,22 +44,26 @@ Created a simple 3-second looping animation featuring:
 
 ## Technical Implementation
 
-### Loading State Enhancement
+### App Startup Loading
 ```dart
-// Before: Static progress indicator
-const CircularProgressIndicator()
+// Custom loading screen with Lottie animation
+LoadingScreen(
+  initializationFuture: AppInitializer.initialize(),
+  child: const PuzzleBazaarGameApp(),
+)
 
-// After: Animated puzzle pieces
+// Shows during 2-3 second app initialization
 Lottie.asset(
   'assets/animations/loading_puzzle_pieces.json',
-  width: 150,
-  height: 150,
+  width: 200,
+  height: 200,
   repeat: true,
 )
 ```
 
 ### Benefits
-- **Professional polish**: Enhanced visual experience
+- **Visible during actual loading time**: 2-3 seconds of app initialization
+- **Professional first impression**: Animated brand experience
 - **Artist-ready workflow**: Foundation for River's future contributions
 - **Cross-platform**: Same animation works on all Flutter targets
 - **Small file size**: JSON format is lightweight (~3KB)
@@ -94,8 +99,10 @@ Lottie.asset(
 ## File Locations
 
 - **Animation asset**: `assets/animations/loading_puzzle_pieces.json`
-- **Integration code**: `lib/presentation/screens/game_screen.dart`
+- **Loading screen**: `lib/presentation/screens/loading_screen.dart`
+- **Integration code**: `lib/main.dart` (LoadingScreen wrapper)
 - **Configuration**: `pubspec.yaml` (dependencies and assets)
+- **Native splash**: Disabled in favor of custom loading
 
 ## Performance Considerations
 

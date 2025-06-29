@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lottie/lottie.dart';
 import 'package:puzzgame_flutter/core/application/game_use_cases.dart';
 import 'package:puzzgame_flutter/core/application/settings_providers.dart';
 import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
@@ -129,34 +128,17 @@ class GameScreen extends ConsumerWidget {
   ) {
     // Handle loading state
     if (gameSessionAsync.isLoading || difficultyAsync.isLoading) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Lottie loading animation
-            Lottie.asset(
-              'assets/animations/loading_puzzle_pieces.json',
-              width: 150,
-              height: 150,
-              repeat: true,
-            ),
-            const SizedBox(height: 24),
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
             Text(
-              gameSessionAsync.isLoading 
-                ? 'Starting puzzle game...' 
-                : 'Loading settings...',
+              'Loading puzzle...',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: Colors.grey[700],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Preparing your puzzle experience',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[500],
               ),
             ),
           ],
