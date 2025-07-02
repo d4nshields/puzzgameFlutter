@@ -118,7 +118,7 @@ class AppInitializer {
   
   /// Ensure the splash screen shows for at least a minimum duration
   static Future<void> _ensureMinimumSplashDuration(DateTime startTime) async {
-    const minimumSplashDuration = Duration(seconds: 2);
+    const minimumSplashDuration = Duration(milliseconds: 500); // Reduced for custom LoadingScreen
     final elapsedTime = DateTime.now().difference(startTime);
     
     if (elapsedTime < minimumSplashDuration) {
