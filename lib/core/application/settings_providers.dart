@@ -31,6 +31,11 @@ final easyPieceSortingProvider = AsyncNotifierProvider<EasyPieceSortingNotifier,
   return EasyPieceSortingNotifier();
 });
 
+/// Provider for piece placement precision setting
+final placementPrecisionProvider = AsyncNotifierProvider<PlacementPrecisionNotifier, double>(() {
+  return PlacementPrecisionNotifier();
+});
+
 /// Provider for piece sorting service that reacts to easy sorting setting changes
 final pieceSortingServiceProvider = Provider<PieceSortingService>((ref) {
   final sortingService = PieceSortingService();
@@ -158,6 +163,28 @@ class EasyPieceSortingNotifier extends AsyncNotifier<bool> {
       final settingsService = ref.read(settingsServiceProvider);
       await settingsService.setEasyPieceSortingEnabled(enabled);
       state = AsyncValue.data(enabled);
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+    }
+  }
+}
+
+/// Notifier class for piece placement precision setting
+class PlacementPrecisionNotifier extends AsyncNotifier<double> {
+  @override
+  Future<double> build() async {
+    final settingsService = ref.watch(settingsServiceProvider);
+    return await settingsService.getPlacementPrecision();
+  }
+  
+  /// Update placement precision setting and persist immediately
+  Future<void> setPlacementPrecision(double precision) async {
+    state = const AsyncValue.loading();
+    
+    try {
+      final settingsService = ref.read(settingsServiceProvider);
+      await settingsService.setPlacementPrecision(precision);
+      state = AsyncValue.data(precision);
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);
     }
