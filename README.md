@@ -1,10 +1,10 @@
-# Puzzle Bazaar Game
+# Puzzle Nook Game
 
 A multiplatform puzzle game application.
 
 ## Project Overview
 
-Puzzle Bazaar is a puzzle game for Android (and eventually iOS) designed for offline entertainment. The game's core logic is being developed separately and will be integrated into this application as a module.
+Puzzle Nook is a puzzle game for Android (and eventually iOS) designed for offline entertainment. The game's core logic is being developed separately and will be integrated into this application as a module.
 
 ## Architecture
 

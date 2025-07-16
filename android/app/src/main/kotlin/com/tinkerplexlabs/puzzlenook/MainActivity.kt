@@ -1,4 +1,4 @@
-package com.tinkerplexlabs.puzzlebazaar
+package com.tinkerplexlabs.puzzlenook
 
 import io.flutter.embedding.android.FlutterActivity
 
