@@ -12,7 +12,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify we're on the home screen
-      expect(find.text('Welcome to Puzzle Bazaar!'), findsOneWidget);
+      expect(find.text('Welcome to Puzzle Nook!'), findsOneWidget);
       
       // Tap on the start game button
       await tester.tap(find.text('Start New Game'));
@@ -26,7 +26,7 @@ void main() {
       await tester.pumpAndSettle();
       
       // Verify we're back on the home screen
-      expect(find.text('Welcome to Puzzle Bazaar!'), findsOneWidget);
+      expect(find.text('Welcome to Puzzle Nook!'), findsOneWidget);
     });
     
     testWidgets('Can navigate to settings screen and back', (WidgetTester tester) async {
@@ -50,7 +50,7 @@ void main() {
       await tester.pumpAndSettle();
       
       // Verify we're back on the home screen
-      expect(find.text('Welcome to Puzzle Bazaar!'), findsOneWidget);
+      expect(find.text('Welcome to Puzzle Nook!'), findsOneWidget);
     });
   });
 }
