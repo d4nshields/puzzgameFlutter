@@ -1,7 +1,7 @@
-# GitHub Actions Update Guide for Puzzle Bazaar
+# GitHub Actions Update Guide for Puzzle Nook
 
 ## Overview
-This guide documents the required changes to GitHub Actions workflows after the Puzzle Bazaar rebranding and provides setup instructions for automated releases.
+This guide documents the required changes to GitHub Actions workflows after the Puzzle Nook rebranding and provides setup instructions for automated releases.
 
 ---
 

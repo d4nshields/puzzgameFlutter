@@ -1,13 +1,13 @@
-# Puzzle Bazaar Rebranding Summary
+# Puzzle Nook Rebranding Summary
 
 ## Overview
-This document summarizes all changes made during the rebranding from "Nook" to "Puzzle Bazaar" and the app ID change from `org.shields.apps.nook` to `com.tinkerplexlabs.puzzlebazaar`.
+This document summarizes all changes made during the rebranding from "Puzzle Bazaar" to "Puzzle Nook" and the app ID change from `com.tinkerplexlabs.puzzlebazaar` to `com.tinkerplexlabs.puzzlenook`.
 
-**Date:** May 31, 2025  
-**Previous Name:** Nook  
-**New Name:** Puzzle Bazaar  
-**Previous App ID:** org.shields.apps.nook  
-**New App ID:** com.tinkerplexlabs.puzzlebazaar  
+**Date:** July 15, 2025  
+**Previous Name:** Puzzle Bazaar  
+**New Name:** Puzzle Nook  
+**Previous App ID:** com.tinkerplexlabs.puzzlebazaar  
+**New App ID:** com.tinkerplexlabs.puzzlenook  
 
 ---
 
