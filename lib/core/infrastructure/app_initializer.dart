@@ -3,6 +3,7 @@ import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
 import 'package:puzzgame_flutter/core/domain/services/error_reporting_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/core/infrastructure/desktop_window_config.dart';
+import 'package:puzzgame_flutter/core/infrastructure/supabase/supabase_config.dart';
 
 /// AppInitializer is responsible for loading necessary resources and
 /// initializing components during the splash screen display.
@@ -16,12 +17,25 @@ class AppInitializer {
     
     // Initialize services in parallel
     await Future.wait([
+      _initializeSupabase(),
       _initializeErrorReporting(),
       _initializeGameModule(),
       _initializeDesktopWindow(),
       _preloadAssets(),
       _ensureMinimumSplashDuration(startTime),
     ]);
+  }
+  
+  /// Initialize Supabase
+  static Future<void> _initializeSupabase() async {
+    try {
+      await SupabaseConfig.initialize();
+      print('Supabase initialized successfully');
+    } catch (e) {
+      print('Error initializing Supabase: $e');
+      // Continue app initialization even if Supabase fails
+      // Users can still play offline
+    }
   }
   
   /// Initialize error reporting service
@@ -118,7 +132,7 @@ class AppInitializer {
   
   /// Ensure the splash screen shows for at least a minimum duration
   static Future<void> _ensureMinimumSplashDuration(DateTime startTime) async {
-    const minimumSplashDuration = Duration(seconds: 2);
+    const minimumSplashDuration = Duration(milliseconds: 500); // Reduced for custom LoadingScreen
     final elapsedTime = DateTime.now().difference(startTime);
     
     if (elapsedTime < minimumSplashDuration) {

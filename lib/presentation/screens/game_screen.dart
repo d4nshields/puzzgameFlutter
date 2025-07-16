@@ -128,44 +128,21 @@ class GameScreen extends ConsumerWidget {
   ) {
     // Handle loading state
     if (gameSessionAsync.isLoading || difficultyAsync.isLoading) {
-      return Column(
-        children: [
-          // Show loading info
-          Container(
-            padding: const EdgeInsets.all(16),
-            margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.blue[50],
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.blue[200]!),
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text(
+              'Loading puzzle...',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  gameSessionAsync.isLoading 
-                    ? 'Starting game...' 
-                    : 'Loading settings...',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    color: Colors.blue[700],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Expanded(
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
-          ),
-        ],
+          ],
+        ),
       );
     }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:puzzgame_flutter/core/application/settings_providers.dart';
+import 'package:puzzgame_flutter/presentation/widgets/user_profile_widget.dart';
 
 /// Settings screen for the application - now fully reactive
 class SettingsScreen extends ConsumerWidget {
@@ -13,6 +14,20 @@ class SettingsScreen extends ConsumerWidget {
     return '${gridSize}×$gridSize grid ($pieceCount pieces)';
   }
 
+  String _getPlacementPrecisionHelp(double precision) {
+    if (precision <= 0.1) {
+      return 'Pieces snap to correct position when dropped anywhere on the puzzle.';
+    } else if (precision <= 0.3) {
+      return 'Pieces need to be dropped roughly in the right area.';
+    } else if (precision <= 0.6) {
+      return 'Pieces must be placed fairly close to their correct position.';
+    } else if (precision <= 0.9) {
+      return 'Pieces require precise placement near their exact location.';
+    } else {
+      return 'Pieces must be dropped exactly over their correct position.';
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Watch all settings providers
@@ -20,14 +35,16 @@ class SettingsScreen extends ConsumerWidget {
     final soundEnabledAsync = ref.watch(soundEnabledProvider);
     final vibrationEnabledAsync = ref.watch(vibrationEnabledProvider);
     final easyPieceSortingAsync = ref.watch(easyPieceSortingProvider);
+    final placementPrecisionAsync = ref.watch(placementPrecisionProvider);
 
     // Show loading state if any setting is loading
     final isLoading = difficultyAsync.isLoading || 
                      soundEnabledAsync.isLoading || 
                      vibrationEnabledAsync.isLoading ||
-                     easyPieceSortingAsync.isLoading;
+                     easyPieceSortingAsync.isLoading ||
+                     placementPrecisionAsync.isLoading;
 
-    if (isLoading && !difficultyAsync.hasValue && !soundEnabledAsync.hasValue && !vibrationEnabledAsync.hasValue && !easyPieceSortingAsync.hasValue) {
+    if (isLoading && !difficultyAsync.hasValue && !soundEnabledAsync.hasValue && !vibrationEnabledAsync.hasValue && !easyPieceSortingAsync.hasValue && !placementPrecisionAsync.hasValue) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Settings'),
@@ -42,9 +59,10 @@ class SettingsScreen extends ConsumerWidget {
     final hasError = difficultyAsync.hasError || 
                     soundEnabledAsync.hasError || 
                     vibrationEnabledAsync.hasError ||
-                    easyPieceSortingAsync.hasError;
+                    easyPieceSortingAsync.hasError ||
+                    placementPrecisionAsync.hasError;
 
-    if (hasError && !difficultyAsync.hasValue && !soundEnabledAsync.hasValue && !vibrationEnabledAsync.hasValue && !easyPieceSortingAsync.hasValue) {
+    if (hasError && !difficultyAsync.hasValue && !soundEnabledAsync.hasValue && !vibrationEnabledAsync.hasValue && !easyPieceSortingAsync.hasValue && !placementPrecisionAsync.hasValue) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Settings'),
@@ -64,6 +82,7 @@ class SettingsScreen extends ConsumerWidget {
                   ref.invalidate(soundEnabledProvider);
                   ref.invalidate(vibrationEnabledProvider);
                   ref.invalidate(easyPieceSortingProvider);
+                  ref.invalidate(placementPrecisionProvider);
                 },
                 child: const Text('Retry'),
               ),
@@ -78,13 +97,15 @@ class SettingsScreen extends ConsumerWidget {
     final soundEnabled = soundEnabledAsync.value ?? true;
     final vibrationEnabled = vibrationEnabledAsync.value ?? true;
     final easyPieceSortingEnabled = easyPieceSortingAsync.value ?? false;
+    final placementPrecision = placementPrecisionAsync.value ?? 0.0;
+    final settingsService = ref.read(settingsServiceProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
         // Add a visual indicator when changes are auto-saving
         actions: [
-          if (difficultyAsync.isLoading || soundEnabledAsync.isLoading || vibrationEnabledAsync.isLoading || easyPieceSortingAsync.isLoading)
+          if (difficultyAsync.isLoading || soundEnabledAsync.isLoading || vibrationEnabledAsync.isLoading || easyPieceSortingAsync.isLoading || placementPrecisionAsync.isLoading)
             const Padding(
               padding: EdgeInsets.all(16.0),
               child: SizedBox(
@@ -95,11 +116,15 @@ class SettingsScreen extends ConsumerWidget {
             ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // User Profile section
+            const UserProfileWidget(),
+            const SizedBox(height: 20),
+            
             const Text(
               'Game Settings',
               style: TextStyle(
@@ -251,7 +276,80 @@ class SettingsScreen extends ConsumerWidget {
               },
             ),
 
-            const Spacer(),
+            const SizedBox(height: 20),
+
+            // Placement Precision Settings
+            const Text(
+              'Piece Placement Difficulty',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.purple[200]!),
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.purple[50],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.precision_manufacturing, color: Colors.purple),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          settingsService.getPlacementPrecisionDescription(placementPrecision),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Icon(Icons.games, size: 16, color: Colors.green),
+                      const SizedBox(width: 4),
+                      const Text('Easy', style: TextStyle(fontSize: 12)),
+                      Expanded(
+                        child: Slider(
+                          value: placementPrecision,
+                          min: 0.0,
+                          max: 1.0,
+                          divisions: 10,
+                          activeColor: Colors.purple,
+                          onChanged: (value) {
+                            ref.read(placementPrecisionProvider.notifier).setPlacementPrecision(value);
+                          },
+                        ),
+                      ),
+                      const Icon(Icons.my_location, size: 16, color: Colors.red),
+                      const SizedBox(width: 4),
+                      const Text('Expert', style: TextStyle(fontSize: 12)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _getPlacementPrecisionHelp(placementPrecision),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 30),
 
             // Keep the save button for the "elevator door close" effect 😉
             Center(
@@ -289,7 +387,7 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 30),
           ],
         ),
       ),
