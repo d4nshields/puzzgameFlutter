@@ -8,7 +8,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Puzzle Bazaar'),
+        title: const Text('Puzzle Nook'),
         centerTitle: true,
       ),
       body: Padding(
@@ -18,7 +18,7 @@ class HomeScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
-                'Welcome to Puzzle Bazaar!',
+                'Welcome to Puzzle Nook!',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -65,7 +65,7 @@ class HomeScreen extends StatelessWidget {
                   // Show about dialog
                   showAboutDialog(
                     context: context,
-                    applicationName: 'Puzzle Bazaar',
+                    applicationName: 'Puzzle Nook',
                     applicationVersion: '1.0.0',
                     applicationLegalese: '© 2025',
                   );
