@@ -29,13 +29,4 @@ abstract class SettingsService {
   
   /// Set easy piece sorting enabled setting
   Future<void> setEasyPieceSortingEnabled(bool enabled);
-  
-  /// Get piece placement precision (0.0 = drop anywhere, 1.0 = exact placement)
-  Future<double> getPlacementPrecision();
-  
-  /// Set piece placement precision
-  Future<void> setPlacementPrecision(double precision);
-  
-  /// Get placement precision description for UI
-  String getPlacementPrecisionDescription(double precision);
 }

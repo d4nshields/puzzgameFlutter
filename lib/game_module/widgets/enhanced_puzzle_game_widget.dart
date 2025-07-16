@@ -680,99 +680,6 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
   
   // Event handlers with audio feedback
   
-  /// Place piece at a specific position with precision checking
-  void _placePieceAtPosition(PuzzlePiece piece, Offset position, Size canvasSize) async {
-    setState(() {
-      // This will be updated after the async call
-    });
-    
-    try {
-      final result = await widget.gameSession.tryPlacePieceAtPosition(piece, position, canvasSize);
-      
-      setState(() {
-        switch (result) {
-          case PlacementResult.success:
-            _selectedPiece = null;
-            _audioService.playPieceCorrect();
-            HapticFeedback.lightImpact();
-            
-            _errorReporting.addBreadcrumb(
-              'Piece placed correctly',
-              category: 'game_action',
-              data: {
-                'piece_id': piece.id,
-                'position': '${position.dx}, ${position.dy}',
-                'session_id': widget.gameSession.sessionId,
-              },
-            );
-            
-            // Check if puzzle is completed
-            if (widget.gameSession.isCompleted) {
-              _audioService.playPuzzleCompleted();
-              _errorReporting.addBreadcrumb(
-                'Puzzle completed',
-                category: 'game_lifecycle',
-                data: {
-                  'session_id': widget.gameSession.sessionId,
-                  'final_score': widget.gameSession.score,
-                },
-              );
-              _showCompletionDialog();
-            }
-            break;
-            
-          case PlacementResult.incorrectPosition:
-            _audioService.playPieceIncorrect();
-            HapticFeedback.mediumImpact();
-            
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Try placing the piece closer to its correct position'),
-                duration: Duration(seconds: 2),
-                backgroundColor: Colors.orange,
-              ),
-            );
-            break;
-            
-          case PlacementResult.alreadyPlaced:
-            _audioService.playPieceIncorrect();
-            HapticFeedback.mediumImpact();
-            
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('This piece is already placed!'),
-                duration: Duration(seconds: 1),
-                backgroundColor: Colors.orange,
-              ),
-            );
-            break;
-        }
-      });
-    } catch (e, stackTrace) {
-      _errorReporting.reportException(
-        e,
-        stackTrace: stackTrace,
-        context: 'piece_placement_error',
-        extra: {
-          'piece_id': piece.id,
-          'position': '${position.dx}, ${position.dy}',
-          'session_id': widget.gameSession.sessionId,
-        },
-      );
-      
-      setState(() {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('An error occurred while placing the piece'),
-            duration: Duration(seconds: 2),
-            backgroundColor: Colors.red,
-          ),
-        );
-      });
-    }
-  }
-  
-  /// Legacy method for backward compatibility
   void _placePieceOnCanvas(PuzzlePiece piece) {
     setState(() {
       try {
@@ -859,22 +766,6 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
     setState(() {
       widget.gameSession.removePiece(piece);
       _audioService.playUIClick();
-    });
-  }
-  
-  /// Remove an incorrectly placed piece back to the tray
-  void _removeIncorrectPiece(PuzzlePiece piece) {
-    setState(() {
-      widget.gameSession.removeIncorrectPiece(piece);
-      _audioService.playUIClick();
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Piece ${piece.id} returned to tray'),
-          duration: const Duration(seconds: 1),
-          backgroundColor: Colors.blue,
-        ),
-      );
     });
   }
   
@@ -973,71 +864,17 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
     return Positioned.fill(
       child: DragTarget<PuzzlePiece>(
         onWillAcceptWithDetails: (details) => details.data != null,
-        onAcceptWithDetails: (details) => _placePieceAtPosition(details.data, details.offset, canvasSize),
+        onAcceptWithDetails: (details) => _placePieceOnCanvas(details.data),
         builder: (context, candidateData, rejectedData) {
-          return Stack(
-            children: [
-              // Main drop zone
-              Container(
-                decoration: candidateData.isNotEmpty
-                    ? BoxDecoration(
-                        border: Border.all(color: Colors.blue, width: 3),
-                        color: Colors.blue.withOpacity(0.1),
-                      )
-                    : null,
-              ),
-              // Render incorrectly placed pieces with red outline
-              ...widget.gameSession.incorrectlyPlacedPieces.map((incorrectPiece) => 
-                _buildIncorrectPiece(incorrectPiece, canvasSize)
-              ),
-            ],
+          return Container(
+            decoration: candidateData.isNotEmpty
+                ? BoxDecoration(
+                    border: Border.all(color: Colors.blue, width: 3),
+                    color: Colors.blue.withOpacity(0.1),
+                  )
+                : null,
           );
         },
-      ),
-    );
-  }
-  
-  /// Build an incorrectly placed piece with red outline
-  Widget _buildIncorrectPiece(IncorrectlyPlacedPiece incorrectPiece, Size canvasSize) {
-    final piece = incorrectPiece.piece;
-    final position = incorrectPiece.placedPosition;
-    
-    // Calculate piece display size
-    final pieceSize = canvasSize.width / widget.gameSession.gridSize * 0.8; // Slightly smaller for visual clarity
-    
-    return Positioned(
-      left: position.dx - pieceSize / 2,
-      top: position.dy - pieceSize / 2,
-      child: GestureDetector(
-        onTap: () => _removeIncorrectPiece(piece),
-        child: Container(
-          width: pieceSize,
-          height: pieceSize,
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.red, width: 3),
-            borderRadius: BorderRadius.circular(4),
-            color: Colors.red.withOpacity(0.1),
-          ),
-          child: widget.gameSession.useMemoryOptimization
-              ? MemoryOptimizedPuzzleImage(
-                  pieceId: piece.id,
-                  assetManager: piece.memoryOptimizedAssetManager,
-                  fit: BoxFit.contain,
-                  cropToContent: true,
-                )
-              : widget.gameSession.useEnhancedRendering
-                  ? EnhancedCachedPuzzleImage(
-                      pieceId: piece.id,
-                      assetManager: piece.enhancedAssetManager,
-                      fit: BoxFit.contain,
-                      cropToContent: true,
-                    )
-                  : CachedPuzzleImage(
-                      pieceId: piece.id,
-                      assetManager: piece.assetManager,
-                      fit: BoxFit.cover,
-                    ),
-        ),
       ),
     );
   }
