@@ -1,7 +1,7 @@
-# Keystore Generation Guide for Puzzle Bazaar
+# Keystore Generation Guide for Puzzle Nook
 
 ## Overview
-This guide provides step-by-step instructions for generating a new PKCS12 (.p12) keystore for the Puzzle Bazaar app with the new TinkerPlex Labs organization identity and app ID `com.tinkerplexlabs.puzzlebazaar`.
+This guide provides step-by-step instructions for generating a new PKCS12 (.p12) keystore for the Puzzle Nook app with the new TinkerPlex Labs organization identity and app ID `com.tinkerplexlabs.puzzlenook`.
 
 ---
 
