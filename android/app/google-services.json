@@ -1,10 +1,29 @@
 {
-  "_comment": "This is a placeholder file. You need to replace this with your actual google-services.json from Firebase Console",
-  "_instructions": [
-    "1. Go to https://console.firebase.google.com",
-    "2. Create a new project or select existing",
-    "3. Add Android app with package name: com.tinkerplexlabs.puzzlebazaar",
-    "4. Download google-services.json",
-    "5. Replace this file with the downloaded one"
-  ]
+  "project_info": {
+    "project_number": "458649993920",
+    "project_id": "tinkerplexlabs-9cf33",
+    "storage_bucket": "tinkerplexlabs-9cf33.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:458649993920:android:9b19365441cb217d856325",
+        "android_client_info": {
+          "package_name": "com.tinkerplexlabs.puzzlebazaar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8StAxJSthU9YDT3wTVqY-en3fzW5FZ1s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
 }
