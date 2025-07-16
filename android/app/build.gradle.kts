@@ -17,7 +17,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.tinkerplexlabs.puzzlebazaar"
+    namespace = "com.tinkerplexlabs.puzzlenook"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "28.1.13356709"
 
@@ -35,7 +35,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.tinkerplexlabs.puzzlebazaar"
+        applicationId = "com.tinkerplexlabs.puzzlenook"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = 12

@@ -39,13 +39,13 @@ void main() async {
 }
 
 /// Main application widget
-class PuzzleBazaarGameApp extends StatelessWidget {
-  const PuzzleBazaarGameApp({super.key});
+class PuzzleNookGameApp extends StatelessWidget {
+  const PuzzleNookGameApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Puzzle Bazaar',
+      title: 'Puzzle Nook',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.deepPurple,
