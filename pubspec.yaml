@@ -34,6 +34,10 @@ dependencies:
   
   # Animations
   lottie: ^3.1.0
+  
+  # Authentication & Backend
+  supabase_flutter: ^2.8.1
+  google_sign_in: ^6.2.2
 
 dev_dependencies:
   flutter_test:

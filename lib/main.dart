@@ -9,6 +9,7 @@ import 'package:puzzgame_flutter/presentation/screens/settings_screen.dart';
 import 'package:puzzgame_flutter/presentation/screens/auto_solve_screen.dart';
 import 'package:puzzgame_flutter/presentation/screens/lottie_test_screen.dart';
 import 'package:puzzgame_flutter/presentation/screens/loading_screen.dart';
+import 'package:puzzgame_flutter/presentation/screens/sign_in_screen.dart';
 
 void main() async {
   // Ensure Flutter is initialized
@@ -61,6 +62,7 @@ class PuzzleBazaarGameApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const HomeScreen(),
+        '/sign-in': (context) => const SignInScreen(),
         '/game': (context) => const GameScreen(),
         '/settings': (context) => const SettingsScreen(),
         '/auto-solve': (context) => const AutoSolveScreen(),

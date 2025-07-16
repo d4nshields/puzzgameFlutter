@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:puzzgame_flutter/core/application/settings_providers.dart';
+import 'package:puzzgame_flutter/presentation/widgets/user_profile_widget.dart';
 
 /// Settings screen for the application - now fully reactive
 class SettingsScreen extends ConsumerWidget {
@@ -115,11 +116,15 @@ class SettingsScreen extends ConsumerWidget {
             ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // User Profile section
+            const UserProfileWidget(),
+            const SizedBox(height: 20),
+            
             const Text(
               'Game Settings',
               style: TextStyle(
@@ -297,11 +302,13 @@ class SettingsScreen extends ConsumerWidget {
                     children: [
                       const Icon(Icons.precision_manufacturing, color: Colors.purple),
                       const SizedBox(width: 8),
-                      Text(
-                        settingsService.getPlacementPrecisionDescription(placementPrecision),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                      Expanded(
+                        child: Text(
+                          settingsService.getPlacementPrecisionDescription(placementPrecision),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
                     ],
@@ -342,7 +349,7 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
 
-            const Spacer(),
+            const SizedBox(height: 30),
 
             // Keep the save button for the "elevator door close" effect 😉
             Center(
@@ -380,7 +387,7 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 30),
           ],
         ),
       ),
