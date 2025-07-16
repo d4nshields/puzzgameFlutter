@@ -7,6 +7,7 @@ class SharedPreferencesSettingsService implements SettingsService {
   static const String _soundEnabledKey = 'sound_enabled';
   static const String _vibrationEnabledKey = 'vibration_enabled';
   static const String _easyPieceSortingKey = 'easy_piece_sorting_enabled';
+  static const String _placementPrecisionKey = 'placement_precision';
   
   @override
   Future<int> getDifficulty() async {
@@ -74,5 +75,32 @@ class SharedPreferencesSettingsService implements SettingsService {
   Future<void> setEasyPieceSortingEnabled(bool enabled) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_easyPieceSortingKey, enabled);
+  }
+  
+  @override
+  Future<double> getPlacementPrecision() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getDouble(_placementPrecisionKey) ?? 0.0; // Default to drop anywhere
+  }
+  
+  @override
+  Future<void> setPlacementPrecision(double precision) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_placementPrecisionKey, precision.clamp(0.0, 1.0));
+  }
+  
+  @override
+  String getPlacementPrecisionDescription(double precision) {
+    if (precision <= 0.1) {
+      return 'Drop Anywhere (Very Easy)';
+    } else if (precision <= 0.3) {
+      return 'Forgiving (Easy)';
+    } else if (precision <= 0.6) {
+      return 'Moderate (Medium)';
+    } else if (precision <= 0.9) {
+      return 'Precise (Hard)';
+    } else {
+      return 'Exact Placement (Expert)';
+    }
   }
 }

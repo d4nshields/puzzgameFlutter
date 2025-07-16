@@ -31,6 +31,13 @@ dependencies:
   
   # Error Tracking & Monitoring
   sentry_flutter: ^8.14.2
+  
+  # Animations
+  lottie: ^3.1.0
+  
+  # Authentication & Backend
+  supabase_flutter: ^2.8.1
+  google_sign_in: ^6.2.2
 
 dev_dependencies:
   flutter_test:
@@ -58,6 +65,7 @@ flutter:
   # Include image assets
   assets:
     - assets/images/
+    - assets/animations/
     - assets/puzzles/sample_puzzle_01/
     - assets/puzzles/sample_puzzle_01/layouts/8x8/
     - assets/puzzles/sample_puzzle_01/layouts/8x8/pieces/
@@ -73,12 +81,12 @@ flutter:
     - assets/puzzles/sample_puzzle_01/layouts/15x15_optimized/
     - assets/puzzles/sample_puzzle_01/layouts/15x15_optimized/pieces/
 
-# Splash screen configuration
-flutter_native_splash:
-  color: "#FFFFFF"
-  image: assets/images/splashscreen-portrait.png
-  android: true
-  ios: true
+# Splash screen configuration (disabled - using custom loading screen)
+# flutter_native_splash:
+#   color: "#FFFFFF"
+#   image: assets/images/splashscreen-portrait.png
+#   android: true
+#   ios: true
 
 # App icon configuration
 flutter_launcher_icons:
