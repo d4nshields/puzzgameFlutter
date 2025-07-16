@@ -27,6 +27,10 @@ Rename the application to "Puzzle Nook" with the following changes:
 - `lib/presentation/screens/home_screen.dart` - Updated app bar title, welcome message, and about dialog
 - All user-facing text changed from "Puzzle Bazaar" to "Puzzle Nook"
 
+### Test Files
+- `test/widget/home_screen_test.dart` - Updated test expectations for new app name
+- `integration_test/app_test.dart` - Updated integration test expectations for new welcome message
+
 ### Core Configuration
 - `pubspec.yaml` - Updated app description
 - `README.md` - Updated project title and description
