@@ -61,7 +61,7 @@ class GameSessionNotifier extends AsyncNotifier<GameSession?> {
   }
 }
 
-/// Game screen that hosts the Puzzle Bazaar game with reactive settings
+/// Game screen that hosts the Puzzle Nook game with reactive settings
 class GameScreen extends ConsumerWidget {
   const GameScreen({super.key});
 
@@ -74,7 +74,7 @@ class GameScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Puzzle Bazaar'),
+        title: const Text('Puzzle Nook'),
         actions: [
           // Puzzle selection button
           IconButton(
@@ -374,11 +374,8 @@ class GameScreen extends ConsumerWidget {
 
   /// Handle puzzle completion
   void _onPuzzleCompleted(BuildContext context, WidgetRef ref) {
-    _showCompletionCelebration(context);
-    
-    // TODO: Add logic for progression to next level/puzzle
-    // TODO: Save high score
-    // TODO: Unlock achievements
+    // Show the early access registration screen instead of just a snackbar
+    Navigator.pushNamed(context, '/early-access');
   }
 
   void _onGridSizeChanged(BuildContext context, WidgetRef ref, int newGridSize) {

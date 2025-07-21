@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/services.dart';
 import 'package:puzzgame_flutter/core/domain/entities/user.dart';
 import 'package:puzzgame_flutter/core/domain/services/auth_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/supabase/supabase_config.dart';
@@ -10,57 +10,76 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseAuthService implements AuthService {
   final _client = SupabaseConfig.client;
-  final _googleSignIn = GoogleSignIn(
-    // Add your web client ID here if you have one configured
-    // This is optional for Android but required for iOS
-    // clientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
-  );
   
   @override
   Future<AppUser?> signInWithGoogle() async {
     try {
-      // Native Google Sign In (for mobile)
-      if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
-        final googleUser = await _googleSignIn.signIn();
-        if (googleUser == null) {
-          // User cancelled the sign-in
-          return null;
+      print('Starting Google Sign-In with Supabase native OAuth...');
+      print('Platform: Android=${Platform.isAndroid}, iOS=${Platform.isIOS}, Web=${kIsWeb}');
+      
+      // Create a completer to wait for auth state change
+      final completer = Completer<AppUser?>();
+      late StreamSubscription authSubscription;
+      
+      // Listen for auth state changes
+      authSubscription = _client.auth.onAuthStateChange.listen((data) {
+        final event = data.event;
+        final session = data.session;
+        
+        print('Auth state changed: $event');
+        
+        if (event == AuthChangeEvent.signedIn && session != null) {
+          print('User signed in successfully: ${session.user.email}');
+          authSubscription.cancel();
+          completer.complete(_mapSupabaseUserToAppUser(session.user));
+        } else if (event == AuthChangeEvent.signedOut) {
+          print('User signed out');
+          authSubscription.cancel();
+          completer.complete(null);
         }
-        
-        final googleAuth = await googleUser.authentication;
-        final idToken = googleAuth.idToken;
-        final accessToken = googleAuth.accessToken;
-        
-        if (idToken == null || accessToken == null) {
-          throw Exception('No ID token or access token received from Google');
-        }
-        
-        final response = await _client.auth.signInWithIdToken(
-          provider: OAuthProvider.google,
-          idToken: idToken,
-          accessToken: accessToken,
-        );
-        
-        return _mapSupabaseUserToAppUser(response.user);
-      } else {
+      });
+      
+      // Start the OAuth flow
+      bool success;
+      
+      if (kIsWeb) {
         // Web OAuth flow
-        final response = await _client.auth.signInWithOAuth(
+        success = await _client.auth.signInWithOAuth(
           OAuthProvider.google,
-          redirectTo: kIsWeb ? null : 'io.supabase.puzzgame://login-callback/',
+          redirectTo: null, // Use default web redirect
         );
-        
-        if (!response) {
-          throw Exception('Failed to sign in with Google');
-        }
-        
-        // Wait for the auth state to update
-        await Future.delayed(const Duration(seconds: 1));
-        
-        final user = _client.auth.currentUser;
-        return _mapSupabaseUserToAppUser(user);
+      } else {
+        // Mobile OAuth flow (Android/iOS)
+        success = await _client.auth.signInWithOAuth(
+          OAuthProvider.google,
+          redirectTo: 'io.supabase.puzzgame://login-callback/',
+        );
       }
+      
+      if (!success) {
+        authSubscription.cancel();
+        throw Exception('Failed to initiate Google Sign-In');
+      }
+      
+      print('OAuth flow initiated successfully, waiting for completion...');
+      
+      // Wait for auth state change or timeout
+      return await completer.future.timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          authSubscription.cancel();
+          throw Exception('Google Sign-In timed out');
+        },
+      );
+      
     } catch (e) {
       print('Error signing in with Google: $e');
+      print('Error type: ${e.runtimeType}');
+      if (e is AuthException) {
+        print('Auth exception details:');
+        print('- Message: ${e.message}');
+        print('- Status Code: ${e.statusCode}');
+      }
       rethrow;
     }
   }
@@ -68,7 +87,6 @@ class SupabaseAuthService implements AuthService {
   @override
   Future<void> signOut() async {
     try {
-      await _googleSignIn.signOut();
       await _client.auth.signOut();
     } catch (e) {
       print('Error signing out: $e');

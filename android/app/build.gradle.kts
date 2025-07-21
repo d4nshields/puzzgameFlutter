@@ -38,8 +38,8 @@ android {
         applicationId = "com.tinkerplexlabs.puzzlenook"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 23
-        versionName = "0.5.6"
+        versionCode = 528
+        versionName = "0.5.28"
     }
 
     signingConfigs {
@@ -82,6 +82,17 @@ android {
             // )
         }
     }
+}
+
+dependencies {
+    // Import the Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:33.16.0"))
+    
+    // Firebase Analytics (required for Google services to work properly)
+    implementation("com.google.firebase:firebase-analytics")
+    
+    // Google Play Services Auth (for Google Sign-In)
+    implementation("com.google.android.gms:play-services-auth:21.0.0")
 }
 
 flutter {
