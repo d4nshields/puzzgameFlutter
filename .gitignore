@@ -57,3 +57,9 @@ app.*.map.json
 .sentry-native/
 sentry.properties
 **/sentry_debug_meta.properties
+
+# Java/Android debugging files
+*.hprof
+java_pid*.hprof
+prod-fingerprint.txt
+
