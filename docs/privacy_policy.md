@@ -8,7 +8,7 @@ This Privacy Policy describes how Nook ("we," "our," or "us") collects, uses, an
 
 ## Information We Collect
 
-Puzzle Bazaar is designed to be a privacy-friendly offline game. We collect minimal information to ensure the app functions properly and to improve stability:
+Puzzle Nook is designed to be a privacy-friendly offline game. We collect minimal information to ensure the app functions properly and to improve stability:
 
 ### Automatically Collected Information
 - **Crash Reports**: When the app encounters technical issues, we automatically collect crash logs and error reports to help us identify and fix problems. This includes technical information about the error, app version, and device specifications, but does not include any personal information.

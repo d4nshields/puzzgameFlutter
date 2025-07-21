@@ -86,7 +86,7 @@ class _LoadingScreenState extends State<LoadingScreen>
                               children: [
                                 // App logo/title
                                 const Text(
-                                  'Puzzle Bazaar',
+                                  'Puzzle Nook',
                                   style: TextStyle(
                                     fontSize: 32,
                                     fontWeight: FontWeight.bold,

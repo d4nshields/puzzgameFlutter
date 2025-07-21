@@ -62,7 +62,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 
                 // App Title
                 Text(
-                  'Puzzle Bazaar',
+                  'Puzzle Nook',
                   style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),

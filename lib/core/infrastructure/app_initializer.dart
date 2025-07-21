@@ -16,26 +16,14 @@ class AppInitializer {
     final startTime = DateTime.now();
     
     // Initialize services in parallel
+    // Note: Supabase is already initialized in main() before dependency injection
     await Future.wait([
-      _initializeSupabase(),
       _initializeErrorReporting(),
       _initializeGameModule(),
       _initializeDesktopWindow(),
       _preloadAssets(),
       _ensureMinimumSplashDuration(startTime),
     ]);
-  }
-  
-  /// Initialize Supabase
-  static Future<void> _initializeSupabase() async {
-    try {
-      await SupabaseConfig.initialize();
-      print('Supabase initialized successfully');
-    } catch (e) {
-      print('Error initializing Supabase: $e');
-      // Continue app initialization even if Supabase fails
-      // Users can still play offline
-    }
   }
   
   /// Initialize error reporting service

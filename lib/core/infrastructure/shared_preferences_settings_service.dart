@@ -12,7 +12,7 @@ class SharedPreferencesSettingsService implements SettingsService {
   @override
   Future<int> getDifficulty() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt(_difficultyKey) ?? 2; // Default to medium
+    return prefs.getInt(_difficultyKey) ?? 1; // Default to easy for onboarding
   }
   
   @override
@@ -68,7 +68,7 @@ class SharedPreferencesSettingsService implements SettingsService {
   @override
   Future<bool> getEasyPieceSortingEnabled() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_easyPieceSortingKey) ?? false; // Default disabled
+    return prefs.getBool(_easyPieceSortingKey) ?? true; // Default enabled for onboarding
   }
   
   @override

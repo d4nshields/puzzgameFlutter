@@ -1,26 +1,44 @@
 {
   "project_info": {
-    "project_number": "458649993920",
-    "project_id": "tinkerplexlabs-9cf33",
-    "storage_bucket": "tinkerplexlabs-9cf33.firebasestorage.app"
+    "project_number": "1038604734243",
+    "project_id": "tinkerplexlabs-74d71",
+    "storage_bucket": "tinkerplexlabs-74d71.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:458649993920:android:9b19365441cb217d856325",
+        "mobilesdk_app_id": "1:1038604734243:android:5087431ee1aaa5af144696",
         "android_client_info": {
-          "package_name": "com.tinkerplexlabs.puzzlebazaar"
+          "package_name": "com.tinkerplexlabs.puzzlenook"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1038604734243-p6egjqpa3922bbf03tiuhnddrboe9ccn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tinkerplexlabs.puzzlenook",
+            "certificate_hash": "a457af9a574794f3bb6c8fce2743d4624f84093e"
+          }
+        },
+        {
+          "client_id": "1038604734243-ka6qhvk7atns5e6oie26g05dfudhqjdo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyC8StAxJSthU9YDT3wTVqY-en3fzW5FZ1s"
+          "current_key": "AIzaSyBf-gF8J1HhvrnZ3_MklBmkKtpFmQ_OAqU"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1038604734243-ka6qhvk7atns5e6oie26g05dfudhqjdo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
