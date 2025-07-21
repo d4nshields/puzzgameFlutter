@@ -52,3 +52,8 @@ app.*.map.json
 # GitHub Actions generated keystore
 **/android/app/keystore.jks
 **/android/app/keystore.p12
+
+# Sentry generated files
+.sentry-native/
+sentry.properties
+**/sentry_debug_meta.properties
