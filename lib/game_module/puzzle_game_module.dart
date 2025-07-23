@@ -6,6 +6,8 @@ import 'package:puzzgame_flutter/core/domain/services/settings_service.dart';
 import 'package:puzzgame_flutter/core/domain/services/error_reporting_service.dart';
 import 'package:puzzgame_flutter/core/domain/services/audio_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
+import 'package:puzzgame_flutter/core/domain/services/game_session_tracking_service.dart';
+import 'package:puzzgame_flutter/core/domain/services/auth_service.dart';
 import 'package:puzzgame_flutter/game_module/services/puzzle_asset_manager.dart';
 import 'package:puzzgame_flutter/game_module/services/enhanced_puzzle_asset_manager.dart';
 import 'package:puzzgame_flutter/game_module/services/memory_optimized_asset_manager.dart';
@@ -513,6 +515,9 @@ class PuzzleGameSession implements GameSession {
       
       print('PuzzleGameSession: Correctly placed piece ${piece.id}. Score: +$points');
       
+      // Track piece placement
+      _trackPiecePlacement(piece, dropPosition, true, points);
+      
       // Check completion
       if (isCompleted) {
         _onPuzzleCompleted();
@@ -530,6 +535,9 @@ class PuzzleGameSession implements GameSession {
       _trayPieces.remove(piece);
       
       print('PuzzleGameSession: Incorrectly placed piece ${piece.id} at position $dropPosition');
+      
+      // Track incorrect piece placement
+      _trackPiecePlacement(piece, dropPosition, false, 0);
       
       return PlacementResult.incorrectPosition;
     }
@@ -675,7 +683,18 @@ class PuzzleGameSession implements GameSession {
     final completionBonus = 100 * _difficulty;
     _score += completionBonus;
     
-    // TODO: Trigger completion effects, save high score, etc.
+    // Track puzzle completion
+    final completionTime = DateTime.now().difference(_startTime);
+    _trackGameEvent('puzzle_completed', {
+      'completion_time_minutes': completionTime.inMinutes,
+      'completion_time_seconds': completionTime.inSeconds,
+      'final_score': _score,
+      'completion_bonus': completionBonus,
+      'puzzle_id': _currentPuzzleId,
+      'grid_size': _gridSize,
+      'total_pieces': totalPieces,
+    });
+    
     print('PuzzleGameSession: Completion bonus: +$completionBonus. Final score: $_score');
   }
   
@@ -706,6 +725,13 @@ class PuzzleGameSession implements GameSession {
     if (_isActive) {
       _isActive = false;
       print('PuzzleGameSession: Game paused');
+      
+      // Track pause event
+      _trackGameEvent('pause', {
+        'pieces_placed': _piecesPlaced,
+        'current_score': _score,
+        'play_time_minutes': DateTime.now().difference(_startTime).inMinutes,
+      });
     }
   }
   
@@ -714,6 +740,13 @@ class PuzzleGameSession implements GameSession {
     if (!_isActive) {
       _isActive = true;
       print('PuzzleGameSession: Game resumed');
+      
+      // Track resume event
+      _trackGameEvent('resume', {
+        'pieces_placed': _piecesPlaced,
+        'current_score': _score,
+        'play_time_minutes': DateTime.now().difference(_startTime).inMinutes,
+      });
     }
   }
   
@@ -746,6 +779,56 @@ class PuzzleGameSession implements GameSession {
     // - Score, time, etc.
     
     return true;
+  }
+  
+  /// Track piece placement events
+  void _trackPiecePlacement(PuzzlePiece piece, Offset position, bool correct, int points) {
+    try {
+      final trackingService = serviceLocator<GameSessionTrackingService>();
+      
+      trackingService.updateGameSession(
+        sessionId: _sessionId,
+        sessionData: {
+          'last_piece_placed': {
+            'piece_id': piece.id,
+            'position': {'x': position.dx, 'y': position.dy},
+            'correct': correct,
+            'points_earned': points,
+            'timestamp': DateTime.now().toIso8601String(),
+            'pieces_placed_count': _piecesPlaced,
+            'current_score': _score,
+          },
+          'game_progress': {
+            'pieces_placed': _piecesPlaced,
+            'total_pieces': totalPieces,
+            'completion_percentage': (_piecesPlaced / totalPieces * 100).round(),
+            'current_score': _score,
+          },
+        },
+      );
+    } catch (e) {
+      print('Warning: Failed to track piece placement: $e');
+    }
+  }
+  
+  /// Track general game events
+  void _trackGameEvent(String eventType, Map<String, dynamic> eventData) {
+    try {
+      final trackingService = serviceLocator<GameSessionTrackingService>();
+      
+      trackingService.updateGameSession(
+        sessionId: _sessionId,
+        sessionData: {
+          'last_event': {
+            'type': eventType,
+            'data': eventData,
+            'timestamp': DateTime.now().toIso8601String(),
+          },
+        },
+      );
+    } catch (e) {
+      print('Warning: Failed to track game event: $e');
+    }
   }
 }
 
