@@ -1,24 +1,22 @@
 #!/bin/bash
 
-# Simple build test script for the puzzle game
-echo "🔨 Testing Flutter build..."
-
+# Quick compilation test for game session tracking implementation
 cd /home/daniel/work/puzzgameFlutter
 
-# Clean build artifacts
-echo "🧹 Cleaning build artifacts..."
-flutter clean
-
-# Get dependencies
-echo "📦 Getting dependencies..."
+echo "=== Checking Flutter dependencies ==="
 flutter pub get
 
-# Analyze code for issues
-echo "🔍 Analyzing code..."
-flutter analyze --no-fatal-infos
+echo ""
+echo "=== Running code generation (if needed) ==="
+flutter pub run build_runner build --delete-conflicting-outputs
 
-# Try to compile (but don't run)
-echo "🏗️ Testing compilation..."
-flutter build linux --debug --verbose
+echo ""
+echo "=== Checking for compilation errors ==="
+flutter analyze --no-current-package
 
-echo "✅ Build test complete!"
+echo ""
+echo "=== Testing compilation ==="
+flutter build apk --debug --target-platform android-arm64 --no-tree-shake-icons
+
+echo ""
+echo "=== Build test completed ==="

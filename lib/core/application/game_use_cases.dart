@@ -1,4 +1,7 @@
 import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
+import 'package:puzzgame_flutter/core/domain/services/game_session_tracking_service.dart';
+import 'package:puzzgame_flutter/core/domain/services/auth_service.dart';
+import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 
 /// Use case for starting a new game
 ///
@@ -22,7 +25,29 @@ class StartGameUseCase {
     }
     
     // Start the game with the specified difficulty
-    return _gameModule.startGame(difficulty: difficulty);
+    final gameSession = await _gameModule.startGame(difficulty: difficulty);
+    
+    // Track the game session start
+    try {
+      final trackingService = serviceLocator<GameSessionTrackingService>();
+      final authService = serviceLocator<AuthService>();
+      final currentUser = authService.currentUser;
+      
+      await trackingService.startGameSession(
+        gameSession: gameSession,
+        user: currentUser,
+        gameType: 'puzzle_nook',
+        initialSessionData: {
+          'difficulty': difficulty,
+          'started_via': 'game_screen',
+        },
+      );
+    } catch (e) {
+      print('Warning: Failed to track game session start: $e');
+      // Don't throw - game should continue even if tracking fails
+    }
+    
+    return gameSession;
   }
 }
 
@@ -56,6 +81,29 @@ class EndGameUseCase {
   /// [gameSession] - The active game session to end
   /// Returns the final [GameResult]
   Future<GameResult> execute({required GameSession gameSession}) async {
-    return gameSession.endGame();
+    // End the game and get results
+    final gameResult = await gameSession.endGame();
+    
+    // Track the game session end
+    try {
+      final trackingService = serviceLocator<GameSessionTrackingService>();
+      final authService = serviceLocator<AuthService>();
+      final currentUser = authService.currentUser;
+      
+      await trackingService.endGameSession(
+        sessionId: gameSession.sessionId,
+        gameResult: gameResult,
+        user: currentUser,
+        finalSessionData: {
+          'ended_via': 'end_game_use_case',
+          'final_state': 'completed',
+        },
+      );
+    } catch (e) {
+      print('Warning: Failed to track game session end: $e');
+      // Don't throw - we still want to return the game result
+    }
+    
+    return gameResult;
   }
 }

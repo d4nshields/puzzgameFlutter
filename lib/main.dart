@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:puzzgame_flutter/core/infrastructure/app_initializer.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/core/infrastructure/supabase/supabase_config.dart';
+import 'package:puzzgame_flutter/core/domain/services/game_session_tracking_service.dart';
+import 'package:puzzgame_flutter/core/domain/services/auth_service.dart';
 import 'package:puzzgame_flutter/presentation/screens/game_screen.dart';
 import 'package:puzzgame_flutter/presentation/screens/home_screen.dart';
 import 'package:puzzgame_flutter/presentation/screens/settings_screen.dart';
@@ -32,6 +34,9 @@ void main() async {
   // Start app initialization (async)
   final initializationFuture = AppInitializer.initialize();
   
+  // Track app launch (after Supabase is initialized)
+  _trackAppLaunch();
+  
   // Run the app immediately with loading screen
   runApp(
     ProviderScope(
@@ -52,6 +57,28 @@ Future<void> _initializeSupabase() async {
     print('Error initializing Supabase in main(): $e');
     // Continue app initialization even if Supabase fails
     // Users can still play offline
+  }
+}
+
+/// Track app launch for analytics
+Future<void> _trackAppLaunch() async {
+  try {
+    // Import the tracking service only when needed
+    final trackingService = serviceLocator<GameSessionTrackingService>();
+    final authService = serviceLocator<AuthService>();
+    final currentUser = authService.currentUser;
+    
+    await trackingService.recordAppUsage(
+      user: currentUser,
+      usageData: {
+        'action': 'app_launch',
+        'platform': 'flutter',
+        'launch_time': DateTime.now().toIso8601String(),
+      },
+    );
+  } catch (e) {
+    print('Warning: Failed to track app launch: $e');
+    // Don't throw - app should continue even if tracking fails
   }
 }
 
