@@ -150,12 +150,29 @@ jobs:
         
     - name: Update version in files
       run: |
+        # Generate timestamp-based version code (YYMMDDHHMM format)
+        # YY = years since 2025 (2025=00, 2026=01, etc.)
+        # This ensures version codes are always increasing across years and deployment methods
+        CURRENT_YEAR=$(date -u +"%Y")
+        YEAR_OFFSET=$((CURRENT_YEAR - 2025))
+        TIMESTAMP_VERSION_CODE=$(printf "%02d%s" $YEAR_OFFSET $(date -u +"%m%d%H%M"))
+        # Remove leading zeros to ensure it's treated as a number
+        VERSION_CODE=$((10#$TIMESTAMP_VERSION_CODE))
+        
+        echo "🔢 Using timestamp-based version code: $VERSION_CODE (Year offset: $YEAR_OFFSET, UTC: $(date -u +'%Y-%m-%d %H:%M'))"
+        
         # Update pubspec.yaml
-        sed -i "s/^version:.*/version: ${{ steps.version.outputs.VERSION_NAME }}+${{ github.run_number }}/" pubspec.yaml
+        sed -i "s/^version:.*/version: ${{ steps.version.outputs.VERSION_NAME }}+${VERSION_CODE}/" pubspec.yaml
         
         # Update build.gradle.kts
-        sed -i "s/versionCode = [0-9]\+/versionCode = ${{ github.run_number }}/" android/app/build.gradle.kts
+        sed -i "s/versionCode = [0-9]\+/versionCode = ${VERSION_CODE}/" android/app/build.gradle.kts
         sed -i "s/versionName = \"[^\"]*\"/versionName = \"${{ steps.version.outputs.VERSION_NAME }}\"/" android/app/build.gradle.kts
+        
+        # Verify the changes
+        echo "📋 Updated pubspec.yaml:"
+        grep "^version:" pubspec.yaml
+        echo "📋 Updated build.gradle.kts:"
+        grep -E "versionCode|versionName" android/app/build.gradle.kts
         
     - name: Build App Bundle
       run: flutter build appbundle --release
