@@ -101,7 +101,7 @@ class _LoadingScreenState extends State<LoadingScreen>
                                     ),
                                   ),
                                   Text(
-                                    'Bazaar', // Keep original name for consistency
+                                    'Nook', // Correct app name
                                     style: PuzzleBazaarTheme.headingStyle.copyWith(
                                       fontSize: 36,
                                       color: PuzzleBazaarTheme.mutedBlue,

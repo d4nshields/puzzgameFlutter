@@ -97,7 +97,7 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
                         ),
                       ),
                       Text(
-                        'Bazaar',
+                        'Nook', // Correct app name
                         style: PuzzleBazaarTheme.captionStyle.copyWith(
                           color: PuzzleBazaarTheme.mutedBlue,
                           fontWeight: FontWeight.bold,
@@ -152,7 +152,7 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
                   child: Column(
                     children: [
                       Text(
-                        'Join the Puzzle Bazaar',
+                        'Join the Puzzle Nook',
                         style: PuzzleBazaarTheme.subheadingStyle.copyWith(
                           color: PuzzleBazaarTheme.richBrown,
                         ),
@@ -177,7 +177,7 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
                           _buildFeatureItem('🧩', 'Exclusive puzzle collections'),
                           _buildFeatureItem('🎨', 'Beautiful custom themes'),
                           _buildFeatureItem('🏆', 'Achievements & progress tracking'),
-                          _buildFeatureItem('☁️', 'Sync across all your devices'),
+                          _buildFeatureItem('☁️', 'Sync all games across all your devices'),
                         ],
                       ),
                       
