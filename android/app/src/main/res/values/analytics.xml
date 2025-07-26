@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Disable advertising ID collection in Firebase Analytics -->
+    <bool name="google_analytics_adid_collection_enabled">false</bool>
+    
+    <!-- Keep automatic data collection enabled for analytics -->
+    <bool name="google_analytics_automatic_data_collection_enabled">true</bool>
+</resources>
