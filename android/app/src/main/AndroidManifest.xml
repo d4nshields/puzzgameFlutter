@@ -1,4 +1,11 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
+    
+    <!-- Remove advertising ID permission if not needed -->
+    <!-- Force remove from all dependencies including Sentry, Firebase, etc. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
+    <uses-permission android:name="android.permission.AD_ID" tools:node="remove" />
+    
     <application
         android:label="Puzzle Nook"
         android:name="${applicationName}"
@@ -38,6 +45,14 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+            
+        <!-- Disable Sentry advertising ID collection -->
+        <meta-data 
+            android:name="io.sentry.performance.enable-automatic-performance-instrumentation" 
+            android:value="false" />
+        <meta-data 
+            android:name="io.sentry.performance.enable-user-interaction-tracing" 
+            android:value="false" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

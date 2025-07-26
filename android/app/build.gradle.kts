@@ -89,10 +89,16 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.16.0"))
     
     // Firebase Analytics (required for Google services to work properly)
-    implementation("com.google.firebase:firebase-analytics")
+    // Exclude ads-identifier to remove AD_ID permission
+    implementation("com.google.firebase:firebase-analytics") {
+        exclude(group = "com.google.android.gms", module = "play-services-ads-identifier")
+    }
     
     // Google Play Services Auth (for Google Sign-In)
-    implementation("com.google.android.gms:play-services-auth:21.0.0")
+    // Also exclude ads-identifier if it's being pulled in here
+    implementation("com.google.android.gms:play-services-auth:21.0.0") {
+        exclude(group = "com.google.android.gms", module = "play-services-ads-identifier")
+    }
 }
 
 flutter {
