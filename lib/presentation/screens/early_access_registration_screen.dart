@@ -62,191 +62,177 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
             child: Column(
               children: [
-                const Spacer(),
-                
-                // App icon/logo area with theme styling
+                // Compact top section with logo and congratulations
                 Container(
-                  width: 140,
-                  height: 140,
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: PuzzleBazaarTheme.warmShadow,
-                    border: Border.all(
-                      color: PuzzleBazaarTheme.terracotta.withOpacity(0.3),
-                      width: 2,
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.extension,
-                        size: 60,
-                        color: PuzzleBazaarTheme.mutedBlue,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Puzzle',
-                        style: PuzzleBazaarTheme.captionStyle.copyWith(
-                          color: PuzzleBazaarTheme.richBrown,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'Nook', // Correct app name
-                        style: PuzzleBazaarTheme.captionStyle.copyWith(
-                          color: PuzzleBazaarTheme.mutedBlue,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                const SizedBox(height: 32),
-                
-                // Congratulations text with theme styling
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 16,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withOpacity(0.95),
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: PuzzleBazaarTheme.warmShadow,
                   ),
-                  child: Column(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        '🎉 Congratulations!',
-                        style: PuzzleBazaarTheme.subheadingStyle.copyWith(
-                          color: PuzzleBazaarTheme.goldenAmber,
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: PuzzleBazaarTheme.warmCream,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: PuzzleBazaarTheme.terracotta.withOpacity(0.3),
+                            width: 2,
+                          ),
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      
-                      const SizedBox(height: 8),
-                      
-                      Text(
-                        'You completed your first puzzle!',
-                        style: PuzzleBazaarTheme.bodyStyle.copyWith(
-                          color: PuzzleBazaarTheme.softGrey,
+                        child: Icon(
+                          Icons.extension,
+                          size: 28,
+                          color: PuzzleBazaarTheme.mutedBlue,
                         ),
-                        textAlign: TextAlign.center,
                       ),
-                    ],
-                  ),
-                ),
-                
-                const SizedBox(height: 32),
-                
-                // Early access registration card with theme
-                Container(
-                  padding: const EdgeInsets.all(28),
-                  decoration: PuzzleBazaarTheme.cardDecoration,
-                  child: Column(
-                    children: [
-                      Text(
-                        'Join the Puzzle Nook',
-                        style: PuzzleBazaarTheme.subheadingStyle.copyWith(
-                          color: PuzzleBazaarTheme.richBrown,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      
-                      const SizedBox(height: 12),
-                      
-                      Text(
-                        'Register for early access and be the first to explore our cozy collection of puzzles:',
-                        style: PuzzleBazaarTheme.bodyStyle.copyWith(
-                          color: PuzzleBazaarTheme.softGrey,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      
-                      const SizedBox(height: 24),
-                      
-                      // Features list with themed styling
+                      const SizedBox(width: 12),
                       Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildFeatureItem('🧩', 'Exclusive puzzle collections'),
-                          _buildFeatureItem('🎨', 'Beautiful custom themes'),
-                          _buildFeatureItem('🏆', 'Achievements & progress tracking'),
-                          _buildFeatureItem('☁️', 'Sync all games across all your devices'),
-                        ],
-                      ),
-                      
-                      const SizedBox(height: 32),
-                      
-                      // Sign in with Google button with theme
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton.icon(
-                          onPressed: _isSigningIn ? null : _signInWithGoogle,
-                          icon: _isSigningIn 
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : Image.asset(
-                                  'assets/images/google_logo.png',
-                                  width: 20,
-                                  height: 20,
-                                  errorBuilder: (context, error, stackTrace) => const Icon(
-                                    Icons.login,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                          label: Text(
-                            _isSigningIn ? 'Joining...' : 'Join with Google',
-                            style: PuzzleBazaarTheme.buttonTextStyle.copyWith(
-                              color: Colors.white,
+                          Text(
+                            'Puzzle Nook',
+                            style: PuzzleBazaarTheme.subheadingStyle.copyWith(
+                              fontSize: 20,
+                              color: PuzzleBazaarTheme.richBrown,
                             ),
                           ),
-                          style: PuzzleBazaarTheme.primaryButtonStyle,
-                        ),
+                          Text(
+                            '🎉 Puzzle Complete!',
+                            style: PuzzleBazaarTheme.bodyStyle.copyWith(
+                              color: PuzzleBazaarTheme.goldenAmber,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
                 
-                const Spacer(),
+                const SizedBox(height: 24),
                 
-                // Skip option with theme
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.8),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    style: PuzzleBazaarTheme.textButtonStyle,
-                    child: Text(
-                      'Continue exploring for now',
-                      style: PuzzleBazaarTheme.bodyStyle.copyWith(
-                        color: PuzzleBazaarTheme.mutedBlue,
-                      ),
+                // Main registration card - more compact
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: PuzzleBazaarTheme.cardDecoration,
+                    child: Column(
+                      children: [
+                        Text(
+                          'Join the Puzzle Nook',
+                          style: PuzzleBazaarTheme.subheadingStyle.copyWith(
+                            fontSize: 22,
+                            color: PuzzleBazaarTheme.richBrown,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        
+                        const SizedBox(height: 12),
+                        
+                        Text(
+                          'Get early access to new puzzles and features:',
+                          style: PuzzleBazaarTheme.bodyStyle.copyWith(
+                            color: PuzzleBazaarTheme.softGrey,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        
+                        const SizedBox(height: 20),
+                        
+                        // Compact features list - 2 columns
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  _buildCompactFeatureItem('🧩', 'New puzzle packs'),
+                                  const SizedBox(height: 8),
+                                  _buildCompactFeatureItem('🏆', 'Progress tracking'),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  _buildCompactFeatureItem('🎨', 'Custom themes'),
+                                  const SizedBox(height: 8),
+                                  _buildCompactFeatureItem('☁️', 'Cloud sync'),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        
+                        const Spacer(),
+                        
+                        // Prominent sign-in button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: ElevatedButton.icon(
+                            onPressed: _isSigningIn ? null : _signInWithGoogle,
+                            icon: _isSigningIn 
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Image.asset(
+                                    'assets/images/google_logo.png',
+                                    width: 20,
+                                    height: 20,
+                                    errorBuilder: (context, error, stackTrace) => const Icon(
+                                      Icons.login,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                            label: Text(
+                              _isSigningIn ? 'Joining...' : 'Join with Google',
+                              style: PuzzleBazaarTheme.buttonTextStyle.copyWith(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            style: PuzzleBazaarTheme.primaryButtonStyle,
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 16),
+                        
+                        // Compact skip option
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          style: PuzzleBazaarTheme.textButtonStyle,
+                          child: Text(
+                            'Continue exploring',
+                            style: PuzzleBazaarTheme.bodyStyle.copyWith(
+                              color: PuzzleBazaarTheme.mutedBlue,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        
+                        // Extra bottom padding to avoid gesture navigation
+                        const SizedBox(height: 8),
+                      ],
                     ),
                   ),
                 ),
-                
-                const SizedBox(height: 16),
               ],
             ),
           ),
@@ -255,13 +241,12 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
     );
   }
   
-  Widget _buildFeatureItem(String emoji, String text) {
+  Widget _buildCompactFeatureItem(String emoji, String text) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: PuzzleBazaarTheme.warmCream,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: PuzzleBazaarTheme.terracotta.withOpacity(0.2),
           width: 1,
@@ -270,29 +255,26 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
       child: Row(
         children: [
           Container(
-            width: 32,
-            height: 32,
+            width: 24,
+            height: 24,
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: PuzzleBazaarTheme.mutedBlue.withOpacity(0.3),
-                width: 1,
-              ),
+              borderRadius: BorderRadius.circular(6),
             ),
             child: Center(
               child: Text(
                 emoji,
-                style: const TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 12),
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
               text,
               style: PuzzleBazaarTheme.bodyStyle.copyWith(
                 color: PuzzleBazaarTheme.darkBrown,
+                fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
             ),
