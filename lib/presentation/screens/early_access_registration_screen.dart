@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/core/domain/services/auth_service.dart';
+import 'package:puzzgame_flutter/presentation/theme/puzzle_bazaar_theme.dart';
 
 /// Screen shown after completing the first puzzle to encourage registration
 class EarlyAccessRegistrationScreen extends StatefulWidget {
@@ -55,169 +56,199 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.deepPurple[50],
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            children: [
-              const Spacer(),
-              
-              // App icon/logo area
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: Colors.deepPurple[100],
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Icon(
-                  Icons.extension,
-                  size: 60,
-                  color: Colors.deepPurple[700],
-                ),
-              ),
-              
-              const SizedBox(height: 32),
-              
-              // Congratulations text
-              const Text(
-                '🎉 Congratulations!',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.deepPurple,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              
-              const SizedBox(height: 16),
-              
-              const Text(
-                'You completed your first puzzle!',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              
-              const SizedBox(height: 40),
-              
-              // Early access registration card
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: PuzzleBazaarTheme.warmGradient,
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              children: [
+                const Spacer(),
+                
+                // App icon/logo area with theme styling
+                Container(
+                  width: 140,
+                  height: 140,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: PuzzleBazaarTheme.warmShadow,
+                    border: Border.all(
+                      color: PuzzleBazaarTheme.terracotta.withOpacity(0.3),
+                      width: 2,
                     ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    const Text(
-                      'Register for Early Access',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.extension,
+                        size: 60,
+                        color: PuzzleBazaarTheme.mutedBlue,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    const Text(
-                      'Get notified when the full version of Puzzle Nook is available with:',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    
-                    const SizedBox(height: 20),
-                    
-                    // Features list
-                    Column(
-                      children: [
-                        _buildFeatureItem('📱', 'More puzzle packs'),
-                        _buildFeatureItem('🎨', 'Custom themes'),
-                        _buildFeatureItem('🏆', 'Achievements & leaderboards'),
-                        _buildFeatureItem('☁️', 'Cloud save sync'),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 32),
-                    
-                    // Sign in with Google button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton.icon(
-                        onPressed: _isSigningIn ? null : _signInWithGoogle,
-                        icon: _isSigningIn 
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : Image.asset(
-                                'assets/images/google_logo.png', // You may need to add this
-                                width: 20,
-                                height: 20,
-                                errorBuilder: (context, error, stackTrace) => const Icon(
-                                  Icons.login,
-                                  color: Colors.white,
-                                ),
-                              ),
-                        label: Text(
-                          _isSigningIn ? 'Signing in...' : 'Register with Google',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.deepPurple,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 2,
+                      const SizedBox(height: 8),
+                      Text(
+                        'Puzzle',
+                        style: PuzzleBazaarTheme.captionStyle.copyWith(
+                          color: PuzzleBazaarTheme.richBrown,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              
-              const Spacer(),
-              
-              // Skip option
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text(
-                  'Maybe later',
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 16,
+                      Text(
+                        'Bazaar',
+                        style: PuzzleBazaarTheme.captionStyle.copyWith(
+                          color: PuzzleBazaarTheme.mutedBlue,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              
-              const SizedBox(height: 16),
-            ],
+                
+                const SizedBox(height: 32),
+                
+                // Congratulations text with theme styling
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: PuzzleBazaarTheme.warmShadow,
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        '🎉 Congratulations!',
+                        style: PuzzleBazaarTheme.subheadingStyle.copyWith(
+                          color: PuzzleBazaarTheme.goldenAmber,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      
+                      const SizedBox(height: 8),
+                      
+                      Text(
+                        'You completed your first puzzle!',
+                        style: PuzzleBazaarTheme.bodyStyle.copyWith(
+                          color: PuzzleBazaarTheme.softGrey,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 32),
+                
+                // Early access registration card with theme
+                Container(
+                  padding: const EdgeInsets.all(28),
+                  decoration: PuzzleBazaarTheme.cardDecoration,
+                  child: Column(
+                    children: [
+                      Text(
+                        'Join the Puzzle Bazaar',
+                        style: PuzzleBazaarTheme.subheadingStyle.copyWith(
+                          color: PuzzleBazaarTheme.richBrown,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      
+                      const SizedBox(height: 12),
+                      
+                      Text(
+                        'Register for early access and be the first to explore our cozy collection of puzzles:',
+                        style: PuzzleBazaarTheme.bodyStyle.copyWith(
+                          color: PuzzleBazaarTheme.softGrey,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Features list with themed styling
+                      Column(
+                        children: [
+                          _buildFeatureItem('🧩', 'Exclusive puzzle collections'),
+                          _buildFeatureItem('🎨', 'Beautiful custom themes'),
+                          _buildFeatureItem('🏆', 'Achievements & progress tracking'),
+                          _buildFeatureItem('☁️', 'Sync across all your devices'),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 32),
+                      
+                      // Sign in with Google button with theme
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton.icon(
+                          onPressed: _isSigningIn ? null : _signInWithGoogle,
+                          icon: _isSigningIn 
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Image.asset(
+                                  'assets/images/google_logo.png',
+                                  width: 20,
+                                  height: 20,
+                                  errorBuilder: (context, error, stackTrace) => const Icon(
+                                    Icons.login,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                          label: Text(
+                            _isSigningIn ? 'Joining...' : 'Join with Google',
+                            style: PuzzleBazaarTheme.buttonTextStyle.copyWith(
+                              color: Colors.white,
+                            ),
+                          ),
+                          style: PuzzleBazaarTheme.primaryButtonStyle,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const Spacer(),
+                
+                // Skip option with theme
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    style: PuzzleBazaarTheme.textButtonStyle,
+                    child: Text(
+                      'Continue exploring for now',
+                      style: PuzzleBazaarTheme.bodyStyle.copyWith(
+                        color: PuzzleBazaarTheme.mutedBlue,
+                      ),
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+              ],
+            ),
           ),
         ),
       ),
@@ -225,21 +256,44 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
   }
   
   Widget _buildFeatureItem(String emoji, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: PuzzleBazaarTheme.warmCream,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: PuzzleBazaarTheme.terracotta.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
       child: Row(
         children: [
-          Text(
-            emoji,
-            style: const TextStyle(fontSize: 18),
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: PuzzleBazaarTheme.mutedBlue.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                emoji,
+                style: const TextStyle(fontSize: 16),
+              ),
+            ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
+              style: PuzzleBazaarTheme.bodyStyle.copyWith(
+                color: PuzzleBazaarTheme.darkBrown,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
