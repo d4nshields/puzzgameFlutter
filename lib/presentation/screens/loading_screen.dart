@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:puzzgame_flutter/presentation/theme/puzzle_bazaar_theme.dart';
 
 /// Custom loading screen with Lottie animation shown during app initialization
 class LoadingScreen extends StatefulWidget {
@@ -66,72 +67,117 @@ class _LoadingScreenState extends State<LoadingScreen>
         if (snapshot.connectionState != ConnectionState.done) {
           return MaterialApp(
             home: Scaffold(
-              backgroundColor: Colors.black, // Start with black to match native splash
-              body: AnimatedBuilder(
-                animation: _fadeAnimation,
-                builder: (context, child) {
-                  return Stack(
-                    children: [
-                      // Black background
-                      Container(color: Colors.black),
-                      
-                      // White loading content that fades in
-                      Opacity(
-                        opacity: _fadeAnimation.value,
-                        child: Container(
-                          color: Colors.white,
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                // App logo/title
-                                const Text(
-                                  'Puzzle Nook',
-                                  style: TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.deepPurple,
+              body: Container(
+                decoration: BoxDecoration(
+                  gradient: PuzzleBazaarTheme.warmGradient,
+                ),
+                child: AnimatedBuilder(
+                  animation: _fadeAnimation,
+                  builder: (context, child) {
+                    return Opacity(
+                      opacity: _fadeAnimation.value,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // App logo/title with theme styling
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 16,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.9),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: PuzzleBazaarTheme.warmShadow,
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    'Puzzle',
+                                    style: PuzzleBazaarTheme.headingStyle.copyWith(
+                                      fontSize: 36,
+                                      color: PuzzleBazaarTheme.richBrown,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 60),
-                                
-                                // Lottie loading animation
-                                Lottie.asset(
-                                  'assets/animations/loading_puzzle_pieces.json',
-                                  width: 200,
-                                  height: 200,
-                                  repeat: true,
-                                ),
-                                
-                                const SizedBox(height: 40),
-                                
-                                // Loading text
-                                const Text(
-                                  'Loading your puzzle experience...',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey,
+                                  Text(
+                                    'Bazaar', // Keep original name for consistency
+                                    style: PuzzleBazaarTheme.headingStyle.copyWith(
+                                      fontSize: 36,
+                                      color: PuzzleBazaarTheme.mutedBlue,
+                                    ),
                                   ),
-                                ),
-                                
-                                const SizedBox(height: 20),
-                                
-                                // Progress indicator
-                                SizedBox(
-                                  width: 200,
-                                  child: LinearProgressIndicator(
-                                    backgroundColor: Colors.grey[300],
-                                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.deepPurple),
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
+                            
+                            const SizedBox(height: 60),
+                            
+                            // Lottie loading animation with themed container
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.8),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: PuzzleBazaarTheme.warmShadow,
+                              ),
+                              child: Lottie.asset(
+                                'assets/animations/loading_puzzle_pieces.json',
+                                width: 180,
+                                height: 180,
+                                repeat: true,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: 180,
+                                    height: 180,
+                                    decoration: PuzzleBazaarTheme.iconDecoration,
+                                    child: const Icon(
+                                      Icons.extension,
+                                      size: 80,
+                                      color: PuzzleBazaarTheme.mutedBlue,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            
+                            const SizedBox(height: 40),
+                            
+                            // Loading text with theme styling
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.9),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Text(
+                                'Preparing your cozy puzzle experience...',
+                                style: PuzzleBazaarTheme.bodyStyle,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            
+                            const SizedBox(height: 20),
+                            
+                            // Progress indicator with theme
+                            Container(
+                              width: 240,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.9),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: PuzzleBazaarTheme.createProgressIndicator(),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
           );
