@@ -126,7 +126,7 @@ class GameScreen extends ConsumerWidget {
     AsyncValue<int> difficultyAsync,
     int gridSize,
   ) {
-    // Handle loading state
+    // Handle loading state - DON'T create EnhancedPuzzleGameWidget yet
     if (gameSessionAsync.isLoading || difficultyAsync.isLoading) {
       return const Center(
         child: Column(
@@ -194,22 +194,51 @@ class GameScreen extends ConsumerWidget {
       );
     }
 
-    // Check if this is a puzzle game session
+    // Check if this is a puzzle game session AND everything is ready
     if (gameSession is PuzzleGameSession) {
-      return Column(
-        children: [
-          // Show current puzzle info
-          _buildPuzzleInfo(context, gameSession, difficulty, gridSize, ref),
-          
-          // Enhanced puzzle game widget with zoom and audio - more space on phones
-          Expanded(
-          child: EnhancedPuzzleGameWidget(
-          gameSession: gameSession,
-          onGameCompleted: () => _onPuzzleCompleted(context, ref),
+      // Add additional safety check for services
+      try {
+        // Verify services are available before creating the widget
+        if (!serviceLocator.isRegistered<PuzzleAssetManager>()) {
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Initializing puzzle services...'),
+              ],
+            ),
+          );
+        }
+
+        return Column(
+          children: [
+            // Show current puzzle info
+            _buildPuzzleInfo(context, gameSession, difficulty, gridSize, ref),
+            
+            // Enhanced puzzle game widget with zoom and audio - ONLY create when ready
+            Expanded(
+              child: EnhancedPuzzleGameWidget(
+                gameSession: gameSession,
+                onGameCompleted: () => _onPuzzleCompleted(context, ref),
+              ),
+            ),
+          ],
+        );
+      } catch (e) {
+        // If services aren't ready, show loading instead of crashing
+        return const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Preparing puzzle interface...'),
+            ],
           ),
-          ),
-        ],
-      );
+        );
+      }
     }
 
     // Fallback to placeholder for other game types

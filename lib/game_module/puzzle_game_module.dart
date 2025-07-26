@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
 import 'package:puzzgame_flutter/core/domain/services/settings_service.dart';
 import 'package:puzzgame_flutter/core/domain/services/error_reporting_service.dart';
-import 'package:puzzgame_flutter/core/domain/services/audio_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/core/domain/services/game_session_tracking_service.dart';
 import 'package:puzzgame_flutter/core/domain/services/auth_service.dart';
@@ -12,26 +11,6 @@ import 'package:puzzgame_flutter/game_module/services/puzzle_asset_manager.dart'
 import 'package:puzzgame_flutter/game_module/services/enhanced_puzzle_asset_manager.dart';
 import 'package:puzzgame_flutter/game_module/services/memory_optimized_asset_manager.dart';
 import 'package:uuid/uuid.dart';
-
-/// Result of attempting to place a piece
-enum PlacementResult {
-  success,
-  incorrectPosition,
-  alreadyPlaced,
-}
-
-/// Represents a piece that has been placed incorrectly
-class IncorrectlyPlacedPiece {
-  const IncorrectlyPlacedPiece({
-    required this.piece,
-    required this.placedPosition,
-    required this.placedAt,
-  });
-  
-  final PuzzlePiece piece;
-  final Offset placedPosition; // Position where it was incorrectly placed
-  final DateTime placedAt;
-}
 
 /// Implementation of the GameModule interface for jigsaw puzzle game
 /// Now with integrated memory optimization for large grids
@@ -239,8 +218,7 @@ class PuzzleGameSession implements GameSession {
   late List<PuzzlePiece> _allPieces;
   late List<PuzzlePiece> _trayPieces;
   late List<List<PuzzlePiece?>> _puzzleGrid;
-  final List<PuzzlePiece> _placedPieces = []; // Canvas-placed pieces (correctly positioned)
-  final List<IncorrectlyPlacedPiece> _incorrectlyPlacedPieces = []; // Incorrectly placed pieces
+  final List<PuzzlePiece> _placedPieces = []; // Canvas-placed pieces
   late String _currentPuzzleId;
   late PuzzleCanvasInfo _canvasInfo;
   int _piecesPlaced = 0;
@@ -264,7 +242,6 @@ class PuzzleGameSession implements GameSession {
   List<PuzzlePiece> get trayPieces => List.unmodifiable(_trayPieces);
   List<List<PuzzlePiece?>> get puzzleGrid => _puzzleGrid.map(List<PuzzlePiece?>.from).toList();
   List<PuzzlePiece> get placedPieces => List.unmodifiable(_placedPieces); // Canvas-placed pieces
-  List<IncorrectlyPlacedPiece> get incorrectlyPlacedPieces => List.unmodifiable(_incorrectlyPlacedPieces); // Incorrectly placed pieces
   String get currentPuzzleId => _currentPuzzleId;
   PuzzleCanvasInfo get canvasInfo => _canvasInfo;
   bool get isCompleted => _piecesPlaced == totalPieces;
@@ -343,7 +320,6 @@ class PuzzleGameSession implements GameSession {
     
     // Clear placed pieces
     _placedPieces.clear();
-    _incorrectlyPlacedPieces.clear();
     
     _piecesPlaced = 0;
     _assetsLoaded = true;
@@ -361,8 +337,6 @@ class PuzzleGameSession implements GameSession {
     _allPieces.clear();
     _trayPieces.clear();
     _puzzleGrid.clear();
-    _placedPieces.clear();
-    _incorrectlyPlacedPieces.clear();
     _piecesPlaced = 0;
     _assetsLoaded = false;
     
@@ -436,8 +410,6 @@ class PuzzleGameSession implements GameSession {
     _allPieces.clear();
     _trayPieces.clear();
     _puzzleGrid.clear();
-    _placedPieces.clear();
-    _incorrectlyPlacedPieces.clear();
     _piecesPlaced = 0;
     _assetsLoaded = false;
     
@@ -479,123 +451,7 @@ class PuzzleGameSession implements GameSession {
     print('PuzzleGameSession: Successfully switched to puzzle $newPuzzleId');
   }
 
-  /// Try to place piece at specific position with precision checking
-  Future<PlacementResult> tryPlacePieceAtPosition(
-    PuzzlePiece piece, 
-    Offset dropPosition, 
-    Size canvasSize,
-  ) async {
-    if (!_isActive || !_assetsLoaded) return PlacementResult.incorrectPosition;
-    
-    // Check if piece is already correctly placed
-    if (_placedPieces.contains(piece)) {
-      return PlacementResult.alreadyPlaced;
-    }
-    
-    // Remove from incorrectly placed if it was there
-    _incorrectlyPlacedPieces.removeWhere((incorrectPiece) => incorrectPiece.piece == piece);
-    
-    // Get placement precision setting
-    final settingsService = serviceLocator<SettingsService>();
-    final precisionSetting = await settingsService.getPlacementPrecision();
-    
-    // Check if placement is correct
-    if (_isPlacementCorrect(piece, dropPosition, canvasSize, precisionSetting)) {
-      // Correct placement
-      _placedPieces.add(piece);
-      _trayPieces.remove(piece);
-      _piecesPlaced++;
-      
-      // Calculate score
-      final timeBonusMultiplier = _calculateTimeBonusMultiplier();
-      final basePoints = 10 * _difficulty;
-      final precisionBonus = (precisionSetting * 5).round(); // Up to 5 bonus points for high precision
-      final points = ((basePoints + precisionBonus) * timeBonusMultiplier).round();
-      _score += points;
-      
-      print('PuzzleGameSession: Correctly placed piece ${piece.id}. Score: +$points');
-      
-      // Track piece placement
-      _trackPiecePlacement(piece, dropPosition, true, points);
-      
-      // Check completion
-      if (isCompleted) {
-        _onPuzzleCompleted();
-      }
-      
-      return PlacementResult.success;
-    } else {
-      // Incorrect placement - add to incorrect list
-      final incorrectPiece = IncorrectlyPlacedPiece(
-        piece: piece,
-        placedPosition: dropPosition,
-        placedAt: DateTime.now(),
-      );
-      _incorrectlyPlacedPieces.add(incorrectPiece);
-      _trayPieces.remove(piece);
-      
-      print('PuzzleGameSession: Incorrectly placed piece ${piece.id} at position $dropPosition');
-      
-      // Track incorrect piece placement
-      _trackPiecePlacement(piece, dropPosition, false, 0);
-      
-      return PlacementResult.incorrectPosition;
-    }
-  }
-  
-  /// Check if a piece placement is correct based on precision setting
-  bool _isPlacementCorrect(
-    PuzzlePiece piece, 
-    Offset dropPosition, 
-    Size canvasSize, 
-    double precisionSetting,
-  ) {
-    // Calculate the correct position for this piece
-    final correctPosition = _calculateCorrectPosition(piece, canvasSize);
-    
-    // If precision is 0 (drop anywhere), always succeed
-    if (precisionSetting <= 0.0) {
-      return true;
-    }
-    
-    // Calculate tolerance based on precision setting
-    // At precision 1.0, tolerance is very small (5% of piece size)
-    // At precision 0.0, tolerance is very large (50% of piece size)
-    final pieceSize = canvasSize.width / _gridSize;
-    final maxTolerance = pieceSize * 0.5;
-    final minTolerance = pieceSize * 0.05;
-    final tolerance = maxTolerance - (precisionSetting * (maxTolerance - minTolerance));
-    
-    // Check if drop position is within tolerance
-    final distance = (dropPosition - correctPosition).distance;
-    return distance <= tolerance;
-  }
-  
-  /// Calculate the correct center position for a piece on the canvas
-  Offset _calculateCorrectPosition(PuzzlePiece piece, Size canvasSize) {
-    final pieceSize = canvasSize.width / _gridSize;
-    final centerX = (piece.correctCol + 0.5) * pieceSize;
-    final centerY = (piece.correctRow + 0.5) * pieceSize;
-    return Offset(centerX, centerY);
-  }
-  
-  /// Remove an incorrectly placed piece back to tray
-  void removeIncorrectPiece(PuzzlePiece piece) {
-    if (!_isActive || !_assetsLoaded) return;
-    
-    // Remove from incorrect list and add back to tray
-    final removedCount = _incorrectlyPlacedPieces.length;
-    _incorrectlyPlacedPieces.removeWhere((incorrectPiece) => incorrectPiece.piece == piece);
-    final actuallyRemoved = removedCount - _incorrectlyPlacedPieces.length;
-    
-    if (actuallyRemoved > 0) {
-      _trayPieces.add(piece);
-      _trayPieces.shuffle(Random());
-      print('PuzzleGameSession: Removed incorrect piece ${piece.id} back to tray');
-    }
-  }
-  
-  /// Legacy method: Place piece on canvas (PNG padding handles positioning)
+  /// Place piece on canvas (PNG padding handles positioning)
   bool placePiece(PuzzlePiece piece) {
     if (!_isActive || !_assetsLoaded) return false;
     
