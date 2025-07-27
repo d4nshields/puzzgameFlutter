@@ -7,11 +7,13 @@ import 'package:puzzgame_flutter/core/domain/services/zoom_service.dart';
 import 'package:puzzgame_flutter/core/domain/services/error_reporting_service.dart';
 import 'package:puzzgame_flutter/core/domain/services/auth_service.dart';
 import 'package:puzzgame_flutter/core/domain/services/game_session_tracking_service.dart';
+import 'package:puzzgame_flutter/core/domain/services/achievement_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/shared_preferences_settings_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/system_audio_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/sentry_error_reporting_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/supabase/supabase_auth_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/supabase/supabase_game_session_tracking_service.dart';
+import 'package:puzzgame_flutter/core/infrastructure/supabase/supabase_achievement_service.dart';
 import 'package:puzzgame_flutter/game_module/puzzle_game_module.dart';
 
 /// Service locator singleton
@@ -27,6 +29,11 @@ void setupDependencies() {
   
   // Register Game Session Tracking Service
   serviceLocator.registerSingleton<GameSessionTrackingService>(SupabaseGameSessionTrackingService());
+  
+  // Register Achievement and Sharing Service
+  final achievementService = SupabaseAchievementService();
+  serviceLocator.registerSingleton<AchievementService>(achievementService);
+  serviceLocator.registerSingleton<SharingTrackingService>(achievementService);
   
   // Register Settings Service
   serviceLocator.registerSingleton<SettingsService>(SharedPreferencesSettingsService());

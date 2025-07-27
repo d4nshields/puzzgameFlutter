@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
+import 'package:puzzgame_flutter/core/domain/services/auth_service.dart';
+import 'package:puzzgame_flutter/core/domain/services/achievement_service.dart';
 import 'package:puzzgame_flutter/presentation/theme/puzzle_bazaar_theme.dart';
 
 /// Screen shown after successful registration to encourage sharing and highlight badge rewards
@@ -11,6 +14,8 @@ class SharingEncouragementScreen extends StatefulWidget {
 }
 
 class _SharingEncouragementScreenState extends State<SharingEncouragementScreen> {
+  final _authService = serviceLocator<AuthService>();
+  final _sharingService = serviceLocator<SharingTrackingService>();
   bool _isSharing = false;
 
   Future<void> _shareApp() async {
@@ -19,6 +24,17 @@ class _SharingEncouragementScreenState extends State<SharingEncouragementScreen>
     });
 
     try {
+      // Record the share event before sharing
+      final currentUser = _authService.currentUser;
+      await _sharingService.recordShare(
+        user: currentUser,
+        shareType: 'app_share',
+        shareData: {
+          'source': 'sharing_encouragement_screen',
+          'timestamp': DateTime.now().toIso8601String(),
+        },
+      );
+      
       await Share.share(
         'I just discovered Puzzle Nook - a cozy puzzle solving game! 🧩 '
         'It\'s perfect for relaxing and challenging your mind. '
@@ -27,6 +43,17 @@ class _SharingEncouragementScreenState extends State<SharingEncouragementScreen>
         '#PuzzleNook #PuzzleGame #CozyGaming',
         subject: 'Check out Puzzle Nook - A Cozy Puzzle Game!',
       );
+      
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Thanks for sharing Puzzle Nook! 🌟'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

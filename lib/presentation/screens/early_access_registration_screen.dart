@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/core/domain/services/auth_service.dart';
+import 'package:puzzgame_flutter/core/domain/services/achievement_service.dart';
 import 'package:puzzgame_flutter/presentation/theme/puzzle_bazaar_theme.dart';
 
 /// Screen shown after completing the first puzzle to encourage registration
@@ -13,6 +14,7 @@ class EarlyAccessRegistrationScreen extends StatefulWidget {
 
 class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationScreen> {
   final _authService = serviceLocator<AuthService>();
+  final _achievementService = serviceLocator<AchievementService>();
   bool _isSigningIn = false;
 
   Future<void> _signInWithGoogle() async {
@@ -23,6 +25,9 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
     try {
       final user = await _authService.signInWithGoogle();
       if (user != null && mounted) {
+        // Initialize achievements for new user
+        await _achievementService.initializeUserAchievements(userId: user.id);
+        
         // Show success message and navigate to sharing encouragement
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -1,5 +1,38 @@
 // Test Sentry Integration
 // Add this to any button press or app startup for testing
 
-// Test 1: Manual exception report
-try {\n  throw Exception('Test Sentry integration - this is a test crash');\n} catch (e, stackTrace) {\n  final errorReporting = serviceLocator<ErrorReportingService>();\n  await errorReporting.reportException(\n    e,\n    stackTrace: stackTrace,\n    context: 'test_crash',\n    extra: {\n      'test_type': 'manual_exception',\n      'timestamp': DateTime.now().toIso8601String(),\n    },\n  );\n}\n\n// Test 2: Message report\nfinal errorReporting = serviceLocator<ErrorReportingService>();\nawait errorReporting.reportMessage(\n  'Test message from production app',\n  level: 'info',\n  tags: {'test': 'true'},\n);\n\n// Test 3: Breadcrumb\nawait errorReporting.addBreadcrumb(\n  'User triggered test crash',\n  category: 'user_action',\n  data: {'action': 'test_button_pressed'},\n);\n
+import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
+import 'package:puzzgame_flutter/core/domain/services/error_reporting_service.dart';
+
+Future<void> testSentryIntegration() async {
+  // Test 1: Manual exception report
+  try {
+    throw Exception('Test Sentry integration - this is a test crash');
+  } catch (e, stackTrace) {
+    final errorReporting = serviceLocator<ErrorReportingService>();
+    await errorReporting.reportException(
+      e,
+      stackTrace: stackTrace,
+      context: 'test_crash',
+      extra: {
+        'test_type': 'manual_exception',
+        'timestamp': DateTime.now().toIso8601String(),
+      },
+    );
+  }
+
+  // Test 2: Message report
+  final errorReporting = serviceLocator<ErrorReportingService>();
+  await errorReporting.reportMessage(
+    'Test message from production app',
+    level: 'info',
+    tags: {'test': 'true'},
+  );
+
+  // Test 3: Breadcrumb
+  await errorReporting.addBreadcrumb(
+    'User triggered test crash',
+    category: 'user_action',
+    data: {'action': 'test_button_pressed'},
+  );
+}
