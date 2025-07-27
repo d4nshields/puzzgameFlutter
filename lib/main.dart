@@ -14,6 +14,7 @@ import 'package:puzzgame_flutter/presentation/screens/lottie_test_screen.dart';
 import 'package:puzzgame_flutter/presentation/screens/loading_screen.dart';
 import 'package:puzzgame_flutter/presentation/screens/sign_in_screen.dart';
 import 'package:puzzgame_flutter/presentation/screens/early_access_registration_screen.dart';
+import 'package:puzzgame_flutter/presentation/screens/sharing_encouragement_screen.dart';
 
 void main() async {
   // Ensure Flutter is initialized
@@ -109,6 +110,7 @@ class PuzzleBazaarGameApp extends StatelessWidget {
         '/home': (context) => const HomeScreen(),
         '/sign-in': (context) => const SignInScreen(),
         '/early-access': (context) => const EarlyAccessRegistrationScreen(),
+        '/sharing-encouragement': (context) => const SharingEncouragementScreen(),
         '/game': (context) => const GameScreen(),
         '/settings': (context) => const SettingsScreen(),
         '/auto-solve': (context) => const AutoSolveScreen(),
