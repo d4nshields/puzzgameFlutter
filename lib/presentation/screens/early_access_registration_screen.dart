@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/core/domain/services/auth_service.dart';
 import 'package:puzzgame_flutter/core/domain/services/achievement_service.dart';
-import 'package:puzzgame_flutter/presentation/theme/puzzle_bazaar_theme.dart';
+import 'package:puzzgame_flutter/presentation/theme/cozy_puzzle_theme.dart';
 
 /// Screen shown after completing the first puzzle to encourage registration
 class EarlyAccessRegistrationScreen extends StatefulWidget {
@@ -31,9 +31,16 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
         // Show success message and navigate to sharing encouragement
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Welcome ${user.email}! Thanks for registering for early access.'),
-            backgroundColor: Colors.green,
+            content: Text(
+              'Welcome ${user.email}! Thanks for registering for early access.',
+              style: CozyPuzzleTheme.bodyMedium.copyWith(color: Colors.white),
+            ),
+            backgroundColor: CozyPuzzleTheme.seafoamMist,
             duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
         
@@ -44,8 +51,15 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Sign in failed: $e'),
-            backgroundColor: Colors.red,
+            content: Text(
+              'Sign in failed: $e',
+              style: CozyPuzzleTheme.bodyMedium.copyWith(color: Colors.white),
+            ),
+            backgroundColor: CozyPuzzleTheme.coralBlush,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
@@ -63,7 +77,14 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: PuzzleBazaarTheme.warmGradient,
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              CozyPuzzleTheme.linenWhite,
+              CozyPuzzleTheme.warmSand.withOpacity(0.4),
+            ],
+          ),
         ),
         child: SafeArea(
           child: Padding(
@@ -71,13 +92,8 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
             child: Column(
               children: [
                 // Compact top section with logo and congratulations
-                Container(
+                CozyPuzzleTheme.createThemedContainer(
                   padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.95),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: PuzzleBazaarTheme.warmShadow,
-                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -85,17 +101,17 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: PuzzleBazaarTheme.warmCream,
+                          color: CozyPuzzleTheme.goldenSandbar.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: PuzzleBazaarTheme.terracotta.withOpacity(0.3),
+                            color: CozyPuzzleTheme.goldenSandbar,
                             width: 2,
                           ),
                         ),
                         child: Icon(
                           Icons.extension,
                           size: 28,
-                          color: PuzzleBazaarTheme.mutedBlue,
+                          color: CozyPuzzleTheme.goldenSandbar,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -104,15 +120,12 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
                         children: [
                           Text(
                             'Puzzle Nook',
-                            style: PuzzleBazaarTheme.subheadingStyle.copyWith(
-                              fontSize: 20,
-                              color: PuzzleBazaarTheme.richBrown,
-                            ),
+                            style: CozyPuzzleTheme.headingSmall,
                           ),
                           Text(
                             '🎉 Puzzle Complete!',
-                            style: PuzzleBazaarTheme.bodyStyle.copyWith(
-                              color: PuzzleBazaarTheme.goldenAmber,
+                            style: CozyPuzzleTheme.bodyMedium.copyWith(
+                              color: CozyPuzzleTheme.goldenSandbar,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -124,19 +137,15 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
                 
                 const SizedBox(height: 24),
                 
-                // Main registration card - more compact
+                // Main registration card
                 Expanded(
-                  child: Container(
+                  child: CozyPuzzleTheme.createThemedContainer(
                     padding: const EdgeInsets.all(24),
-                    decoration: PuzzleBazaarTheme.cardDecoration,
                     child: Column(
                       children: [
                         Text(
                           'Join the Puzzle Nook',
-                          style: PuzzleBazaarTheme.subheadingStyle.copyWith(
-                            fontSize: 22,
-                            color: PuzzleBazaarTheme.richBrown,
-                          ),
+                          style: CozyPuzzleTheme.headingMedium,
                           textAlign: TextAlign.center,
                         ),
                         
@@ -144,9 +153,7 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
                         
                         Text(
                           'Get early access to new puzzles and features:',
-                          style: PuzzleBazaarTheme.bodyStyle.copyWith(
-                            color: PuzzleBazaarTheme.softGrey,
-                          ),
+                          style: CozyPuzzleTheme.bodyMedium,
                           textAlign: TextAlign.center,
                         ),
                         
@@ -183,35 +190,13 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
                         SizedBox(
                           width: double.infinity,
                           height: 52,
-                          child: ElevatedButton.icon(
-                            onPressed: _isSigningIn ? null : _signInWithGoogle,
+                          child: CozyPuzzleTheme.createThemedButton(
+                            text: _isSigningIn ? 'Joining...' : 'Join with Google',
+                            onPressed: _isSigningIn ? () {} : _signInWithGoogle,
                             icon: _isSigningIn 
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : Image.asset(
-                                    'assets/images/google_logo.png',
-                                    width: 20,
-                                    height: 20,
-                                    errorBuilder: (context, error, stackTrace) => const Icon(
-                                      Icons.login,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                            label: Text(
-                              _isSigningIn ? 'Joining...' : 'Join with Google',
-                              style: PuzzleBazaarTheme.buttonTextStyle.copyWith(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            style: PuzzleBazaarTheme.primaryButtonStyle,
+                                ? null 
+                                : Icons.login,
+                            isPrimary: true,
                           ),
                         ),
                         
@@ -222,12 +207,10 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
-                          style: PuzzleBazaarTheme.textButtonStyle,
                           child: Text(
                             'Continue exploring',
-                            style: PuzzleBazaarTheme.bodyStyle.copyWith(
-                              color: PuzzleBazaarTheme.mutedBlue,
-                              fontSize: 14,
+                            style: CozyPuzzleTheme.bodyMedium.copyWith(
+                              color: CozyPuzzleTheme.stoneGray,
                             ),
                           ),
                         ),
@@ -250,10 +233,10 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: PuzzleBazaarTheme.warmCream,
+        color: CozyPuzzleTheme.linenWhite,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: PuzzleBazaarTheme.terracotta.withOpacity(0.2),
+          color: CozyPuzzleTheme.seafoamMist.withOpacity(0.3),
           width: 1,
         ),
       ),
@@ -263,7 +246,7 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
             width: 24,
             height: 24,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: CozyPuzzleTheme.seafoamMist.withOpacity(0.2),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Center(
@@ -277,9 +260,8 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
           Expanded(
             child: Text(
               text,
-              style: PuzzleBazaarTheme.bodyStyle.copyWith(
-                color: PuzzleBazaarTheme.darkBrown,
-                fontSize: 13,
+              style: CozyPuzzleTheme.bodySmall.copyWith(
+                color: CozyPuzzleTheme.deepSlate,
                 fontWeight: FontWeight.w500,
               ),
             ),
