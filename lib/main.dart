@@ -15,6 +15,7 @@ import 'package:puzzgame_flutter/presentation/screens/loading_screen.dart';
 import 'package:puzzgame_flutter/presentation/screens/sign_in_screen.dart';
 import 'package:puzzgame_flutter/presentation/screens/early_access_registration_screen.dart';
 import 'package:puzzgame_flutter/presentation/screens/sharing_encouragement_screen.dart';
+import 'package:puzzgame_flutter/presentation/theme/cozy_puzzle_theme.dart';
 
 void main() async {
   // Ensure Flutter is initialized
@@ -91,19 +92,9 @@ class PuzzleBazaarGameApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Puzzle Nook',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-        ),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-      ),
+      theme: CozyPuzzleTheme.lightTheme,
+      // Note: Dark theme implementation can be added later if needed
+      // For now, using light theme for consistency with cozy aesthetic
       initialRoute: '/',
       routes: {
         '/': (context) => const GameScreen(), // Direct to game instead of home

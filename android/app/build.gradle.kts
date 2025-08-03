@@ -9,12 +9,77 @@ plugins {
     id("com.google.gms.google-services")
 }
 
-// Load key.properties file if it exists
-val keystorePropertiesFile = rootProject.file("key.properties")
-val keystoreProperties = Properties()
-if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+// Enhanced key.properties loading with keyring integration
+fun loadKeystoreProperties(): Properties? {
+    val keystorePropertiesFile = rootProject.file("key.properties")
+    
+    if (!keystorePropertiesFile.exists()) {
+        println("⚠️  WARNING: key.properties file not found!")
+        println("📁 Expected location: ${keystorePropertiesFile.absolutePath}")
+        println("📋 To fix this:")
+        println("   1. Run './setup_signing_keyring.sh' for keyring-based setup")
+        println("   2. Or run './setup_signing.sh' for manual setup")
+        println("   3. Or copy android/key.properties.template to android/key.properties")
+        return null
+    }
+    
+    // Check if this is a keyring-based configuration
+    val fileContent = keystorePropertiesFile.readText()
+    if (fileContent.contains("__FROM_KEYRING__") || fileContent.contains("__keyring_backend=")) {
+        println("🔐 Detected keyring-based configuration, loading credentials...")
+        
+        // Execute the keyring loader script
+        val loadScript = rootProject.file("load_keyring_credentials.sh")
+        if (loadScript.exists()) {
+            try {
+                val process = ProcessBuilder("bash", loadScript.absolutePath, keystorePropertiesFile.absolutePath)
+                    .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                    .redirectError(ProcessBuilder.Redirect.INHERIT)
+                    .start()
+                
+                val exitCode = process.waitFor()
+                if (exitCode != 0) {
+                    println("❌ Failed to load credentials from keyring")
+                    return null
+                }
+            } catch (e: Exception) {
+                println("❌ Error loading keyring credentials: ${e.message}")
+                return null
+            }
+        } else {
+            println("❌ Keyring loader script not found: ${loadScript.absolutePath}")
+            return null
+        }
+    }
+    
+    val properties = Properties()
+    properties.load(FileInputStream(keystorePropertiesFile))
+    
+    // Validate required properties
+    val requiredKeys = listOf("storePassword", "keyPassword", "keyAlias", "storeFile")
+    val missingKeys = requiredKeys.filter { properties.getProperty(it).isNullOrBlank() }
+    
+    if (missingKeys.isNotEmpty()) {
+        println("❌ ERROR: key.properties is missing required values:")
+        missingKeys.forEach { println("   - $it") }
+        println("📋 Please run './setup_signing_keyring.sh' to reconfigure")
+        return null
+    }
+    
+    // Validate keystore file exists
+    val storeFile = file(properties.getProperty("storeFile"))
+    if (!storeFile.exists()) {
+        println("❌ ERROR: Keystore file not found:")
+        println("   Expected: ${storeFile.absolutePath}")
+        println("📋 Please check the storeFile path in key.properties")
+        return null
+    }
+    
+    println("✅ Signing configuration loaded successfully")
+    return properties
 }
+
+val keystoreProperties = loadKeystoreProperties()
 
 android {
     namespace = "com.tinkerplexlabs.puzzlenook"
@@ -38,13 +103,13 @@ android {
         applicationId = "com.tinkerplexlabs.puzzlenook"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 7270030
-        versionName = "0.6.7"
+        versionCode = 8022228
+        versionName = "0.7.1"
     }
 
     signingConfigs {
-        // Release signing config - used for Play Store uploads (PKCS12 format)
-        if (keystorePropertiesFile.exists()) {
+        // Release signing config - loaded from keyring or direct properties
+        if (keystoreProperties != null) {
             create("release") {
                 keyAlias = keystoreProperties["keyAlias"] as String
                 keyPassword = keystoreProperties["keyPassword"] as String
@@ -59,27 +124,30 @@ android {
             signingConfig = signingConfigs.getByName("debug")
             isDebuggable = true
         }
+        
         getByName("release") {
-            // Use release signing config if it exists, otherwise use debug
-            if (keystorePropertiesFile.exists()) {
+            if (keystoreProperties != null) {
                 signingConfig = signingConfigs.getByName("release")
+                println("🔐 Using release signing configuration")
             } else {
-                signingConfig = signingConfigs.getByName("debug")
+                // FAIL THE BUILD for release without proper signing
+                throw GradleException("""
+                    ❌ RELEASE BUILD FAILED: No valid signing configuration!
+                    
+                    Release builds require a properly configured signing setup.
+                    This prevents accidentally publishing debug-signed builds.
+                    
+                    To fix this:
+                    1. Run: ./setup_signing_keyring.sh (recommended - uses system keyring)
+                    2. Or run: ./setup_signing.sh (manual setup)
+                    3. Or manually create android/key.properties from template
+                    
+                    For debug builds, use: flutter run --debug
+                """.trimIndent())
             }
             
-            // For now, disable minification to avoid R8 issues
-            // This is fine for a simple app like yours
             isMinifyEnabled = false
             isShrinkResources = false
-            
-            // If you want to enable minification later, uncomment these:
-            // isMinifyEnabled = true
-            // isShrinkResources = true
-            // proguardFiles(
-            //     getDefaultProguardFile("proguard-android-optimize.txt"), 
-            //     "proguard-rules.pro",
-            //     "missing_rules.pro"
-            // )
         }
     }
 }

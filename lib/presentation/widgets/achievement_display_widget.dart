@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:puzzgame_flutter/core/domain/services/achievement_service.dart';
 import 'package:puzzgame_flutter/core/domain/entities/user.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
-import 'package:puzzgame_flutter/presentation/theme/puzzle_bazaar_theme.dart';
+import 'package:puzzgame_flutter/presentation/theme/cozy_puzzle_theme.dart';
 
-/// Widget to display user achievements and sharing stats
+/// Widget to display user achievements with cozy theme
 class AchievementDisplayWidget extends StatefulWidget {
   final AppUser user;
   final bool showShareCount;
@@ -23,11 +23,9 @@ class AchievementDisplayWidget extends StatefulWidget {
 
 class _AchievementDisplayWidgetState extends State<AchievementDisplayWidget> {
   final _achievementService = serviceLocator<AchievementService>();
-  final _sharingService = serviceLocator<SharingTrackingService>();
   
   List<Achievement>? _achievements;
   List<Achievement>? _unlockedAchievements;
-  int? _shareCount;
   int? _totalPoints;
   bool _isLoading = true;
 
@@ -41,16 +39,12 @@ class _AchievementDisplayWidgetState extends State<AchievementDisplayWidget> {
     try {
       final achievements = await _achievementService.getUserAchievements(userId: widget.user.id);
       final unlockedAchievements = await _achievementService.getUnlockedAchievements(userId: widget.user.id);
-      final shareCount = widget.showShareCount 
-          ? await _sharingService.getUserShareCount(userId: widget.user.id)
-          : 0;
       final totalPoints = await _achievementService.getUserAchievementPoints(userId: widget.user.id);
 
       if (mounted) {
         setState(() {
           _achievements = achievements;
           _unlockedAchievements = unlockedAchievements;
-          _shareCount = shareCount;
           _totalPoints = totalPoints;
           _isLoading = false;
         });
@@ -60,6 +54,10 @@ class _AchievementDisplayWidgetState extends State<AchievementDisplayWidget> {
       if (mounted) {
         setState(() {
           _isLoading = false;
+          // Set default values for graceful degradation
+          _achievements = [];
+          _unlockedAchievements = [];
+          _totalPoints = 0;
         });
       }
     }
@@ -68,149 +66,224 @@ class _AchievementDisplayWidgetState extends State<AchievementDisplayWidget> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
+      return CozyPuzzleTheme.createThemedContainer(
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: CozyPuzzleTheme.goldenSandbar,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Loading achievements...',
+                style: CozyPuzzleTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
       );
     }
 
     if (widget.compact) {
       return _buildCompactView();
+    } else {
+      return _buildFullView();
     }
-
-    return _buildFullView();
   }
 
   Widget _buildCompactView() {
     final unlockedCount = _unlockedAchievements?.length ?? 0;
     final totalCount = _achievements?.length ?? 0;
-    
-    return Container(
+    final points = _totalPoints ?? 0;
+
+    return CozyPuzzleTheme.createThemedContainer(
+      isPrimary: false,
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: PuzzleBazaarTheme.warmCream,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: PuzzleBazaarTheme.terracotta.withOpacity(0.3),
-          width: 1,
-        ),
-      ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          // Achievement badge count
-          _buildStatItem('🏆', '$unlockedCount/$totalCount'),
-          if (widget.showShareCount && _shareCount != null) ...[
-            const SizedBox(width: 16),
-            _buildStatItem('📤', '$_shareCount'),
-          ],
-          if (_totalPoints != null && _totalPoints! > 0) ...[
-            const SizedBox(width: 16),
-            _buildStatItem('⭐', '$_totalPoints'),
-          ],
+          // Achievement icon
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: CozyPuzzleTheme.goldenSandbar.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.emoji_events,
+              color: CozyPuzzleTheme.goldenSandbar,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          
+          // Achievement text
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  totalCount > 0 ? '$unlockedCount/$totalCount Achievements' : 'No achievements yet',
+                  style: CozyPuzzleTheme.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (points > 0)
+                  Text(
+                    '$points points earned',
+                    style: CozyPuzzleTheme.bodySmall,
+                  ),
+              ],
+            ),
+          ),
         ],
       ),
-    );
-  }
-
-  Widget _buildStatItem(String emoji, String value) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(emoji, style: const TextStyle(fontSize: 16)),
-        const SizedBox(width: 4),
-        Text(
-          value,
-          style: PuzzleBazaarTheme.bodyStyle.copyWith(
-            fontWeight: FontWeight.w600,
-            color: PuzzleBazaarTheme.darkBrown,
-            fontSize: 14,
-          ),
-        ),
-      ],
     );
   }
 
   Widget _buildFullView() {
     final unlockedCount = _unlockedAchievements?.length ?? 0;
     final totalCount = _achievements?.length ?? 0;
-    
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: PuzzleBazaarTheme.cardDecoration,
+    final points = _totalPoints ?? 0;
+    final progressPercentage = totalCount > 0 ? (unlockedCount / totalCount) : 0.0;
+
+    return CozyPuzzleTheme.createThemedContainer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          // Header with title and points
           Row(
             children: [
-              const Icon(
-                Icons.military_tech,
-                color: PuzzleBazaarTheme.goldenAmber,
-                size: 24,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Achievements',
-                style: PuzzleBazaarTheme.subheadingStyle.copyWith(
-                  fontSize: 18,
-                  color: PuzzleBazaarTheme.richBrown,
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: CozyPuzzleTheme.goldenSandbar.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.emoji_events,
+                  color: CozyPuzzleTheme.goldenSandbar,
+                  size: 24,
                 ),
               ),
-              const Spacer(),
-              Text(
-                '$unlockedCount/$totalCount',
-                style: PuzzleBazaarTheme.bodyStyle.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: PuzzleBazaarTheme.mutedBlue,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Achievements',
+                      style: CozyPuzzleTheme.headingSmall,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      totalCount > 0 ? '$unlockedCount of $totalCount unlocked' : 'No achievements available',
+                      style: CozyPuzzleTheme.bodyMedium,
+                    ),
+                  ],
                 ),
               ),
+              if (points > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: CozyPuzzleTheme.coralBlush.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: CozyPuzzleTheme.coralBlush.withOpacity(0.5),
+                    ),
+                  ),
+                  child: Text(
+                    '$points pts',
+                    style: CozyPuzzleTheme.labelLarge.copyWith(
+                      color: CozyPuzzleTheme.deepSlate,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
             ],
           ),
           
-          const SizedBox(height: 12),
-          
-          // Stats row
-          Row(
-            children: [
-              if (widget.showShareCount && _shareCount != null)
-                Expanded(
-                  child: _buildFullStatCard(
-                    '📤',
-                    'Shares',
-                    '$_shareCount',
-                    PuzzleBazaarTheme.mutedBlue,
-                  ),
+          if (totalCount > 0) ...[
+            const SizedBox(height: 20),
+            
+            // Progress bar
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Progress',
+                  style: CozyPuzzleTheme.labelLarge,
                 ),
-              if (widget.showShareCount && _shareCount != null && _totalPoints != null)
-                const SizedBox(width: 12),
-              if (_totalPoints != null)
-                Expanded(
-                  child: _buildFullStatCard(
-                    '⭐',
-                    'Points',
-                    '$_totalPoints',
-                    PuzzleBazaarTheme.goldenAmber,
-                  ),
+                const SizedBox(height: 8),
+                CozyPuzzleTheme.createProgressIndicator(
+                  value: progressPercentage,
+                  height: 8,
                 ),
-            ],
-          ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${(progressPercentage * 100).toInt()}% Complete',
+                      style: CozyPuzzleTheme.bodySmall,
+                    ),
+                    Text(
+                      '$unlockedCount/$totalCount',
+                      style: CozyPuzzleTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
           
-          if (_unlockedAchievements?.isNotEmpty == true) ...[
-            const SizedBox(height: 16),
+          // Recent achievements (if any)
+          if (_unlockedAchievements != null && _unlockedAchievements!.isNotEmpty) ...[
+            const SizedBox(height: 24),
             Text(
               'Recent Achievements',
-              style: PuzzleBazaarTheme.bodyStyle.copyWith(
-                fontWeight: FontWeight.w600,
-                color: PuzzleBazaarTheme.darkBrown,
-              ),
+              style: CozyPuzzleTheme.labelLarge,
             ),
-            const SizedBox(height: 8),
-            
-            // Show recent achievements
-            ..._unlockedAchievements!.take(3).map((achievement) =>
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: _buildAchievementItem(achievement),
+            const SizedBox(height: 12),
+            ...(_unlockedAchievements!.take(3).map((achievement) => 
+              _buildAchievementTile(achievement)
+            )),
+            if (_unlockedAchievements!.length > 3) ...[
+              const SizedBox(height: 8),
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    _showAllAchievements();
+                  },
+                  child: Text(
+                    'View all ${_unlockedAchievements!.length} achievements',
+                    style: CozyPuzzleTheme.bodyMedium.copyWith(
+                      color: CozyPuzzleTheme.stoneGray,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ] else if (totalCount == 0) ...[
+            const SizedBox(height: 24),
+            Center(
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.star_outline,
+                    size: 48,
+                    color: CozyPuzzleTheme.stoneGray,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Start playing to unlock achievements!',
+                    style: CozyPuzzleTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
           ],
@@ -219,76 +292,109 @@ class _AchievementDisplayWidgetState extends State<AchievementDisplayWidget> {
     );
   }
 
-  Widget _buildFullStatCard(String emoji, String label, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 1,
+  Widget _buildAchievementTile(Achievement achievement) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: CozyPuzzleTheme.linenWhite,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: CozyPuzzleTheme.weatheredDriftwood.withOpacity(0.3),
+          ),
         ),
-      ),
-      child: Column(
-        children: [
-          Text(emoji, style: const TextStyle(fontSize: 20)),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: PuzzleBazaarTheme.subheadingStyle.copyWith(
-              fontSize: 16,
-              color: color,
-              fontWeight: FontWeight.bold,
+        child: Row(
+          children: [
+            // Achievement icon/emoji
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: CozyPuzzleTheme.goldenSandbar.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: Text(
+                  achievement.emoji ?? '🏆',
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ),
             ),
-          ),
-          Text(
-            label,
-            style: PuzzleBazaarTheme.captionStyle.copyWith(
-              color: PuzzleBazaarTheme.softGrey,
-              fontSize: 12,
+            const SizedBox(width: 12),
+            
+            // Achievement details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    achievement.title,
+                    style: CozyPuzzleTheme.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (achievement.description.isNotEmpty)
+                    Text(
+                      achievement.description,
+                      style: CozyPuzzleTheme.bodySmall,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
+              ),
             ),
-          ),
-        ],
+            
+            // Points
+            if (achievement.points > 0)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: CozyPuzzleTheme.coralBlush.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '+${achievement.points}',
+                  style: CozyPuzzleTheme.labelSmall.copyWith(
+                    color: CozyPuzzleTheme.deepSlate,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildAchievementItem(Achievement achievement) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: PuzzleBazaarTheme.warmCream,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: PuzzleBazaarTheme.terracotta.withOpacity(0.2),
-          width: 1,
-        ),
+  void _showAllAchievements() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: CozyPuzzleTheme.linenWhite,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      child: Row(
-        children: [
-          Text(
-            achievement.iconEmoji,
-            style: const TextStyle(fontSize: 16),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              achievement.name,
-              style: PuzzleBazaarTheme.bodyStyle.copyWith(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: PuzzleBazaarTheme.darkBrown,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'All Achievements',
+              style: CozyPuzzleTheme.headingMedium,
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _unlockedAchievements?.length ?? 0,
+                itemBuilder: (context, index) {
+                  final achievement = _unlockedAchievements![index];
+                  return _buildAchievementTile(achievement);
+                },
               ),
             ),
-          ),
-          if (achievement.isUnlocked)
-            Icon(
-              Icons.check_circle,
-              size: 16,
-              color: Colors.green.shade600,
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
