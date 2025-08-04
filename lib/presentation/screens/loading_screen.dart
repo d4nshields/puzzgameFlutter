@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:puzzgame_flutter/presentation/theme/puzzle_bazaar_theme.dart';
+import 'package:puzzgame_flutter/presentation/theme/cozy_puzzle_theme.dart';
 
 /// Custom loading screen with Lottie animation shown during app initialization
 class LoadingScreen extends StatefulWidget {
@@ -52,6 +52,7 @@ class _LoadingScreenState extends State<LoadingScreen>
     _fadeController.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     // Ensure minimum display time for the animation
@@ -69,7 +70,14 @@ class _LoadingScreenState extends State<LoadingScreen>
             home: Scaffold(
               body: Container(
                 decoration: BoxDecoration(
-                  gradient: PuzzleBazaarTheme.warmGradient,
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      CozyPuzzleTheme.linenWhite,
+                      CozyPuzzleTheme.warmSand.withOpacity(0.5),
+                    ],
+                  ),
                 ),
                 child: AnimatedBuilder(
                   animation: _fadeAnimation,
@@ -80,31 +88,25 @@ class _LoadingScreenState extends State<LoadingScreen>
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // App logo/title with theme styling
-                            Container(
+                            // App logo/title with cozy theme styling
+                            CozyPuzzleTheme.createThemedContainer(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 32,
                                 vertical: 16,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.9),
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: PuzzleBazaarTheme.warmShadow,
                               ),
                               child: Column(
                                 children: [
                                   Text(
                                     'Puzzle',
-                                    style: PuzzleBazaarTheme.headingStyle.copyWith(
+                                    style: CozyPuzzleTheme.headingLarge.copyWith(
                                       fontSize: 36,
-                                      color: PuzzleBazaarTheme.richBrown,
                                     ),
                                   ),
                                   Text(
-                                    'Nook', // Correct app name
-                                    style: PuzzleBazaarTheme.headingStyle.copyWith(
+                                    'Nook',
+                                    style: CozyPuzzleTheme.headingLarge.copyWith(
                                       fontSize: 36,
-                                      color: PuzzleBazaarTheme.mutedBlue,
+                                      color: CozyPuzzleTheme.goldenSandbar,
                                     ),
                                   ),
                                 ],
@@ -114,13 +116,9 @@ class _LoadingScreenState extends State<LoadingScreen>
                             const SizedBox(height: 60),
                             
                             // Lottie loading animation with themed container
-                            Container(
+                            CozyPuzzleTheme.createThemedContainer(
+                              isPrimary: false,
                               padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.8),
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: PuzzleBazaarTheme.warmShadow,
-                              ),
                               child: Lottie.asset(
                                 'assets/animations/loading_puzzle_pieces.json',
                                 width: 180,
@@ -130,11 +128,18 @@ class _LoadingScreenState extends State<LoadingScreen>
                                   return Container(
                                     width: 180,
                                     height: 180,
-                                    decoration: PuzzleBazaarTheme.iconDecoration,
-                                    child: const Icon(
+                                    decoration: BoxDecoration(
+                                      color: CozyPuzzleTheme.seafoamMist.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: CozyPuzzleTheme.seafoamMist,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: Icon(
                                       Icons.extension,
                                       size: 80,
-                                      color: PuzzleBazaarTheme.mutedBlue,
+                                      color: CozyPuzzleTheme.goldenSandbar,
                                     ),
                                   );
                                 },
@@ -143,34 +148,30 @@ class _LoadingScreenState extends State<LoadingScreen>
                             
                             const SizedBox(height: 40),
                             
-                            // Loading text with theme styling
-                            Container(
+                            // Loading text with cozy theme styling
+                            CozyPuzzleTheme.createThemedContainer(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 24,
                                 vertical: 12,
                               ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.9),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Text(
+                              child: Text(
                                 'Preparing your cozy puzzle experience...',
-                                style: PuzzleBazaarTheme.bodyStyle,
+                                style: CozyPuzzleTheme.bodyLarge,
                                 textAlign: TextAlign.center,
                               ),
                             ),
                             
                             const SizedBox(height: 20),
                             
-                            // Progress indicator with theme
-                            Container(
-                              width: 240,
+                            // Progress indicator with cozy theme
+                            CozyPuzzleTheme.createThemedContainer(
                               padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.9),
-                                borderRadius: BorderRadius.circular(12),
+                              child: SizedBox(
+                                width: 240,
+                                child: CozyPuzzleTheme.createProgressIndicator(
+                                  height: 6,
+                                ),
                               ),
-                              child: PuzzleBazaarTheme.createProgressIndicator(),
                             ),
                           ],
                         ),
