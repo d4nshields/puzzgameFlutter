@@ -17,16 +17,6 @@ The zoom and audio functionality has been implemented with all necessary files c
    flutter test
    ```
 
-3. **If you want to generate proper mocks later (optional):**
-   ```bash
-   # Add to pubspec.yaml dev_dependencies:
-   # build_runner: ^2.4.6
-   # mockito: ^5.4.2
-   
-   # Then run:
-   dart run build_runner build
-   ```
-
 ## Fixed Issues
 
 ✅ **Import Issues Resolved:**
