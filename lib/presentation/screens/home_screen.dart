@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/core/domain/services/auth_service.dart';
+import 'package:puzzgame_flutter/presentation/theme/cozy_puzzle_theme.dart';
 
 /// Main screen of the application
 class HomeScreen extends StatefulWidget {
@@ -30,10 +31,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: CircleAvatar(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    backgroundColor: CozyPuzzleTheme.goldenSandbar,
                     child: Text(
                       user.email.substring(0, 1).toUpperCase(),
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: CozyPuzzleTheme.deepSlate),
                     ),
                   ),
                 );
@@ -50,80 +51,119 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Welcome to Puzzle Nook!',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 40),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(200, 50),
-                ),
-                onPressed: () {
-                  Navigator.pushNamed(context, '/game');
-                },
-                child: const Text('Start New Game'),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(200, 50),
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: () {
-                  Navigator.pushNamed(context, '/lottie-test');
-                },
-                child: const Text('Test Animation'),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(200, 50),
-                ),
-                onPressed: () {
-                  Navigator.pushNamed(context, '/settings');
-                },
-                child: const Text('Settings'),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(200, 50),
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: () {
-                  Navigator.pushNamed(context, '/auto-solve');
-                },
-                child: const Text('Auto-Solve (Debug)'),
-              ),
-              const SizedBox(height: 16),
-              OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(200, 50),
-                ),
-                onPressed: () {
-                  // Show about dialog
-                  showAboutDialog(
-                    context: context,
-                    applicationName: 'Puzzle Nook',
-                    applicationVersion: '1.0.0',
-                    applicationLegalese: '© 2025',
-                  );
-                },
-                child: const Text('About'),
-              ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              CozyPuzzleTheme.linenWhite,
+              CozyPuzzleTheme.warmSand.withOpacity(0.3),
             ],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Welcome to Puzzle Nook!',
+                    style: CozyPuzzleTheme.headingLarge,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Cozy puzzle solving for relaxation',
+                    style: CozyPuzzleTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 48),
+                  
+                  // Primary action - Start Game
+                  CozyPuzzleTheme.createThemedButton(
+                    text: 'Start New Game',
+                    onPressed: () => Navigator.pushNamed(context, '/game'),
+                    icon: Icons.play_arrow,
+                    isPrimary: true,
+                  ),
+                  
+                  const SizedBox(height: 20),
+                  
+                  // Secondary actions
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: CozyPuzzleTheme.createThemedButton(
+                            text: 'Settings',
+                            onPressed: () => Navigator.pushNamed(context, '/settings'),
+                            icon: Icons.settings,
+                            isPrimary: false,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: CozyPuzzleTheme.createThemedButton(
+                            text: 'Test Animation',
+                            onPressed: () => Navigator.pushNamed(context, '/lottie-test'),
+                            icon: Icons.animation,
+                            isPrimary: false,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 32),
+                  
+                  // Debug/Development actions in a card
+                  CozyPuzzleTheme.createThemedContainer(
+                    isPrimary: false,
+                    child: Column(
+                      children: [
+                        Text(
+                          'Developer Tools',
+                          style: CozyPuzzleTheme.headingSmall,
+                        ),
+                        const SizedBox(height: 16),
+                        CozyPuzzleTheme.createThemedButton(
+                          text: 'Auto-Solve Debug',
+                          onPressed: () => Navigator.pushNamed(context, '/auto-solve'),
+                          icon: Icons.bug_report,
+                          isAlert: true,
+                        ),
+                        const SizedBox(height: 12),
+                        TextButton(
+                          onPressed: () {
+                            showAboutDialog(
+                              context: context,
+                              applicationName: 'Puzzle Nook',
+                              applicationVersion: '1.0.0',
+                              applicationLegalese: '© 2025 - Cozy Puzzle Experience',
+                              children: [
+                                const SizedBox(height: 16),
+                                Text(
+                                  'A relaxing jigsaw puzzle game designed for cozy moments.',
+                                  style: CozyPuzzleTheme.bodyMedium,
+                                ),
+                              ],
+                            );
+                          },
+                          child: const Text('About Puzzle Nook'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
