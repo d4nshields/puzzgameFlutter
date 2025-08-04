@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:puzzgame_flutter/core/application/settings_providers.dart';
 import 'package:puzzgame_flutter/presentation/widgets/user_profile_widget.dart';
+import 'package:puzzgame_flutter/presentation/theme/cozy_puzzle_theme.dart';
 
-/// Settings screen for the application - now fully reactive
+/// Settings screen for the application - now fully reactive with cozy theme
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -33,8 +34,20 @@ class SettingsScreen extends ConsumerWidget {
         appBar: AppBar(
           title: const Text('Settings'),
         ),
-        body: const Center(
-          child: CircularProgressIndicator(),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(
+                color: CozyPuzzleTheme.goldenSandbar,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Loading settings...',
+                style: CozyPuzzleTheme.bodyMedium,
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -51,24 +64,34 @@ class SettingsScreen extends ConsumerWidget {
           title: const Text('Settings'),
         ),
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error, color: Colors.red, size: 48),
-              const SizedBox(height: 16),
-              const Text('Failed to load settings'),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  // Refresh all providers
-                  ref.invalidate(difficultyProvider);
-                  ref.invalidate(soundEnabledProvider);
-                  ref.invalidate(vibrationEnabledProvider);
-                  ref.invalidate(easyPieceSortingProvider);
-                },
-                child: const Text('Retry'),
-              ),
-            ],
+          child: CozyPuzzleTheme.createThemedContainer(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.error_outline, 
+                  color: CozyPuzzleTheme.coralBlush, 
+                  size: 48
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Failed to load settings',
+                  style: CozyPuzzleTheme.headingSmall,
+                ),
+                const SizedBox(height: 16),
+                CozyPuzzleTheme.createThemedButton(
+                  text: 'Retry',
+                  onPressed: () {
+                    // Refresh all providers
+                    ref.invalidate(difficultyProvider);
+                    ref.invalidate(soundEnabledProvider);
+                    ref.invalidate(vibrationEnabledProvider);
+                    ref.invalidate(easyPieceSortingProvider);
+                  },
+                  isPrimary: true,
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -86,218 +109,321 @@ class SettingsScreen extends ConsumerWidget {
         // Add a visual indicator when changes are auto-saving
         actions: [
           if (difficultyAsync.isLoading || soundEnabledAsync.isLoading || vibrationEnabledAsync.isLoading || easyPieceSortingAsync.isLoading)
-            const Padding(
-              padding: EdgeInsets.all(16.0),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
               child: SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: CozyPuzzleTheme.goldenSandbar,
+                ),
               ),
             ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // User Profile section
-            const UserProfileWidget(),
-            const SizedBox(height: 20),
-            
-            const Text(
-              'Game Settings',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              CozyPuzzleTheme.linenWhite,
+              CozyPuzzleTheme.warmSand.withOpacity(0.2),
+            ],
+          ),
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // User Profile section
+              const UserProfileWidget(),
+              const SizedBox(height: 32),
+              
+              // Game Settings Header
+              Text(
+                'Game Settings',
+                style: CozyPuzzleTheme.headingMedium,
               ),
-            ),
-            const SizedBox(height: 8),
-            
-            // Auto-save indicator
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.green[50],
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.green[200]!),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.auto_awesome, size: 16, color: Colors.green[700]),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Settings auto-save',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.green[700],
-                      fontWeight: FontWeight.w500,
+              const SizedBox(height: 8),
+              
+              // Auto-save indicator
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: CozyPuzzleTheme.seafoamMist.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: CozyPuzzleTheme.seafoamMist),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.auto_awesome, 
+                      size: 16, 
+                      color: CozyPuzzleTheme.deepSlate,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 6),
+                    Text(
+                      'Settings auto-save',
+                      style: CozyPuzzleTheme.labelLarge.copyWith(
+                        color: CozyPuzzleTheme.deepSlate,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            
-            const SizedBox(height: 20),
+              
+              const SizedBox(height: 24),
 
-            // Difficulty setting
-            const Text(
-              'Difficulty',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+              // Difficulty setting
+              Text(
+                'Puzzle Difficulty',
+                style: CozyPuzzleTheme.headingSmall,
               ),
-            ),
-            const SizedBox(height: 8),
+              const SizedBox(height: 12),
 
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.blue[200]!),
-                borderRadius: BorderRadius.circular(8),
+              CozyPuzzleTheme.createThemedContainer(
+                child: Column(
+                  children: [
+                    _buildDifficultyOption(
+                      ref: ref,
+                      title: 'Easy',
+                      subtitle: _getDifficultyDescription(ref, 1),
+                      value: 1,
+                      groupValue: difficulty,
+                      color: CozyPuzzleTheme.seafoamMist,
+                      icon: Icons.sentiment_satisfied,
+                    ),
+                    Divider(color: CozyPuzzleTheme.weatheredDriftwood.withOpacity(0.5)),
+                    _buildDifficultyOption(
+                      ref: ref,
+                      title: 'Medium',
+                      subtitle: _getDifficultyDescription(ref, 2),
+                      value: 2,
+                      groupValue: difficulty,
+                      color: CozyPuzzleTheme.goldenSandbar,
+                      icon: Icons.sentiment_neutral,
+                    ),
+                    Divider(color: CozyPuzzleTheme.weatheredDriftwood.withOpacity(0.5)),
+                    _buildDifficultyOption(
+                      ref: ref,
+                      title: 'Hard',
+                      subtitle: _getDifficultyDescription(ref, 3),
+                      value: 3,
+                      groupValue: difficulty,
+                      color: CozyPuzzleTheme.coralBlush,
+                      icon: Icons.sentiment_very_satisfied,
+                    ),
+                  ],
+                ),
               ),
-              child: Column(
-                children: [
-                  RadioListTile<int>(
-                    title: const Text('Easy'),
-                    subtitle: Text(_getDifficultyDescription(ref, 1)),
-                    value: 1,
-                    groupValue: difficulty,
-                    activeColor: Colors.green,
-                    onChanged: (value) {
-                      if (value != null) {
-                        // Immediately save the new difficulty
-                        ref.read(difficultyProvider.notifier).setDifficulty(value);
-                        
-                        // Show feedback
+
+              const SizedBox(height: 24),
+
+              // Audio & Feedback Settings
+              Text(
+                'Audio & Feedback',
+                style: CozyPuzzleTheme.headingSmall,
+              ),
+              const SizedBox(height: 12),
+              
+              CozyPuzzleTheme.createThemedContainer(
+                child: Column(
+                  children: [
+                    _buildSwitchTile(
+                      title: 'Sound Effects',
+                      subtitle: 'Enable audio feedback for interactions',
+                      value: soundEnabled,
+                      icon: Icons.volume_up,
+                      onChanged: (value) {
+                        ref.read(soundEnabledProvider.notifier).setSoundEnabled(value);
+                      },
+                    ),
+                    Divider(color: CozyPuzzleTheme.weatheredDriftwood.withOpacity(0.5)),
+                    _buildSwitchTile(
+                      title: 'Vibration',
+                      subtitle: 'Enable haptic feedback for actions',
+                      value: vibrationEnabled,
+                      icon: Icons.vibration,
+                      onChanged: (value) {
+                        ref.read(vibrationEnabledProvider.notifier).setVibrationEnabled(value);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Gameplay Assistance
+              Text(
+                'Gameplay Assistance',
+                style: CozyPuzzleTheme.headingSmall,
+              ),
+              const SizedBox(height: 12),
+              
+              CozyPuzzleTheme.createThemedContainer(
+                child: _buildSwitchTile(
+                  title: 'Easy Piece Sorting',
+                  subtitle: 'Show corner and edge pieces first in the tray',
+                  value: easyPieceSortingEnabled,
+                  icon: Icons.sort,
+                  onChanged: (value) {
+                    ref.read(easyPieceSortingProvider.notifier).setEasyPieceSortingEnabled(value);
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 40),
+
+              // Decorative save button (for familiarity)
+              Center(
+                child: Column(
+                  children: [
+                    CozyPuzzleTheme.createThemedButton(
+                      text: 'Save Settings',
+                      onPressed: () {
+                        // This button doesn't actually do anything anymore,
+                        // but users might expect it!
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Difficulty changed! Game will restart.'),
-                            duration: Duration(seconds: 2),
+                          SnackBar(
+                            content: Text(
+                              'Settings are already saved automatically!',
+                              style: CozyPuzzleTheme.bodyMedium.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                            backgroundColor: CozyPuzzleTheme.seafoamMist,
+                            duration: const Duration(seconds: 2),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                         );
-                      }
-                    },
-                  ),
-                  const Divider(height: 1),
-                  RadioListTile<int>(
-                    title: const Text('Medium'),
-                    subtitle: Text(_getDifficultyDescription(ref, 2)),
-                    value: 2,
-                    groupValue: difficulty,
-                    activeColor: Colors.orange,
-                    onChanged: (value) {
-                      if (value != null) {
-                        ref.read(difficultyProvider.notifier).setDifficulty(value);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Difficulty changed! Game will restart.'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                  const Divider(height: 1),
-                  RadioListTile<int>(
-                    title: const Text('Hard'),
-                    subtitle: Text(_getDifficultyDescription(ref, 3)),
-                    value: 3,
-                    groupValue: difficulty,
-                    activeColor: Colors.red,
-                    onChanged: (value) {
-                      if (value != null) {
-                        ref.read(difficultyProvider.notifier).setDifficulty(value);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Difficulty changed! Game will restart.'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Sound settings - now reactive
-            SwitchListTile(
-              title: const Text('Sound Effects'),
-              subtitle: const Text('Enable audio feedback'),
-              value: soundEnabled,
-              onChanged: (value) {
-                // Immediately save the new setting
-                ref.read(soundEnabledProvider.notifier).setSoundEnabled(value);
-              },
-            ),
-
-            // Vibration settings - now reactive
-            SwitchListTile(
-              title: const Text('Vibration'),
-              subtitle: const Text('Enable haptic feedback'),
-              value: vibrationEnabled,
-              onChanged: (value) {
-                // Immediately save the new setting
-                ref.read(vibrationEnabledProvider.notifier).setVibrationEnabled(value);
-              },
-            ),
-
-            // Easy Piece Sorting settings - new feature
-            SwitchListTile(
-              title: const Text('Easy Piece Sorting'),
-              subtitle: const Text('Show corner and edge pieces first in tray'),
-              value: easyPieceSortingEnabled,
-              onChanged: (value) {
-                // Immediately save the new setting
-                ref.read(easyPieceSortingProvider.notifier).setEasyPieceSortingEnabled(value);
-              },
-            ),
-
-            const Spacer(),
-
-            // Keep the save button for the "elevator door close" effect 😉
-            Center(
-              child: Column(
-                children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(200, 50),
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
+                      },
+                      icon: Icons.save,
+                      isPrimary: true,
                     ),
-                    onPressed: () {
-                      // This button doesn't actually do anything anymore,
-                      // but users might expect it, like the elevator close door button!
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Settings are already saved automatically!'),
-                          duration: Duration(seconds: 1),
-                        ),
-                      );
-                    },
-                    child: const Text('Save Settings'),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    '✨ All changes are saved automatically',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.green,
-                      fontWeight: FontWeight.w500,
+                    const SizedBox(height: 12),
+                    Text(
+                      '✨ All changes are saved automatically',
+                      style: CozyPuzzleTheme.labelLarge.copyWith(
+                        color: CozyPuzzleTheme.seafoamMist,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
-            const SizedBox(height: 30),
-          ],
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDifficultyOption({
+    required WidgetRef ref,
+    required String title,
+    required String subtitle,
+    required int value,
+    required int groupValue,
+    required Color color,
+    required IconData icon,
+  }) {
+    return RadioListTile<int>(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      title: Row(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: CozyPuzzleTheme.bodyLarge.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(left: 28),
+        child: Text(
+          subtitle,
+          style: CozyPuzzleTheme.bodyMedium,
+        ),
+      ),
+      value: value,
+      groupValue: groupValue,
+      activeColor: color,
+      onChanged: (selectedValue) {
+        if (selectedValue != null) {
+          ref.read(difficultyProvider.notifier).setDifficulty(selectedValue);
+          
+          // Show contextual feedback
+          final context = ref.context;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Difficulty changed to $title! Game will restart.',
+                style: CozyPuzzleTheme.bodyMedium.copyWith(color: Colors.white),
+              ),
+              backgroundColor: color,
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  Widget _buildSwitchTile({
+    required String title,
+    required String subtitle,
+    required bool value,
+    required IconData icon,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return SwitchListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      title: Row(
+        children: [
+          Icon(
+            icon, 
+            color: CozyPuzzleTheme.stoneGray, 
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: CozyPuzzleTheme.bodyLarge.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(left: 28),
+        child: Text(
+          subtitle,
+          style: CozyPuzzleTheme.bodyMedium,
+        ),
+      ),
+      value: value,
+      activeColor: CozyPuzzleTheme.goldenSandbar,
+      activeTrackColor: CozyPuzzleTheme.goldenSandbar.withOpacity(0.3),
+      inactiveThumbColor: CozyPuzzleTheme.weatheredDriftwood,
+      inactiveTrackColor: CozyPuzzleTheme.weatheredDriftwood.withOpacity(0.3),
+      onChanged: onChanged,
     );
   }
 }
