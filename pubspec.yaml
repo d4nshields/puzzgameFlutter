@@ -1,7 +1,7 @@
 name: puzzgame_flutter
 description: "Puzzle Nook - A Flutter-based puzzle game app with hexagonal architecture."
 publish_to: 'none'
-version: 0.7.5+8032107
+version: 0.7.6+8040037
 
 environment:
   sdk: '>=3.7.2 <4.0.0'
