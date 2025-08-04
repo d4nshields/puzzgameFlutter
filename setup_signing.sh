@@ -94,14 +94,19 @@ echo "🧪 Testing configuration..."
 
 # Test the configuration by attempting a quick build check
 echo "Testing Gradle configuration..."
-if cd android && ./gradlew signingReport > /dev/null 2>&1; then
-    echo "✅ Configuration test passed!"
+if cd android 2>/dev/null; then
+    ./gradlew signingReport >/dev/null 2>&1
+    gradle_ok=$?
+    cd - >/dev/null || exit 1
+    if [ $gradle_ok -eq 0 ]; then
+        echo "✅ Configuration test passed!"
+    else
+        echo "⚠️  Configuration test had issues, but this might be normal"
+        echo "💡 Try a full build to verify: flutter build apk --release"
+    fi
 else
-    echo "⚠️  Configuration test had issues, but this might be normal"
-    echo "💡 Try a full build to verify: flutter build apk --release"
+    echo "⚠️ Could not enter android directory – skipping Gradle validation"
 fi
-
-cd - > /dev/null
 
 echo ""
 echo "🎉 Setup complete!"

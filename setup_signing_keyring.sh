@@ -30,9 +30,10 @@ detect_backends() {
         backends+=("macos-keychain")
     fi
     
-    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]] && command -v cmdkey >/dev/null 2>&1; then
-        backends+=("windows-credential")
-    fi
+    # Windows support is not implemented yet – comment out until available
+    # if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]] && command -v cmdkey >/dev/null 2>&1; then
+    #     backends+=("windows-credential")
+    # fi
     
     # Check for developer password managers
     if command -v op >/dev/null 2>&1; then

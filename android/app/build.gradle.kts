@@ -32,7 +32,9 @@ fun loadKeystoreProperties(): Properties? {
         val loadScript = rootProject.file("load_keyring_credentials.sh")
         if (loadScript.exists()) {
             try {
-                val process = ProcessBuilder("bash", loadScript.absolutePath, keystorePropertiesFile.absolutePath)
+                val isWindows = System.getProperty("os.name").lowercase().contains("windows")
+                val shell = if (isWindows) listOf("cmd", "/c", "bash") else listOf("sh")
+                val process = ProcessBuilder(shell + listOf(loadScript.absolutePath, keystorePropertiesFile.absolutePath))
                     .redirectOutput(ProcessBuilder.Redirect.INHERIT)
                     .redirectError(ProcessBuilder.Redirect.INHERIT)
                     .start()
@@ -52,8 +54,9 @@ fun loadKeystoreProperties(): Properties? {
         }
     }
     
-    val properties = Properties()
-    properties.load(FileInputStream(keystorePropertiesFile))
+    val properties = Properties().apply {
+        FileInputStream(keystorePropertiesFile).use { fis -> load(fis) }
+    }
     
     // Validate required properties
     val requiredKeys = listOf("storePassword", "keyPassword", "keyAlias", "storeFile")
@@ -66,8 +69,20 @@ fun loadKeystoreProperties(): Properties? {
         return null
     }
     
-    // Validate keystore file exists
-    val storeFile = file(properties.getProperty("storeFile"))
+    // Validate keystore file exists (with environment variable expansion)
+    var storeFilePath = properties.getProperty("storeFile")
+    
+    // Expand ~ to home directory
+    if (storeFilePath.startsWith("~")) {
+        storeFilePath = storeFilePath.replaceFirst("~", System.getProperty("user.home"))
+    }
+    
+    // Expand environment variables like ${VAR}
+    storeFilePath = System.getenv().entries.fold(storeFilePath) { acc, entry -> 
+        acc.replace("\${${entry.key}}", entry.value) 
+    }
+    
+    val storeFile = file(storeFilePath)
     if (!storeFile.exists()) {
         println("❌ ERROR: Keystore file not found:")
         println("   Expected: ${storeFile.absolutePath}")
@@ -103,8 +118,8 @@ android {
         applicationId = "com.tinkerplexlabs.puzzlenook"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 8031627
-        versionName = "0.7.4"
+        versionCode = 8032107
+        versionName = "0.7.5"
     }
 
     signingConfigs {

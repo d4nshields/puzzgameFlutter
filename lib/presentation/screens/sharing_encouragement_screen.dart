@@ -23,9 +23,18 @@ class _SharingEncouragementScreenState extends State<SharingEncouragementScreen>
     });
 
     try {
-      // Record the share event (simplified for now)
-      // TODO: Implement proper sharing tracking when SharingTrackingService is available
-      print('Share event recorded for user: ${_authService.currentUser?.email ?? "anonymous"}');
+      // Record the share event - implement proper tracking when available
+      try {
+        // TODO: Implement SharingTrackingService when analytics is expanded
+      // For now, log the event for debugging
+      final user = _authService.currentUser;
+      print('Share event: user=${user?.email ?? "anonymous"}, timestamp=${DateTime.now().toIso8601String()}');
+      
+      // Could also report to error reporting service as a breadcrumb
+      // _errorReporting.addBreadcrumb('share_attempted', data: {'user_id': user?.id});
+    } catch (e) {
+      print('Warning: Failed to log share event: $e');
+    }
       
       await Share.share(
         'I just discovered Puzzle Nook - a cozy puzzle solving game! 🧩 '
@@ -226,10 +235,10 @@ class _SharingEncouragementScreenState extends State<SharingEncouragementScreen>
                           width: double.infinity,
                           height: 52,
                           child: CozyPuzzleTheme.createThemedButton(
-                            text: _isSharing ? 'Sharing...' : 'Share Puzzle Nook',
-                            onPressed: _isSharing ? () {} : _shareApp,
-                            icon: _isSharing ? null : Icons.share,
-                            isPrimary: true,
+                          text: _isSharing ? 'Sharing...' : 'Share Puzzle Nook',
+                          onPressed: _isSharing ? null : _shareApp,
+                          icon: _isSharing ? null : Icons.share,
+                          isPrimary: true,
                           ),
                         ),
                         

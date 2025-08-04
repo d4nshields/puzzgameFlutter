@@ -1,9 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -euo pipefail
 
 # Quick compilation test for theme updates
 echo "Testing Flutter compilation with new Cozy Puzzle Theme..."
 
-cd /home/daniel/work/puzzgameFlutter
+cd /home/daniel/work/puzzgameFlutter || exit 1
 
 # Clean build artifacts
 echo "Cleaning build artifacts..."
