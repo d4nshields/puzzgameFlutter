@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Script to load signing configuration from environment variables
 # Useful for CI/CD where you can't store files
 
-set -e
+set -euo pipefail
 
 echo "🌍 Loading signing configuration from environment variables..."
 
@@ -38,7 +38,15 @@ fi
 
 # Create keystore from base64
 KEYSTORE_PATH="android/app/upload-keystore.jks"
-echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$KEYSTORE_PATH"
+# Ensure directory exists
+mkdir -p android/app
+
+# GNU coreutils (-d) and BSD/macOS (-D) compatibility
+if base64 --help 2>&1 | grep -q -- '-d'; then
+    echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$KEYSTORE_PATH"
+else
+    echo "$ANDROID_KEYSTORE_BASE64" | base64 -D > "$KEYSTORE_PATH"
+fi
 chmod 600 "$KEYSTORE_PATH"
 
 # Create key.properties from environment

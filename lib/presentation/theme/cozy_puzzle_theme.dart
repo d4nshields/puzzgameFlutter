@@ -14,8 +14,8 @@ class CozyPuzzleTheme {
   
   // Text Colors - ENHANCED FOR ACCESSIBILITY
   static const Color richCharcoal = Color(0xFF2B2A26);     // Primary text (was deepSlate #3B3A36)
-  static const Color slateGray = Color(0xFF4A4842);        // Secondary text (was stoneGray #6C6862)  
-  static const Color pewter = Color(0xFF6B6B6B);           // Tertiary text (was seaPebble #9DA6A0)
+  static const Color slateGray = Color(0xFF383532);        // Secondary text - darkened for WCAG AA compliance
+  static const Color pewter = Color(0xFF565656);           // Tertiary text - darkened for WCAG AA compliance
   
   // Interactive Elements - ENHANCED FOR CONTRAST
   static const Color goldenAmber = Color(0xFFC9A961);      // Primary buttons (enhanced from goldenSandbar)
@@ -462,7 +462,7 @@ class CozyPuzzleTheme {
   /// Create a themed button with icon and text
   static Widget createThemedButton({
     required String text,
-    required VoidCallback onPressed,
+    required VoidCallback? onPressed,  // Made nullable to support disabled state
     IconData? icon,
     bool isPrimary = true,
     bool isAlert = false,
@@ -493,35 +493,51 @@ class CozyPuzzleTheme {
   // ACCESSIBILITY VERIFICATION
   // ===============================
   
+  /// Calculate WCAG contrast ratio between two colors
+  static double _contrastRatio(Color foreground, Color background) {
+    final fgLuminance = foreground.computeLuminance();
+    final bgLuminance = background.computeLuminance();
+    final lighter = fgLuminance > bgLuminance ? fgLuminance : bgLuminance;
+    final darker = fgLuminance > bgLuminance ? bgLuminance : fgLuminance;
+    return (lighter + 0.05) / (darker + 0.05);
+  }
+  
   /// Verify that key color combinations meet WCAG AA standards
-  static Map<String, Map<String, dynamic>> get accessibilityReport => {
-    'Primary Text on Linen White': {
-      'foreground': '#2B2A26', // richCharcoal
-      'background': '#F9F7F3', // linenWhite
-      'estimated_contrast': '8.1:1',
-      'wcag_aa': true,
-      'wcag_aaa': true,
-    },
-    'Secondary Text on Warm Sand': {
-      'foreground': '#4A4842', // slateGray
-      'background': '#E8E2D9', // warmSand
-      'estimated_contrast': '4.7:1',
-      'wcag_aa': true,
-      'wcag_aaa': false,
-    },
-    'Tertiary Text on Linen White': {
-      'foreground': '#6B6B6B', // pewter
-      'background': '#F9F7F3', // linenWhite
-      'estimated_contrast': '4.6:1',
-      'wcag_aa': true,
-      'wcag_aaa': false,
-    },
-    'Button Text on Golden Amber': {
-      'foreground': '#2B2A26', // richCharcoal
-      'background': '#C9A961', // goldenAmber
-      'estimated_contrast': '5.2:1',
-      'wcag_aa': true,
-      'wcag_aaa': false,
-    },
-  };
+  static Map<String, Map<String, dynamic>> get accessibilityReport {
+    final primaryOnLinen = _contrastRatio(richCharcoal, linenWhite);
+    final secondaryOnSand = _contrastRatio(slateGray, warmSand);
+    final tertiaryOnLinen = _contrastRatio(pewter, linenWhite);
+    final buttonTextOnAmber = _contrastRatio(richCharcoal, goldenAmber);
+    
+    return {
+      'Primary Text on Linen White': {
+        'foreground': '#2B2A26', // richCharcoal
+        'background': '#F9F7F3', // linenWhite
+        'contrast_ratio': '${primaryOnLinen.toStringAsFixed(1)}:1',
+        'wcag_aa': primaryOnLinen >= 4.5,
+        'wcag_aaa': primaryOnLinen >= 7.0,
+      },
+      'Secondary Text on Warm Sand': {
+        'foreground': '#383532', // slateGray (updated)
+        'background': '#E8E2D9', // warmSand
+        'contrast_ratio': '${secondaryOnSand.toStringAsFixed(1)}:1',
+        'wcag_aa': secondaryOnSand >= 4.5,
+        'wcag_aaa': secondaryOnSand >= 7.0,
+      },
+      'Tertiary Text on Linen White': {
+        'foreground': '#565656', // pewter (updated)
+        'background': '#F9F7F3', // linenWhite
+        'contrast_ratio': '${tertiaryOnLinen.toStringAsFixed(1)}:1',
+        'wcag_aa': tertiaryOnLinen >= 4.5,
+        'wcag_aaa': tertiaryOnLinen >= 7.0,
+      },
+      'Button Text on Golden Amber': {
+        'foreground': '#2B2A26', // richCharcoal
+        'background': '#C9A961', // goldenAmber
+        'contrast_ratio': '${buttonTextOnAmber.toStringAsFixed(1)}:1',
+        'wcag_aa': buttonTextOnAmber >= 4.5,
+        'wcag_aaa': buttonTextOnAmber >= 7.0,
+      },
+    };
+  }
 }

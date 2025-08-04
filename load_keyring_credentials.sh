@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Load Android signing credentials from keyring and create key.properties
 # This script is called by the Gradle build process
 
-set -e
+set -euo pipefail
 
 # Function to retrieve credentials based on backend
 get_credential() {

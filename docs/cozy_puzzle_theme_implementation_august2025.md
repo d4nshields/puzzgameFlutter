@@ -28,7 +28,7 @@ Implementation of the new cozy puzzle theme based on the digital art department'
 ## Implementation Details
 
 ### File Structure
-```
+```text
 lib/presentation/theme/
 ├── cozy_puzzle_theme.dart       # New comprehensive theme system
 └── puzzle_bazaar_theme.dart     # Legacy theme (can be removed after testing)

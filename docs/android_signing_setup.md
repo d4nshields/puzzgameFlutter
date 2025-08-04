@@ -147,21 +147,21 @@ chmod 600 /path/to/keystore.jks   # Secure keystore file
 
 ## Security Best Practices
 
-### ✅ Do:
+### ✅ Do
 - Keep key.properties in .gitignore (already configured)
 - Use environment variables in CI/CD
 - Set restrictive file permissions (600)
 - Back up your keystore securely
 - Use absolute paths in key.properties
 
-### ❌ Don't:
+### ❌ Don't
 - Commit key.properties to version control
 - Share keystore passwords in plain text
 - Store keystores in publicly accessible locations
 - Use relative paths that might break
 
 ## File Structure
-```
+```plaintext
 android/
 ├── key.properties              # Your actual config (gitignored)
 ├── key.properties.template     # Template for setup

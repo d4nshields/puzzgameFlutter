@@ -1,11 +1,14 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -euo pipefail
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "🔧 Making signing scripts executable..."
 
-# Make scripts executable
-chmod +x setup_signing.sh
-chmod +x validate_signing.sh  
-chmod +x load_env_signing.sh
+# Make scripts executable with error handling
+for f in setup_signing.sh validate_signing.sh load_env_signing.sh; do
+    chmod +x "${script_dir}/${f}" 2>/dev/null || echo "⚠️ ${f} not found"
+done
 
 echo "✅ Scripts are now executable"
 echo ""
