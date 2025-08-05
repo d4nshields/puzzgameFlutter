@@ -1,0 +1,30 @@
+# Internal Build Configuration
+# Features enabled for development and testing
+
+build_variant: internal
+
+features:
+  # Core game features
+  sample_puzzle: true          # Enable sample puzzle (under development)
+  google_sign_in: true         # Google authentication
+  early_access_registration: true  # Early access sign-up flow
+  sharing_flow: true           # User sharing and badges system
+  
+  # Development features
+  debug_tools: true            # Debug overlays and tools
+  experimental_features: true # Unstable features under development
+  detailed_analytics: true    # Detailed logging for development
+  performance_monitoring: true # Performance overlays and monitoring
+  
+debug:
+  enabled: true
+  verbose_logging: true
+  show_performance_overlay: false  # Can be toggled via settings
+  show_widget_inspector: false    # Can be toggled via settings
+  
+# Navigation flow for internal builds
+navigation:
+  # Since sample puzzle is under development, start with it for testing
+  initial_route: sample_puzzle
+  post_game_route: early_access_registration
+  post_registration_route: sharing_flow

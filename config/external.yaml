@@ -1,0 +1,30 @@
+# External Build Configuration  
+# Features enabled for production release to users
+
+build_variant: external
+
+features:
+  # Core game features
+  sample_puzzle: false         # Disable sample puzzle (not ready for users)
+  google_sign_in: true         # Google authentication
+  early_access_registration: true  # Early access sign-up flow
+  sharing_flow: true           # User sharing and badges system
+  
+  # Development features (disabled for production)
+  debug_tools: false           # No debug tools for users
+  experimental_features: false # No unstable features
+  detailed_analytics: false   # Respect user privacy
+  performance_monitoring: false # Clean production experience
+  
+debug:
+  enabled: false
+  verbose_logging: false
+  show_performance_overlay: false
+  show_widget_inspector: false
+  
+# Navigation flow for external builds
+navigation:
+  # Since sample puzzle is disabled, go directly to early access
+  initial_route: early_access_registration
+  post_game_route: sharing_flow
+  post_registration_route: sharing_flow

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/core/domain/services/auth_service.dart';
 import 'package:puzzgame_flutter/core/domain/services/achievement_service.dart';
+import 'package:puzzgame_flutter/core/configuration/build_config.dart';
+import 'package:puzzgame_flutter/core/configuration/feature_aware_navigation.dart';
 import 'package:puzzgame_flutter/presentation/theme/cozy_puzzle_theme.dart';
 
 /// Screen shown after completing the first puzzle to encourage registration
@@ -44,8 +46,8 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
           ),
         );
         
-        // Navigate to sharing encouragement screen
-        Navigator.of(context).pushReplacementNamed('/sharing-encouragement');
+        // Navigate using feature-aware navigation
+        FeatureAwareNavigationService.handlePostRegistrationNavigation(context);
       }
     } catch (e) {
       if (mounted) {
@@ -123,7 +125,7 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
                             style: CozyPuzzleTheme.headingSmall,
                           ),
                           Text(
-                            '🎉 Puzzle Complete!',
+                            '🎉 Coming Soon!',
                             style: CozyPuzzleTheme.bodyMedium.copyWith(
                               color: CozyPuzzleTheme.goldenSandbar,
                               fontWeight: FontWeight.w600,
