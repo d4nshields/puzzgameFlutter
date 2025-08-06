@@ -244,19 +244,6 @@ class _SharingEncouragementScreenState extends State<SharingEncouragementScreen>
                         
                         const SizedBox(height: 16),
                         
-                        // Skip button with less emphasis
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text(
-                            'Continue to puzzles',
-                            style: CozyPuzzleTheme.bodyMedium.copyWith(
-                              color: CozyPuzzleTheme.stoneGray,
-                            ),
-                          ),
-                        ),
-                        
                         // Extra bottom padding to avoid gesture navigation
                         const SizedBox(height: 8),
                       ],
