@@ -62,4 +62,4 @@ sentry.properties
 *.hprof
 java_pid*.hprof
 prod-fingerprint.txt
-
+distribution/
