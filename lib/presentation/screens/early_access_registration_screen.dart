@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/core/domain/services/auth_service.dart';
 import 'package:puzzgame_flutter/core/domain/services/achievement_service.dart';
+import 'package:puzzgame_flutter/core/configuration/build_config.dart';
+import 'package:puzzgame_flutter/core/configuration/feature_aware_navigation.dart';
 import 'package:puzzgame_flutter/presentation/theme/cozy_puzzle_theme.dart';
 
 /// Screen shown after completing the first puzzle to encourage registration
@@ -28,24 +30,8 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
         // Initialize achievements for new user
         await _achievementService.initializeUserAchievements(userId: user.id);
         
-        // Show success message and navigate to sharing encouragement
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Welcome ${user.email}! Thanks for registering for early access.',
-              style: CozyPuzzleTheme.bodyMedium.copyWith(color: Colors.white),
-            ),
-            backgroundColor: CozyPuzzleTheme.seafoamMist,
-            duration: const Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
-        
-        // Navigate to sharing encouragement screen
-        Navigator.of(context).pushReplacementNamed('/sharing-encouragement');
+        // Navigate using feature-aware navigation
+        FeatureAwareNavigationService.handlePostRegistrationNavigation(context);
       }
     } catch (e) {
       if (mounted) {
@@ -123,7 +109,7 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
                             style: CozyPuzzleTheme.headingSmall,
                           ),
                           Text(
-                            '🎉 Puzzle Complete!',
+                            '🎉 Coming Soon!',
                             style: CozyPuzzleTheme.bodyMedium.copyWith(
                               color: CozyPuzzleTheme.goldenSandbar,
                               fontWeight: FontWeight.w600,
@@ -201,19 +187,6 @@ class _EarlyAccessRegistrationScreenState extends State<EarlyAccessRegistrationS
                         ),
                         
                         const SizedBox(height: 16),
-                        
-                        // Compact skip option
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text(
-                            'Continue exploring',
-                            style: CozyPuzzleTheme.bodyMedium.copyWith(
-                              color: CozyPuzzleTheme.stoneGray,
-                            ),
-                          ),
-                        ),
                         
                         // Extra bottom padding to avoid gesture navigation
                         const SizedBox(height: 8),

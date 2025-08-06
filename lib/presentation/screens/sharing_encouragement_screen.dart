@@ -45,23 +45,6 @@ class _SharingEncouragementScreenState extends State<SharingEncouragementScreen>
         subject: 'Check out Puzzle Nook - A Cozy Puzzle Game!',
       );
       
-      // Show success message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Thanks for sharing Puzzle Nook! 🌟',
-              style: CozyPuzzleTheme.bodyMedium.copyWith(color: Colors.white),
-            ),
-            backgroundColor: CozyPuzzleTheme.seafoamMist,
-            duration: const Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -243,19 +226,6 @@ class _SharingEncouragementScreenState extends State<SharingEncouragementScreen>
                         ),
                         
                         const SizedBox(height: 16),
-                        
-                        // Skip button with less emphasis
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text(
-                            'Continue to puzzles',
-                            style: CozyPuzzleTheme.bodyMedium.copyWith(
-                              color: CozyPuzzleTheme.stoneGray,
-                            ),
-                          ),
-                        ),
                         
                         // Extra bottom padding to avoid gesture navigation
                         const SizedBox(height: 8),
