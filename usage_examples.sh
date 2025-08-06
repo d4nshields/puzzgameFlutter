@@ -23,7 +23,7 @@ echo ""
 echo "2. Run in development mode (hot reload works):"
 echo "   flutter run"
 echo ""
-echo "3. Test features - sample puzzle will be skipped"
+echo "3. Test features - sample puzzle will be shown"
 echo ""
 
 # Example 2: Testing external build
