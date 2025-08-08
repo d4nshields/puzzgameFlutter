@@ -1,7 +1,7 @@
 name: puzzgame_flutter
 description: "Puzzle Nook - A Flutter-based puzzle game app with hexagonal architecture."
 publish_to: 'none'
-version: 0.8.6+8061038
+version: 0.8.9+8071751
 
 environment:
   sdk: '>=3.7.2 <4.0.0'
@@ -44,6 +44,9 @@ dependencies:
   
   # Sharing
   share_plus: ^10.1.2
+  
+  # UI Components
+  carousel_slider: ^5.1.1
 
 dev_dependencies:
   flutter_test:
@@ -72,6 +75,7 @@ flutter:
   assets:
     - assets/images/
     - assets/animations/
+    - assets/library/
     - assets/puzzles/sample_puzzle_01/
     - assets/puzzles/sample_puzzle_01/layouts/8x8/
     - assets/puzzles/sample_puzzle_01/layouts/8x8/pieces/
