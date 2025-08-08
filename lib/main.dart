@@ -17,6 +17,7 @@ import 'package:puzzgame_flutter/presentation/screens/loading_screen.dart';
 import 'package:puzzgame_flutter/presentation/screens/sign_in_screen.dart';
 import 'package:puzzgame_flutter/presentation/screens/early_access_registration_screen.dart';
 import 'package:puzzgame_flutter/presentation/screens/sharing_encouragement_screen.dart';
+import 'package:puzzgame_flutter/presentation/screens/puzzle_library_screen.dart';
 import 'package:puzzgame_flutter/presentation/theme/cozy_puzzle_theme.dart';
 
 void main() async {
@@ -123,6 +124,9 @@ class PuzzleBazaarGameApp extends StatelessWidget {
         '/lottie-test': (context) => Features.experimentalFeatures 
             ? const LottieTestScreen() 
             : const FeatureDisabledScreen(featureName: 'Test Features'),
+        '/puzzle-library': (context) => Features.puzzleLibraryTeaser 
+            ? const PuzzleLibraryScreen() 
+            : const FeatureDisabledScreen(featureName: 'Puzzle Library'),
       },
     );
   }

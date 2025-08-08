@@ -227,6 +227,17 @@ class _SharingEncouragementScreenState extends State<SharingEncouragementScreen>
                         
                         const SizedBox(height: 16),
                         
+                        // Browse Puzzle Library button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: CozyPuzzleTheme.createThemedButton(
+                            text: '🧩 Browse Puzzle Library',
+                            onPressed: () => Navigator.of(context).pushNamed('/puzzle-library'),
+                            isPrimary: false,
+                          ),
+                        ),
+                        
                         // Extra bottom padding to avoid gesture navigation
                         const SizedBox(height: 8),
                       ],
