@@ -124,7 +124,9 @@ class PuzzleBazaarGameApp extends StatelessWidget {
         '/lottie-test': (context) => Features.experimentalFeatures 
             ? const LottieTestScreen() 
             : const FeatureDisabledScreen(featureName: 'Test Features'),
-        '/puzzle-library': (context) => const PuzzleLibraryScreen(),
+        '/puzzle-library': (context) => Features.puzzleLibraryTeaser 
+            ? const PuzzleLibraryScreen() 
+            : const FeatureDisabledScreen(featureName: 'Puzzle Library'),
       },
     );
   }

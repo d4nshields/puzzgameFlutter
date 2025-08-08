@@ -48,6 +48,11 @@ class Features {
   /// External: true (approved feature)
   static const bool sharingFlow = true;
   
+  /// Enable puzzle library teaser
+  /// Internal: true (for testing)
+  /// External: true (marketing teaser to encourage registration)
+  static const bool puzzleLibraryTeaser = true;
+  
   /// Enable debug tools and overlays
   /// Internal: true (for development)
   /// External: false (clean user experience)
@@ -125,6 +130,7 @@ class BuildConfig {
     'googleSignIn': Features.googleSignIn,
     'earlyAccessRegistration': Features.earlyAccessRegistration,
     'sharingFlow': Features.sharingFlow,
+    'puzzleLibraryTeaser': Features.puzzleLibraryTeaser,
     'debugTools': Features.debugTools,
     'experimentalFeatures': Features.experimentalFeatures,
     'detailedAnalytics': Features.detailedAnalytics,

@@ -205,11 +205,14 @@ class _PuzzleLibraryScreenState extends State<PuzzleLibraryScreen> {
       child: Row(
         children: [
           // Back button
-          CozyPuzzleTheme.createThemedButton(
-            text: '',
-            onPressed: () => Navigator.of(context).pop(),
-            icon: Icons.arrow_back,
-            isPrimary: false,
+          Tooltip(
+            message: 'Back',
+            child: CozyPuzzleTheme.createThemedButton(
+              text: '',
+              onPressed: () => Navigator.of(context).pop(),
+              icon: Icons.arrow_back,
+              isPrimary: false,
+            ),
           ),
           
           const SizedBox(width: 16),
@@ -338,6 +341,7 @@ class _PuzzleLibraryScreenState extends State<PuzzleLibraryScreen> {
                   child: Image.asset(
                     puzzle.assetPath,
                     fit: BoxFit.cover,
+                    semanticLabel: puzzle.title,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
                         color: CozyPuzzleTheme.warmSand,
@@ -364,7 +368,6 @@ class _PuzzleLibraryScreenState extends State<PuzzleLibraryScreen> {
               );
             },
             options: CarouselOptions(
-              height: double.infinity,
               viewportFraction: 0.65,
               enlargeCenterPage: true,
               enlargeFactor: 0.25,
@@ -393,15 +396,18 @@ class _PuzzleLibraryScreenState extends State<PuzzleLibraryScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: _puzzlePreviews.asMap().entries.map((entry) {
         final isActive = entry.key == _currentIndex;
-        return Container(
-          width: isActive ? 24 : 8,
-          height: 8,
-          margin: const EdgeInsets.symmetric(horizontal: 3),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(4),
-            color: isActive 
-                ? CozyPuzzleTheme.goldenAmber 
-                : CozyPuzzleTheme.slateGray.withOpacity(0.3),
+        return GestureDetector(
+          onTap: () => _controller.jumpToPage(entry.key),
+          child: Container(
+            width: isActive ? 24 : 8,
+            height: 8,
+            margin: const EdgeInsets.symmetric(horizontal: 3),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(4),
+              color: isActive 
+                  ? CozyPuzzleTheme.goldenAmber 
+                  : CozyPuzzleTheme.slateGray.withOpacity(0.3),
+            ),
           ),
         );
       }).toList(),
