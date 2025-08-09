@@ -62,4 +62,6 @@ sentry.properties
 *.hprof
 java_pid*.hprof
 prod-fingerprint.txt
-distribution/
+# Distribution - ignore build artifacts but allow release notes
+distribution/*
+!distribution/whatsnew/
