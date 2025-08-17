@@ -1,0 +1,467 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../../puzzle_game_module2.dart';
+import '../../../game_module/puzzle_game_module.dart' show PuzzlePiece;
+import '../../../game_module/services/memory_optimized_asset_manager.dart' show MemoryOptimizedPuzzleImage;
+import '../../../game_module/services/enhanced_puzzle_asset_manager.dart' show EnhancedCachedPuzzleImage;
+import '../../../game_module/services/puzzle_asset_manager.dart' show CachedPuzzleImage;
+
+/// Widget that implements the workspace-based interaction model.
+/// 
+/// This widget replaces the flawed drop zone approach with proper
+/// piece positioning and proximity-based snapping.
+class PuzzleWorkspaceWidget extends StatefulWidget {
+  final PuzzleGameSession2 gameSession;
+  final VoidCallback? onGameCompleted;
+
+  const PuzzleWorkspaceWidget({
+    super.key,
+    required this.gameSession,
+    this.onGameCompleted,
+  });
+
+  @override
+  State<PuzzleWorkspaceWidget> createState() => _PuzzleWorkspaceWidgetState();
+}
+
+class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
+  // Track pieces on workspace
+  final Map<String, Offset> _workspacePiecePositions = {};
+  
+  @override
+  void initState() {
+    super.initState();
+    // Initialize workspace piece positions
+    _initializeWorkspacePieces();
+  }
+  
+  void _initializeWorkspacePieces() {
+    // Debug: Check piece states
+    print('=== INITIALIZING WORKSPACE WIDGET ===');
+    print('Total pieces: ${widget.gameSession.totalPieces}');
+    print('Tray pieces: ${widget.gameSession.trayPieces.length}');
+    print('Placed pieces: ${widget.gameSession.placedPieces.length}');
+    print('Workspace pieces: ${widget.gameSession.workspacePieces.length}');
+    
+    // Place any pieces that are already on the workspace
+    for (final piece in widget.gameSession.workspacePieces) {
+      // Spread them out initially
+      _workspacePiecePositions[piece.id] = Offset(
+        100.0 + (_workspacePiecePositions.length * 50),
+        100.0,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Stack(
+          children: [
+            // Main canvas area
+            _buildCanvas(constraints),
+            
+            // Piece tray at bottom
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 120,
+              child: _buildPieceTray(),
+            ),
+            
+            // Floating workspace pieces
+            ..._buildWorkspacePieces(constraints),
+            
+            // Control buttons
+            Positioned(
+              top: 8,
+              right: 8,
+              child: _buildControls(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildCanvas(BoxConstraints constraints) {
+    final canvasSize = widget.gameSession.canvasInfo.canvasSize;
+    final scale = _calculateCanvasScale(
+      Size(canvasSize.width, canvasSize.height),
+      constraints.biggest,
+    );
+    
+    return Center(
+      child: Container(
+        width: canvasSize.width * scale,
+        height: canvasSize.height * scale,
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          border: Border.all(color: Colors.grey[400]!, width: 2),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Stack(
+          children: [
+            // Grid lines for guidance
+            CustomPaint(
+              size: Size(canvasSize.width * scale, canvasSize.height * scale),
+              painter: GridPainter(
+                gridSize: widget.gameSession.gridSize,
+              ),
+            ),
+            
+            // Placed pieces
+            ...widget.gameSession.placedPieces.map((piece) {
+              return _buildPlacedPiece(piece, scale);
+            }),
+            
+            // Drop targets for each grid position
+            ..._buildDropTargets(scale),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildDropTargets(double scale) {
+    final targets = <Widget>[];
+    final canvasSize = widget.gameSession.canvasInfo.canvasSize;
+    final gridSize = widget.gameSession.gridSize;
+    final cellWidth = canvasSize.width / gridSize * scale;
+    final cellHeight = canvasSize.height / gridSize * scale;
+    
+    for (int row = 0; row < gridSize; row++) {
+      for (int col = 0; col < gridSize; col++) {
+        // Check if this position already has a piece
+        final isOccupied = widget.gameSession.placedPieces.any(
+          (p) => p.correctRow == row && p.correctCol == col,
+        );
+        
+        if (!isOccupied) {
+          targets.add(
+            Positioned(
+              left: col * cellWidth,
+              top: row * cellHeight,
+              width: cellWidth,
+              height: cellHeight,
+              child: DragTarget<PuzzlePiece>(
+                onWillAcceptWithDetails: (details) {
+                  final piece = details.data;
+                  // Only accept if this is the correct position for this piece
+                  return piece.correctRow == row && piece.correctCol == col;
+                },
+                onAcceptWithDetails: (details) {
+                  _placePieceAt(details.data, row, col);
+                },
+                builder: (context, candidateData, rejectedData) {
+                  final isHighlighted = candidateData.isNotEmpty;
+                  // Only show visual feedback when dragging over
+                  return Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: isHighlighted ? Colors.green : Colors.transparent,
+                        width: isHighlighted ? 2 : 0,
+                      ),
+                      color: isHighlighted
+                          ? Colors.green.withOpacity(0.2)
+                          : Colors.transparent,
+                    ),
+                  );
+                },
+              ),
+            ),
+          );
+        }
+      }
+    }
+    
+    return targets;
+  }
+
+  Widget _buildPlacedPiece(PuzzlePiece piece, double scale) {
+    final canvasSize = widget.gameSession.canvasInfo.canvasSize;
+    final gridSize = widget.gameSession.gridSize;
+    final cellWidth = canvasSize.width / gridSize * scale;
+    final cellHeight = canvasSize.height / gridSize * scale;
+    
+    return Positioned(
+      left: piece.correctCol * cellWidth,
+      top: piece.correctRow * cellHeight,
+      width: cellWidth,
+      height: cellHeight,
+      child: GestureDetector(
+        onTap: () => _removePiece(piece),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.blue.withOpacity(0.5)),
+          ),
+          child: _buildPieceImage(piece, fit: BoxFit.contain),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPieceTray() {
+    final sortedPieces = widget.gameSession.sortedTrayPieces;
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        border: Border.all(color: Colors.grey[400]!),
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: Text(
+              'Piece Tray (${sortedPieces.length} pieces)',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: sortedPieces.length,
+              itemBuilder: (context, index) {
+                final piece = sortedPieces[index];
+                return _buildTrayPiece(piece);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrayPiece(PuzzlePiece piece) {
+    return Draggable<PuzzlePiece>(
+      data: piece,
+      feedback: Container(
+        width: 80,
+        height: 80,
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.blue, width: 2),
+          color: Colors.white.withOpacity(0.9),
+        ),
+        child: _buildPieceImage(piece, fit: BoxFit.contain),
+      ),
+      childWhenDragging: Container(
+        width: 80,
+        height: 80,
+        margin: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey),
+          color: Colors.grey[300],
+        ),
+      ),
+      onDragStarted: () {
+        HapticFeedback.lightImpact();
+      },
+      child: Container(
+        width: 80,
+        height: 80,
+        margin: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey),
+          color: Colors.white,
+        ),
+        child: _buildPieceImage(piece, fit: BoxFit.contain),
+      ),
+    );
+  }
+
+  List<Widget> _buildWorkspacePieces(BoxConstraints constraints) {
+    return _workspacePiecePositions.entries.map((entry) {
+      final pieceId = entry.key;
+      final position = entry.value;
+      final piece = widget.gameSession.pieces.firstWhere((p) => p.id == pieceId);
+      
+      return Positioned(
+        left: position.dx,
+        top: position.dy,
+        child: Draggable<PuzzlePiece>(
+          data: piece,
+          feedback: Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.blue, width: 2),
+              color: Colors.white.withOpacity(0.9),
+            ),
+            child: _buildPieceImage(piece, fit: BoxFit.contain),
+          ),
+          onDragEnd: (details) {
+            // Update piece position
+            setState(() {
+              _workspacePiecePositions[pieceId] = details.offset;
+            });
+          },
+          child: Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.blue),
+              color: Colors.white,
+            ),
+            child: _buildPieceImage(piece, fit: BoxFit.contain),
+          ),
+        ),
+      );
+    }).toList();
+  }
+
+  Widget _buildPieceImage(PuzzlePiece piece, {BoxFit fit = BoxFit.cover}) {
+    // Use the appropriate asset manager based on settings
+    if (widget.gameSession.useMemoryOptimization) {
+      return MemoryOptimizedPuzzleImage(
+        pieceId: piece.id,
+        assetManager: piece.memoryOptimizedAssetManager,
+        fit: fit,
+        cropToContent: true,
+      );
+    } else if (widget.gameSession.useEnhancedRendering) {
+      return EnhancedCachedPuzzleImage(
+        pieceId: piece.id,
+        assetManager: piece.enhancedAssetManager,
+        fit: fit,
+        cropToContent: true,
+      );
+    } else {
+      return CachedPuzzleImage(
+        pieceId: piece.id,
+        assetManager: piece.assetManager,
+        fit: fit,
+      );
+    }
+  }
+
+  Widget _buildControls() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Text(
+              '${widget.gameSession.piecesPlaced}/${widget.gameSession.totalPieces}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.lightbulb_outline),
+                  onPressed: _requestHint,
+                  tooltip: 'Hint',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: _reset,
+                  tooltip: 'Reset',
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _placePieceAt(PuzzlePiece piece, int row, int col) {
+    setState(() {
+      // Use the proper method that checks position
+      final placed = widget.gameSession.tryPlacePieceAt(
+        piece,
+        col * (widget.gameSession.canvasInfo.canvasSize.width / widget.gameSession.gridSize),
+        row * (widget.gameSession.canvasInfo.canvasSize.height / widget.gameSession.gridSize),
+      );
+      
+      if (placed) {
+        HapticFeedback.heavyImpact();
+        _workspacePiecePositions.remove(piece.id);
+        
+        if (widget.gameSession.isCompleted) {
+          widget.onGameCompleted?.call();
+        }
+      }
+    });
+  }
+
+  void _removePiece(PuzzlePiece piece) {
+    setState(() {
+      widget.gameSession.removePiece(piece);
+      HapticFeedback.lightImpact();
+    });
+  }
+
+  void _requestHint() {
+    final hint = widget.gameSession.getHint();
+    if (hint != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Try piece ${hint.id} at position (${hint.correctRow}, ${hint.correctCol})'),
+        ),
+      );
+    }
+  }
+
+  void _reset() {
+    setState(() {
+      // Reset all pieces to tray
+      for (final piece in widget.gameSession.placedPieces.toList()) {
+        widget.gameSession.removePiece(piece);
+      }
+      _workspacePiecePositions.clear();
+    });
+  }
+
+  double _calculateCanvasScale(Size canvasSize, Size availableSize) {
+    // Leave room for the tray
+    final adjustedHeight = availableSize.height - 140;
+    final scaleX = availableSize.width / canvasSize.width;
+    final scaleY = adjustedHeight / canvasSize.height;
+    return (scaleX < scaleY ? scaleX : scaleY) * 0.9; // 90% to add padding
+  }
+}
+
+/// Custom painter for grid lines
+class GridPainter extends CustomPainter {
+  final int gridSize;
+
+  GridPainter({required this.gridSize});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.grey[300]!
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+
+    final cellWidth = size.width / gridSize;
+    final cellHeight = size.height / gridSize;
+
+    // Draw vertical lines
+    for (int i = 1; i < gridSize; i++) {
+      canvas.drawLine(
+        Offset(i * cellWidth, 0),
+        Offset(i * cellWidth, size.height),
+        paint,
+      );
+    }
+
+    // Draw horizontal lines
+    for (int i = 1; i < gridSize; i++) {
+      canvas.drawLine(
+        Offset(0, i * cellHeight),
+        Offset(size.width, i * cellHeight),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(GridPainter oldDelegate) {
+    return oldDelegate.gridSize != gridSize;
+  }
+}
