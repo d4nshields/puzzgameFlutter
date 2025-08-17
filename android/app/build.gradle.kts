@@ -118,8 +118,8 @@ android {
         applicationId = "com.tinkerplexlabs.puzzlenook"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 8081401
-        versionName = "0.8.10"
+        versionCode = 8082130
+        versionName = "0.8.12"
     }
 
     signingConfigs {
