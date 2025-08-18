@@ -1,0 +1,21 @@
+I am developing a puzzle game app for Android with my wife.    My wife, Jennifer, is the chief creative visionary and I am in charge of the design and implementation of the product.    Please find the entire source code for the existing app at /home/daniel/work/puzzgameFlutter using the filesystem MCP server to access the files.    In particular documentation for the app has been created piece-by-piece along the way, for each architecture descision, in the docs folder in this repository.      Please analyze the source code and the docs to understand the current state of the app and how to move forward.
+
+At this point the app is written entirely in Flutter for Android and native linux platforms (I am not implementing any ios support at this time but plan to do so in the future).   
+
+---
+
+The puzzle app at /home/daniel/work/puzzgameFlutter/ implements a cozy puzzle solving game.   I have already implemented game mechanics for game play.   Most of the files related to this game mechanics attempt are in a module tree at lib/game_module.  But there is no hard line around this module, it was not developed with modular containment in mind.   I would like to transition to modular development with a hexagonal architecture with new code.
+
+I am not happy with the feel of the way the present game_module works.   I want to develop a new module in lib/game_module2/  that works independently of the lib/game_module/ code.   Leave the existing code along, but create a better, cleaner version of game_module called game_module2.   Once game_module2 is finished and passes acceptance testing I will want to retire lib/game_module completely.
+
+In lib/game_module2/ I would like to accomplish game play in much the same way but completely overhaul the former methods of handling assets and game mechanics to address these concerns:
+
+  1. there are various visual contexts which render the puzzle pieces on the screen at an inconsistent zoom level, demonstrating that there are errors in the interpretation of the size of a puzzle piece, in each of these contexts:
+   - the pieces in the tray
+   - the pieces while being dragged
+   - the pieces as they appear when placed in the puzzle.
+   
+The original image assets are stored in whole pixel units.    The shapes of the puzzle pieces are irregular with protrusions and intrusions that interlock while overlapping their bounding boxes.   A consistent use of coordinate systems that operates apart from the zoom level is necessary. the zoom level should be consistent in the UI and implemented consistently on the screen.   Internal representations of the puzzle pieces should remain in pixel units and not be resampled internally.
+
+  2. dropping pieces into their correct locations to solve the puzzle should be smooth movement by the hand of the user, it should be possible to provide haptic feedback to suggest to them when they have the found the exact location, this may assist low vision users in puzzle solving.   I don't want a 'one shot' drag and drop operation for placing pieces.  The app should implement the main view as a workspace where any number of pieces can be moved around to anywhere on the screen.
+
