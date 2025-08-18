@@ -103,6 +103,22 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
           constraints.biggest,
         );
         
+        // Calculate dynamic tray height based on largest piece height
+        double maxPieceHeight = 100; // Default
+        if (widget.gameSession.useMemoryOptimization && 
+            widget.gameSession.memoryOptimizedAssetManager.currentPuzzleIsOptimized) {
+          // Find the tallest piece to determine tray height
+          for (final piece in widget.gameSession.trayPieces) {
+            final metadata = widget.gameSession.memoryOptimizedAssetManager.getPieceMetadata(piece.id);
+            if (metadata != null) {
+              final height = metadata.contentBounds.height * _currentScale;
+              // Cap at 100 for practical display
+              maxPieceHeight = math.max(maxPieceHeight, math.min(height, 100));
+            }
+          }
+        }
+        final trayHeight = maxPieceHeight + 40; // Add padding for labels
+        
         return Stack(
           children: [
             // Main canvas area
@@ -113,7 +129,7 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
               left: 0,
               right: 0,
               bottom: 0,
-              height: 120,
+              height: trayHeight.clamp(120, 150), // Min 120, max 150
               child: _buildPieceTray(),
             ),
             
@@ -454,13 +470,49 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
         ? Colors.blue[400]! 
         : (isEdge ? Colors.blue[300]! : Colors.grey[400]!);
     
+    // Get the actual piece size from metadata if available
+    double pieceDisplayWidth = 100; // Default fallback
+    double pieceDisplayHeight = 100;
+    
+    if (widget.gameSession.useMemoryOptimization && 
+        widget.gameSession.memoryOptimizedAssetManager.currentPuzzleIsOptimized) {
+      final metadata = widget.gameSession.memoryOptimizedAssetManager.getPieceMetadata(piece.id);
+      if (metadata != null) {
+        // Use the exact size from metadata, scaled to current display
+        pieceDisplayWidth = metadata.contentBounds.width * _currentScale;
+        pieceDisplayHeight = metadata.contentBounds.height * _currentScale;
+        
+        // Cap the size for practical tray display
+        final maxSize = 100.0;
+        if (pieceDisplayWidth > maxSize || pieceDisplayHeight > maxSize) {
+          final scale = maxSize / math.max(pieceDisplayWidth, pieceDisplayHeight);
+          pieceDisplayWidth *= scale;
+          pieceDisplayHeight *= scale;
+        }
+      }
+    } else {
+      // Fallback for non-optimized: use grid cell size
+      final canvasSize = widget.gameSession.canvasInfo.canvasSize;
+      final cellWidth = canvasSize.width / gridSize;
+      final cellHeight = canvasSize.height / gridSize;
+      pieceDisplayWidth = cellWidth * _currentScale;
+      pieceDisplayHeight = cellHeight * _currentScale;
+      
+      // Cap for practical display
+      final maxSize = 100.0;
+      if (pieceDisplayWidth > maxSize) {
+        pieceDisplayWidth = maxSize;
+        pieceDisplayHeight = maxSize;
+      }
+    }
+    
     return Draggable<PuzzlePiece>(
       data: piece,
       feedback: Material(
         color: Colors.transparent,
         child: Container(
-          width: 100,
-          height: 100,
+          width: pieceDisplayWidth, // Use exact size, no arbitrary scaling
+          height: pieceDisplayHeight,
           decoration: BoxDecoration(
             border: Border.all(color: Colors.blue, width: 2),
             borderRadius: BorderRadius.circular(8),
@@ -477,8 +529,8 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
         ),
       ),
       childWhenDragging: Container(
-        width: 80,
-        height: 80,
+        width: pieceDisplayWidth,
+        height: pieceDisplayHeight,
         margin: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey[300]!),
@@ -506,8 +558,8 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
         });
       },
       child: Container(
-        width: 80,
-        height: 80,
+        width: pieceDisplayWidth,
+        height: pieceDisplayHeight,
         margin: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           border: Border.all(color: borderColor, width: 1.5),
@@ -557,6 +609,41 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
       final position = entry.value;
       final piece = widget.gameSession.pieces.firstWhere((p) => p.id == pieceId);
       
+      // Get actual piece size from metadata
+      double pieceDisplayWidth = 100;
+      double pieceDisplayHeight = 100;
+      
+      if (widget.gameSession.useMemoryOptimization && 
+          widget.gameSession.memoryOptimizedAssetManager.currentPuzzleIsOptimized) {
+        final metadata = widget.gameSession.memoryOptimizedAssetManager.getPieceMetadata(piece.id);
+        if (metadata != null) {
+          // Use exact size from metadata
+          pieceDisplayWidth = metadata.contentBounds.width * _currentScale;
+          pieceDisplayHeight = metadata.contentBounds.height * _currentScale;
+          
+          // Cap for practical display
+          final maxSize = 100.0;
+          if (pieceDisplayWidth > maxSize || pieceDisplayHeight > maxSize) {
+            final scale = maxSize / math.max(pieceDisplayWidth, pieceDisplayHeight);
+            pieceDisplayWidth *= scale;
+            pieceDisplayHeight *= scale;
+          }
+        }
+      } else {
+        // Fallback for non-optimized
+        final canvasSize = widget.gameSession.canvasInfo.canvasSize;
+        final gridSize = widget.gameSession.gridSize;
+        final cellWidth = canvasSize.width / gridSize;
+        pieceDisplayWidth = cellWidth * _currentScale;
+        pieceDisplayHeight = pieceDisplayWidth; // Square for non-optimized
+        
+        // Cap for practical display
+        if (pieceDisplayWidth > 100) {
+          pieceDisplayWidth = 100;
+          pieceDisplayHeight = 100;
+        }
+      }
+      
       return Positioned(
         left: position.dx,
         top: position.dy,
@@ -565,8 +652,8 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
           feedback: Material(
             color: Colors.transparent,
             child: Container(
-              width: 100,
-              height: 100,
+              width: pieceDisplayWidth, // Use exact size, no arbitrary scaling
+              height: pieceDisplayHeight,
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.blue, width: 3),
                 borderRadius: BorderRadius.circular(8),
@@ -594,8 +681,8 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
             });
           },
           child: Container(
-            width: 80,
-            height: 80,
+            width: pieceDisplayWidth,
+            height: pieceDisplayHeight,
             decoration: BoxDecoration(
               border: Border.all(color: Colors.blue),
               borderRadius: BorderRadius.circular(4),
@@ -743,9 +830,11 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
   }
 
   double _calculateCanvasScale(Size canvasSize, Size availableSize) {
-    final adjustedHeight = availableSize.height - 140;
+    // Reserve space for the tray (using maximum tray height)
+    final adjustedHeight = availableSize.height - 150;
     final scaleX = availableSize.width / canvasSize.width;
     final scaleY = adjustedHeight / canvasSize.height;
+    // Use the smaller scale to ensure canvas fits, with a bit of padding
     return (scaleX < scaleY ? scaleX : scaleY) * 0.9;
   }
 }
