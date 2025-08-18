@@ -326,29 +326,35 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
   }
 
   Widget _buildPlacedPieceOptimized(PuzzlePiece piece) {
-    // For optimized assets, we use the MemoryOptimizedPuzzleImage widget
-    // which handles the positioning internally using the metadata
+    final canvasSize = widget.gameSession.canvasInfo.canvasSize;
+    
+    // For optimized assets, use the exact positioning from metadata
     if (widget.gameSession.useMemoryOptimization && 
         widget.gameSession.memoryOptimizedAssetManager.currentPuzzleIsOptimized) {
       
-      // Get the metadata to know where to position this piece
+      // Get the metadata to know the exact bounds on the 2048x2048 canvas
       final metadata = widget.gameSession.memoryOptimizedAssetManager.getPieceMetadata(piece.id);
       
       if (metadata != null) {
-        // The metadata contains the position on the original 2048x2048 canvas
-        // We need to position the cropped image at these coordinates
+        // The metadata contains the exact position and size on the original canvas
+        // We need to scale these coordinates to match our current canvas scale
+        final left = metadata.contentBounds.left * _currentScale;
+        final top = metadata.contentBounds.top * _currentScale;
+        final width = metadata.contentBounds.width * _currentScale;
+        final height = metadata.contentBounds.height * _currentScale;
+        
         return Positioned(
-          left: metadata.contentBounds.left * _currentScale,
-          top: metadata.contentBounds.top * _currentScale,
-          width: metadata.contentBounds.width * _currentScale,
-          height: metadata.contentBounds.height * _currentScale,
+          left: left,
+          top: top,
+          width: width,
+          height: height,
           child: GestureDetector(
             onTap: _showDebugInfo ? () => _removePiece(piece) : null,
             child: MemoryOptimizedPuzzleImage(
               pieceId: piece.id,
               assetManager: piece.memoryOptimizedAssetManager,
-              fit: BoxFit.fill,
-              cropToContent: false, // Use the full cropped image
+              fit: BoxFit.fill,  // Fill the exact bounds
+              cropToContent: false, // Use the full image for canvas placement
             ),
           ),
         );
@@ -356,13 +362,10 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
     }
     
     // Fallback for non-optimized assets (which we should avoid using)
-    final canvasSize = widget.gameSession.canvasInfo.canvasSize;
     final gridSize = widget.gameSession.gridSize;
     final cellWidth = canvasSize.width / gridSize * _currentScale;
     final cellHeight = canvasSize.height / gridSize * _currentScale;
     
-    // For non-optimized, just use grid positioning
-    // But we should really only use optimized assets
     return Positioned(
       left: piece.correctCol * cellWidth,
       top: piece.correctRow * cellHeight,

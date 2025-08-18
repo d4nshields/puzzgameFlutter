@@ -76,7 +76,8 @@ class FlutterAssetAdapter implements AssetRepository {
       return cached;
     }
     
-    final layoutPath = '$_assetBasePath$puzzleId/layouts/$gridSize';
+    // UPDATED: Always use optimized path
+    final layoutPath = '$_assetBasePath$puzzleId/layouts/${gridSize}_optimized';
     
     // Load layout metadata
     final layoutJson = await rootBundle.loadString('$layoutPath/layout.ipuz.json');
@@ -204,7 +205,8 @@ class FlutterAssetAdapter implements AssetRepository {
       return _imageCache[cacheKey]!;
     }
     
-    final imagePath = '$_assetBasePath$puzzleId/layouts/$gridSize/pieces/$pieceId.png';
+    // UPDATED: Always use optimized path
+    final imagePath = '$_assetBasePath$puzzleId/layouts/${gridSize}_optimized/pieces/$pieceId.png';
     
     // Load image data
     final data = await rootBundle.load(imagePath);

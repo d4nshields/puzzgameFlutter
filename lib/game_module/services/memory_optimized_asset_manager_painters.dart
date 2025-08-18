@@ -127,57 +127,50 @@ class OptimizedCanvasImagePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // For memory-optimized pieces, we should render at 1:1 pixel coordinates
-    // and let the widget handle display scaling
+    // For canvas placement, the widget is already positioned in the correct grid cell
+    // We just need to fill that cell with the cropped piece image
+    // The image is the cropped piece, so we render it to fill the available space
     
-    // Check if we're rendering at native canvas size (2048x2048)
-    final isNativeSize = size.width == metadata.originalCanvasSize.width && 
-                        size.height == metadata.originalCanvasSize.height;
+    final srcRect = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
     
-    if (isNativeSize) {
-      // Render at 1:1 pixel coordinates - no scaling needed
-      final destRect = Rect.fromLTWH(
-        metadata.contentBounds.left,
-        metadata.contentBounds.top,
-        metadata.contentBounds.width,
-        metadata.contentBounds.height,
-      );
-      
-      final srcRect = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
-      
-      canvas.drawImageRect(image, srcRect, destRect, Paint()..filterQuality = FilterQuality.high);
-    } else {
-      // Legacy scaling for non-native canvas sizes
-      final canvasScale = size.width / metadata.originalCanvasSize.width;
-      
-      final scaledBounds = Rect.fromLTWH(
-        metadata.contentBounds.left * canvasScale,
-        metadata.contentBounds.top * canvasScale,
-        metadata.contentBounds.width * canvasScale,
-        metadata.contentBounds.height * canvasScale,
-      );
-      
-      final srcRect = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
-      
-      canvas.drawImageRect(image, srcRect, scaledBounds, Paint()..filterQuality = FilterQuality.high);
-    }
+    // Calculate destination rect based on fit mode
+    final destRect = _calculateDestRect(size, srcRect.size);
+    
+    // Draw the cropped piece image filling the grid cell
+    canvas.drawImageRect(image, srcRect, destRect, Paint()..filterQuality = FilterQuality.high);
     
     // Optional debug bounds (only when explicitly enabled)
     if (kDebugMode && PuzzleDebugSettings.showDebugBounds) {
-      final bounds = isNativeSize 
-          ? Rect.fromLTWH(
-              metadata.contentBounds.left,
-              metadata.contentBounds.top,
-              metadata.contentBounds.width,
-              metadata.contentBounds.height,
-            )
-          : Rect.fromLTWH(
-              metadata.contentBounds.left * (size.width / metadata.originalCanvasSize.width),
-              metadata.contentBounds.top * (size.width / metadata.originalCanvasSize.width),
-              metadata.contentBounds.width * (size.width / metadata.originalCanvasSize.width),
-              metadata.contentBounds.height * (size.width / metadata.originalCanvasSize.width),
-            );
-      _drawDebugBounds(canvas, bounds, Colors.blue);
+      _drawDebugBounds(canvas, destRect, Colors.blue);
+    }
+  }
+  
+  Rect _calculateDestRect(Size containerSize, Size imageSize) {
+    switch (fit) {
+      case BoxFit.fill:
+        // Stretch to fill the entire container
+        return Rect.fromLTWH(0, 0, containerSize.width, containerSize.height);
+        
+      case BoxFit.contain:
+        // Scale to fit within container while maintaining aspect ratio
+        final scale = (containerSize.width / imageSize.width)
+            .clamp(0.0, containerSize.height / imageSize.height);
+        final scaledWidth = imageSize.width * scale;
+        final scaledHeight = imageSize.height * scale;
+        final dx = (containerSize.width - scaledWidth) / 2;
+        final dy = (containerSize.height - scaledHeight) / 2;
+        return Rect.fromLTWH(dx, dy, scaledWidth, scaledHeight);
+        
+      case BoxFit.cover:
+      default:
+        // Scale to cover the entire container while maintaining aspect ratio
+        final scale = (containerSize.width / imageSize.width)
+            .clamp(containerSize.height / imageSize.height, double.infinity);
+        final scaledWidth = imageSize.width * scale;
+        final scaledHeight = imageSize.height * scale;
+        final dx = (containerSize.width - scaledWidth) / 2;
+        final dy = (containerSize.height - scaledHeight) / 2;
+        return Rect.fromLTWH(dx, dy, scaledWidth, scaledHeight);
     }
   }
 

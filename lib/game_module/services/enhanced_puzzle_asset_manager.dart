@@ -210,7 +210,7 @@ class EnhancedPuzzleAssetManager {
     for (final gridSize in possibleGridSizes) {
       try {
         // Try to load the first piece to verify the grid size exists
-        final testPath = '$basePath/layouts/$gridSize/pieces/0_0.png';
+        final testPath = '$basePath/layouts/${gridSize}_optimized/pieces/0_0.png';
         debugPrint('EnhancedPuzzleAssetManager: Testing path: $testPath');
         
         // Test if we can load the asset
@@ -257,7 +257,7 @@ class EnhancedPuzzleAssetManager {
   }
 
   Future<void> _loadAllPieceImagesWithProcessing(String puzzleId, String gridSize, int rows, int cols) async {
-    final basePath = '$_assetBasePath$puzzleId/layouts/$gridSize/pieces';
+    final basePath = '$_assetBasePath$puzzleId/layouts/${gridSize}_optimized/pieces';
     
     // Create loading futures for all pieces
     final List<Future<void>> loadingFutures = [];
@@ -390,7 +390,7 @@ class EnhancedPuzzleAssetManager {
 
   Future<void> _loadOutlineSvg(String puzzleId, String gridSize) async {
     try {
-      final basePath = '$_assetBasePath$puzzleId/layouts/$gridSize';
+      final basePath = '$_assetBasePath$puzzleId/layouts/${gridSize}_optimized';
       _outlineSvg = await rootBundle.loadString('$basePath/outline.svg');
     } catch (e) {
       debugPrint('Failed to load outline SVG for $puzzleId $gridSize: $e');
@@ -714,7 +714,7 @@ class PuzzleCanvasInfo {
   const PuzzleCanvasInfo({required this.canvasSize});
   
   static Future<PuzzleCanvasInfo> loadFromAssets(String puzzleId, String gridSize) async {
-    final layoutPath = 'assets/puzzles/$puzzleId/layouts/$gridSize/layout.ipuz.json';
+    final layoutPath = 'assets/puzzles/$puzzleId/layouts/${gridSize}_optimized/layout.ipuz.json';
     final jsonString = await rootBundle.loadString(layoutPath);
     final jsonData = json.decode(jsonString);
     

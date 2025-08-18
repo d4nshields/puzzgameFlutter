@@ -192,7 +192,7 @@ class PuzzleAssetManager {
     for (final gridSize in possibleGridSizes) {
       try {
         // Try to load the first piece to verify the grid size exists
-        final testPath = '$basePath/layouts/$gridSize/pieces/0_0.png';
+        final testPath = '$basePath/layouts/${gridSize}_optimized/pieces/0_0.png';
         print('PuzzleAssetManager: Testing path: $testPath');
         
         // Test if we can load the asset
@@ -239,7 +239,7 @@ class PuzzleAssetManager {
   }
 
   Future<void> _loadAllPieceImages(String puzzleId, String gridSize, int rows, int cols) async {
-    final basePath = '$_assetBasePath$puzzleId/layouts/$gridSize/pieces';
+    final basePath = '$_assetBasePath$puzzleId/layouts/${gridSize}_optimized/pieces';
     
     // Create loading futures for all pieces
     final List<Future<void>> loadingFutures = [];
@@ -291,7 +291,7 @@ class PuzzleAssetManager {
 
   Future<void> _loadOutlineSvg(String puzzleId, String gridSize) async {
     try {
-      final basePath = '$_assetBasePath$puzzleId/layouts/$gridSize';
+      final basePath = '$_assetBasePath$puzzleId/layouts/${gridSize}_optimized';
       _outlineSvg = await rootBundle.loadString('$basePath/outline.svg');
     } catch (e) {
       debugPrint('Failed to load outline SVG for $puzzleId $gridSize: $e');
