@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "bf8daf04aa054bfe",
+        "id": "5597f5e393689f70",
         "type": "tabs",
         "children": [
           {
-            "id": "80c0ac3e3379c3c6",
+            "id": "88159c0cdbed8e47",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -55,9 +55,9 @@
               "state": {
                 "query": "",
                 "matchingCase": false,
-                "explainSearch": false,
+                "explainSearch": true,
                 "collapseAll": false,
-                "extraContext": false,
+                "extraContext": true,
                 "sortOrder": "alphabetical"
               },
               "icon": "lucide-search",
@@ -74,11 +74,13 @@
               "title": "Bookmarks"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "a2beb480e05ef4be",
@@ -94,7 +96,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "development_schedule.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +105,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for development_schedule"
+              "title": "Backlinks"
             }
           },
           {
@@ -113,12 +114,11 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "development_schedule.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from development_schedule"
+              "title": "Outgoing links"
             }
           },
           {
@@ -142,13 +142,12 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "development_schedule.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of development_schedule"
+              "title": "Outline"
             }
           }
         ]
@@ -169,8 +168,10 @@
       "bases:Create new base": false
     }
   },
-  "active": "80c0ac3e3379c3c6",
+  "active": "88159c0cdbed8e47",
   "lastOpenFiles": [
+    "Untitled.base",
+    "development_schedule.md",
     "refactoring_roadmap.md",
     "architecture_design.md"
   ]
