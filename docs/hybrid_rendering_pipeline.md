@@ -192,8 +192,15 @@ class MyPiece implements RenderablePiece {
 ### Performance Optimization
 
 ```dart
+// Access quality manager from the renderer
+final qualityManager = hybridRenderer.qualityManager;
+
 // Manual quality adjustment
 qualityManager.setQuality(QualityLevel.medium);
+
+// Check current quality level (public API)
+final currentQuality = qualityManager.currentQuality;
+print('Current quality: $currentQuality');
 
 // Check if can increase quality
 if (qualityManager.canIncreaseQuality()) {
@@ -257,6 +264,9 @@ final gridBounds = coordinateSystem.gridBounds;
 ### Custom Effects
 
 ```dart
+import 'dart:math' as math;
+import 'package:flutter/material.dart';
+
 // Create custom particle effect
 class CustomEffect extends ParticleEffect {
   CustomEffect({required Offset position})
@@ -273,12 +283,56 @@ class CustomEffect extends ParticleEffect {
   }
 }
 
-// Create custom continuous effect
+// Create custom continuous effect with proper LOD checking
 class PulsingGlow extends ContinuousEffect {
+  final Offset center;  // Define center point
+  double time = 0;
+  double intensity = 0.5;
+  
+  PulsingGlow({required this.center}) : super(type: ContinuousEffectType.custom);
+  
   @override
   void update(double deltaTime) {
+    time += deltaTime;
     // Update glow intensity
-    intensity = 0.5 + 0.5 * sin(time * 2);
+    intensity = 0.5 + 0.5 * math.sin(time * 2);
+  }
+}
+
+// Example of rendering with LOD consideration
+class LODAwareRenderer {
+  final QualityManager qualityManager;
+  
+  LODAwareRenderer({required this.qualityManager});
+  
+  void render(Canvas canvas, Size size) {
+    // Define center point for effects
+    final center = Offset(size.width / 2, size.height / 2);
+    
+    // Use public API to check quality level
+    final currentQuality = qualityManager.currentQuality;
+    
+    if (currentQuality == QualityLevel.high || currentQuality == QualityLevel.ultra) {
+      // Render complex effects only on high quality
+      _renderComplexEffect(canvas, center);
+    } else {
+      // Render simple effects for lower quality
+      _renderSimpleEffect(canvas, center);
+    }
+  }
+  
+  void _renderComplexEffect(Canvas canvas, Offset center) {
+    final paint = Paint()
+      ..shader = RadialGradient(
+        colors: [Colors.blue, Colors.purple],
+      ).createShader(Rect.fromCircle(center: center, radius: 100));
+    canvas.drawCircle(center, 100, paint);
+  }
+  
+  void _renderSimpleEffect(Canvas canvas, Offset center) {
+    final paint = Paint()
+      ..color = Colors.blue.withOpacity(0.5);
+    canvas.drawCircle(center, 50, paint);
   }
 }
 ```

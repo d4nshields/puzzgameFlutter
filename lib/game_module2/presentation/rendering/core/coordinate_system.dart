@@ -40,9 +40,16 @@ class CoordinateSystem {
     final offsetY = (_screenSize.height - gameSize.height * scale) / 2;
     
     // Build transformation matrices
-    _screenToCanvas = Matrix4.identity()
-      ..translate(-offsetX, -offsetY)
-      ..scale(1 / scale);
+    // We want: canvas = (screen - offset) / scale
+    // Using Matrix4's cascade operator, we must create S^-1 * T^-1
+    // where operations are in mathematical order (right to left application)
+    
+    // Method: Create the matrices separately and multiply in correct order
+    final translationMatrix = Matrix4.translationValues(-offsetX, -offsetY, 0);
+    final scaleMatrix = Matrix4.diagonal3Values(1 / scale, 1 / scale, 1.0);
+    
+    // For (screen - offset) / scale, we need: scale * translation
+    _screenToCanvas = scaleMatrix.clone()..multiply(translationMatrix);
     
     _canvasToGrid = Matrix4.identity()
       ..scale(1 / 50.0); // 50 pixels per grid unit

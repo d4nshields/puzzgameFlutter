@@ -18,6 +18,9 @@ The Dynamic Layer provides a robust, high-performance solution for rendering hun
 For enhanced visual feedback during dragging:
 
 ```dart
+// Note: Import dart:ui for ImageFilter
+import 'dart:ui' as ui;
+
 class EnhancedDragProxy extends StatelessWidget {
   final PieceState piece;
   final Widget child;
@@ -94,43 +97,114 @@ class MultiTouchHandler {
 
 ```dart
 class PerformanceProfiler {
-  final Map<String, List<Duration>> _timings = {};
+  // Active timers using Stopwatch for accuracy
+  final Map<String, Stopwatch> _activeTimers = {};
+  // Recorded durations for each label
+  final Map<String, List<Duration>> _recordedDurations = {};
   
   void startTimer(String label) {
-    _timings[label] = [DateTime.now().difference(DateTime(0))];
+    // Stop any existing stopwatch for this label
+    if (_activeTimers.containsKey(label)) {
+      _activeTimers[label]!.stop();
+    }
+    
+    // Create and start a new stopwatch
+    _activeTimers[label] = Stopwatch()..start();
   }
   
   void endTimer(String label) {
-    if (_timings.containsKey(label)) {
-      final start = _timings[label]!.last;
-      final end = DateTime.now().difference(DateTime(0));
-      _timings[label]!.add(end - start);
+    // Remove the active stopwatch
+    final stopwatch = _activeTimers.remove(label);
+    
+    if (stopwatch != null) {
+      // Stop it and record the elapsed duration
+      stopwatch.stop();
+      
+      // Add to recorded durations
+      _recordedDurations.putIfAbsent(label, () => []);
+      _recordedDurations[label]!.add(stopwatch.elapsed);
     }
   }
   
   Map<String, Duration> getAverages() {
-    return _timings.map((key, timings) {
-      if (timings.length < 2) return MapEntry(key, Duration.zero);
+    return _recordedDurations.map((label, durations) {
+      if (durations.isEmpty) return MapEntry(label, Duration.zero);
       
-      final durations = <Duration>[];
-      for (int i = 1; i < timings.length; i += 2) {
-        durations.add(timings[i]);
-      }
-      
+      // Sum all durations
       final total = durations.fold<Duration>(
         Duration.zero,
-        (sum, d) => sum + d,
+        (sum, duration) => sum + duration,
       );
       
-      return MapEntry(key, total ~/ durations.length);
+      // Compute average
+      final averageMicroseconds = total.inMicroseconds ~/ durations.length;
+      return MapEntry(label, Duration(microseconds: averageMicroseconds));
     });
   }
   
   void printReport() {
     print('=== Performance Report ===');
     getAverages().forEach((label, duration) {
-      print('$label: ${duration.inMicroseconds}μs');
+      print('$label: ${duration.inMicroseconds}μs (${_recordedDurations[label]?.length ?? 0} samples)');
     });
+  }
+  
+  void reset() {
+    // Stop all active timers
+    _activeTimers.values.forEach((stopwatch) => stopwatch.stop());
+    _activeTimers.clear();
+    _recordedDurations.clear();
+  }
+}
+```
+
+#### Using the Performance Profiler
+
+```dart
+// Example usage in your game code
+class GameWidget extends StatefulWidget {
+  @override
+  State<GameWidget> createState() => _GameWidgetState();
+}
+
+class _GameWidgetState extends State<GameWidget> {
+  final PerformanceProfiler _profiler = PerformanceProfiler();
+  
+  void _handlePieceMove(String pieceId, Offset position) {
+    _profiler.startTimer('piece_move');
+    
+    // Perform hit testing
+    _profiler.startTimer('hit_test');
+    final hitResult = _controller.hitTest(position);
+    _profiler.endTimer('hit_test');
+    
+    // Update transform
+    _profiler.startTimer('transform_update');
+    _controller.updatePiece(pieceId, position: position);
+    _profiler.endTimer('transform_update');
+    
+    // Check snapping
+    _profiler.startTimer('snap_check');
+    _checkSnapPosition(pieceId, position);
+    _profiler.endTimer('snap_check');
+    
+    _profiler.endTimer('piece_move');
+  }
+  
+  void _showPerformanceReport() {
+    _profiler.printReport();
+    // Example output:
+    // === Performance Report ===
+    // piece_move: 2543μs (120 samples)
+    // hit_test: 823μs (120 samples)
+    // transform_update: 156μs (120 samples)
+    // snap_check: 1234μs (120 samples)
+  }
+  
+  @override
+  void dispose() {
+    _profiler.reset();
+    super.dispose();
   }
 }
 ```

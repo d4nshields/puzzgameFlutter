@@ -343,13 +343,20 @@ Timer.periodic(Duration(seconds: 1), (_) {
 ### Custom Effects
 
 ```dart
+import 'dart:ui' as ui;
+import 'package:flutter/material.dart';
+
 // Add custom background effect
 void _drawCustomEffect(Canvas canvas, Size size) {
-  if (controller._currentLOD == LevelOfDetail.high) {
+  // Define the center point
+  final center = Offset(size.width / 2, size.height / 2);
+  
+  // Use public API to check LOD
+  if (controller.getCurrentLOD() == LevelOfDetail.high) {
     // Draw complex effect only for high LOD
     final paint = Paint()
       ..shader = ui.Gradient.sweep(
-        Offset(size.width / 2, size.height / 2),
+        center,
         [Colors.blue, Colors.purple],
       );
     canvas.drawCircle(center, 100, paint);
@@ -360,33 +367,45 @@ void _drawCustomEffect(Canvas canvas, Size size) {
 ### Dynamic Grid Patterns
 
 ```dart
-// Customize grid based on game state
-double _getGridSizeForLOD() {
-  if (gameState.metadata['difficulty'] == 'hard') {
-    return controller._currentLOD == LevelOfDetail.high ? 20.0 : 40.0;
+class CustomGridPainter extends StaticLayerPainter {
+  @override
+  double _getGridSizeForLOD() {
+    // Access game state through the public gameState property
+    if (gameState.metadata['difficulty'] == 'hard') {
+      // Use public API to get current LOD
+      return controller.getCurrentLOD() == LevelOfDetail.high ? 20.0 : 40.0;
+    }
+    return super._getGridSizeForLOD();
   }
-  return super._getGridSizeForLOD();
 }
 ```
 
 ### Animated Backgrounds
 
 ```dart
+import 'dart:math' as math;
+
 // Animate background without invalidating cache
 void _drawAnimatedParticles(Canvas canvas, Size size) {
   final time = DateTime.now().millisecondsSinceEpoch / 1000.0;
   
+  // Determine particle count based on LOD
+  final particleCount = controller.getCurrentLOD() == LevelOfDetail.high ? 50 : 20;
+  
   for (int i = 0; i < particleCount; i++) {
     final phase = (time + i * 0.1) % 10.0;
-    final opacity = sin(phase * pi / 5.0).abs();
+    final opacity = math.sin(phase * math.pi / 5.0).abs();
     
-    final x = (sin(i * 1.7) + 1) * size.width / 2;
+    final x = (math.sin(i * 1.7) + 1) * size.width / 2;
     final y = (phase / 10.0) * size.height;
+    
+    final paint = Paint()
+      ..color = Colors.white.withOpacity(opacity * 0.3);
     
     canvas.drawCircle(
       Offset(x, y),
       2.0,
-      Paint()..color = Colors.white.withOpacity(opacity * 0.3),
+      paint,
     );
   }
 }

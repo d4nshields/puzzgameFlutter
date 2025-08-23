@@ -65,6 +65,9 @@ class StaticLayerController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Get current level of detail
+  LevelOfDetail getCurrentLOD() => _currentLOD;
+  
   /// Update viewport for culling optimization
   void updateViewport(Rect viewport, double zoomLevel) {
     if (_lastViewport != viewport || _lastZoomLevel != zoomLevel) {
@@ -739,8 +742,10 @@ class PerformanceTracker {
     if (_frameTimestamps.length >= 2) {
       final oldestTime = _frameTimestamps.first;
       final duration = now.difference(oldestTime);
+      // Avoid division by zero - use milliseconds for more precision
       if (duration.inMilliseconds > 0) {
-        fps = (_frameTimestamps.length / duration.inSeconds).clamp(0, 120);
+        // Calculate FPS using milliseconds to avoid zero division for sub-second durations
+        fps = (_frameTimestamps.length * 1000.0 / duration.inMilliseconds).clamp(0, 120);
       }
     }
     
