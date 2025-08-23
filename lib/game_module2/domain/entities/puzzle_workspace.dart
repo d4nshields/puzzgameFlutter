@@ -294,13 +294,15 @@ class PuzzleWorkspace {
       puzzleId: json['puzzleId'],
       gridSize: json['gridSize'],
       canvasSize: Size(
-        json['canvasSize']['width'],
-        json['canvasSize']['height'],
+        (json['canvasSize']['width'] as num).toDouble(),
+        (json['canvasSize']['height'] as num).toDouble(),
       ),
       pieces: (json['pieces'] as List)
           .map((p) => PuzzlePiece.fromJson(p))
           .toList(),
-      config: PlacementConfig.fromJson(json['config']),
+      config: json['config'] != null 
+          ? PlacementConfig.fromJson(json['config'])
+          : const PlacementConfig(),
       createdAt: DateTime.parse(json['createdAt']),
     )
       ..completedAt = json['completedAt'] != null
@@ -394,11 +396,15 @@ class PlacementConfig {
 
   factory PlacementConfig.fromJson(Map<String, dynamic> json) {
     return PlacementConfig(
-      snapDistance: json['snapDistance'] ?? 50.0,
-      feedbackDistance: json['feedbackDistance'] ?? 100.0,
-      preventOverlap: json['preventOverlap'] ?? false,
-      autoSave: json['autoSave'] ?? true,
-      autoSaveIntervalSeconds: json['autoSaveIntervalSeconds'] ?? 30,
+      snapDistance: json['snapDistance'] != null 
+          ? (json['snapDistance'] as num).toDouble() 
+          : 50.0,
+      feedbackDistance: json['feedbackDistance'] != null 
+          ? (json['feedbackDistance'] as num).toDouble() 
+          : 100.0,
+      preventOverlap: json['preventOverlap'] as bool? ?? false,
+      autoSave: json['autoSave'] as bool? ?? true,
+      autoSaveIntervalSeconds: json['autoSaveIntervalSeconds'] as int? ?? 30,
     );
   }
 }

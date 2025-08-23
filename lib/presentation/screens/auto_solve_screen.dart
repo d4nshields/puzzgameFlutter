@@ -6,7 +6,7 @@ import 'dart:ui' as ui;
 import 'dart:typed_data';
 import 'dart:async';
 import 'package:puzzgame_flutter/core/application/game_use_cases.dart';
-import 'package:puzzgame_flutter/core/application/settings_providers.dart';
+// import 'package:puzzgame_flutter/core/application/settings_providers.dart'; // Not used
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/game_module/puzzle_game_module.dart';
 import 'package:puzzgame_flutter/game_module/services/memory_optimized_asset_manager.dart';

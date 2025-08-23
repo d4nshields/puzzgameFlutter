@@ -47,6 +47,9 @@ dependencies:
 
   # UI Components
   carousel_slider: ^5.1.1
+  
+  # Math utilities
+  vector_math: ^2.1.4
 
 dev_dependencies:
   flutter_test:

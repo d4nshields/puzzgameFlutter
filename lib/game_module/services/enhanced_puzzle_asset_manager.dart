@@ -602,8 +602,8 @@ class SmartCroppedImagePainter extends CustomPainter {
     canvas.drawImageRect(image, srcRect, centeredRect, Paint()..filterQuality = FilterQuality.medium);
     
     // Optional: Draw debug bounds
-    if (kDebugMode && false) { // Set to true to see bounds in debug mode
-      _drawDebugBounds(canvas, centeredRect);
+    if (kDebugMode) { // Set to true to see bounds in debug mode
+      // _drawDebugBounds(canvas, centeredRect);
     }
   }
 
@@ -631,13 +631,13 @@ class SmartCroppedImagePainter extends CustomPainter {
     }
   }
 
-  void _drawDebugBounds(Canvas canvas, Rect destRect) {
-    final debugPaint = Paint()
-      ..color = Colors.green.withOpacity(0.3)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-    canvas.drawRect(destRect, debugPaint);
-  }
+  // void _drawDebugBounds(Canvas canvas, Rect destRect) {
+  //   final debugPaint = Paint()
+  //     ..color = Colors.green.withOpacity(0.3)
+  //     ..style = PaintingStyle.stroke
+  //     ..strokeWidth = 1.0;
+  //   canvas.drawRect(destRect, debugPaint);
+  // }
 
   @override
   bool shouldRepaint(covariant SmartCroppedImagePainter oldDelegate) {
@@ -666,8 +666,8 @@ class OriginalImagePainter extends CustomPainter {
     canvas.drawImageRect(image, srcRect, destRect, Paint()..filterQuality = FilterQuality.medium);
     
     // Optional: Draw debug bounds
-    if (kDebugMode && false) { // Set to true to see bounds in debug mode
-      _drawDebugBounds(canvas, destRect);
+    if (kDebugMode) { // Set to true to see bounds in debug mode
+      // _drawDebugBounds(canvas, destRect);
     }
   }
 
@@ -693,13 +693,13 @@ class OriginalImagePainter extends CustomPainter {
     }
   }
 
-  void _drawDebugBounds(Canvas canvas, Rect destRect) {
-    final debugPaint = Paint()
-      ..color = Colors.blue.withOpacity(0.3)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
-    canvas.drawRect(destRect, debugPaint);
-  }
+  // void _drawDebugBounds(Canvas canvas, Rect destRect) {
+  //   final debugPaint = Paint()
+  //     ..color = Colors.blue.withOpacity(0.3)
+  //     ..style = PaintingStyle.stroke
+  //     ..strokeWidth = 2.0;
+  //   canvas.drawRect(destRect, debugPaint);
+  // }
 
   @override
   bool shouldRepaint(covariant OriginalImagePainter oldDelegate) {

@@ -37,6 +37,7 @@ class _TrayScrollStickState extends State<TrayScrollStick>
   // Joystick state
   StickPosition _currentPosition = StickPosition.center;
   Timer? _scrollTimer;
+  // ignore: unused_field
   bool _isInteracting = false;
   
   // Accessibility and motor control settings
@@ -385,22 +386,22 @@ class _TrayScrollStickState extends State<TrayScrollStick>
     _scrollTimer = null;
   }
   
-  String _getScrollPosition() {
-    if (!widget.scrollController.hasClients) return 'Beginning';
-    
-    try {
-      final position = widget.scrollController.position;
-      final maxScroll = position.maxScrollExtent;
-      final currentScroll = position.pixels;
-      
-      if (maxScroll == 0) return 'All items visible';
-      
-      final percentage = ((currentScroll / maxScroll) * 100).round();
-      return 'Scrolled $percentage%';
-    } catch (e) {
-      return 'Loading';
-    }
-  }
+  // String _getScrollPosition() {
+  //   if (!widget.scrollController.hasClients) return 'Beginning';
+  //   
+  //   try {
+  //     final position = widget.scrollController.position;
+  //     final maxScroll = position.maxScrollExtent;
+  //     final currentScroll = position.pixels;
+  //     
+  //     if (maxScroll == 0) return 'All items visible';
+  //     
+  //     final percentage = ((currentScroll / maxScroll) * 100).round();
+  //     return 'Scrolled $percentage%';
+  //   } catch (e) {
+  //     return 'Loading';
+  //   }
+  // }
   
   void _scrollUp() {
     if (!widget.scrollController.hasClients) return;

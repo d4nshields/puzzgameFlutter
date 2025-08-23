@@ -244,7 +244,7 @@ class SentryErrorReportingService implements ErrorReportingService {
   FutureOr<SentryEvent?> _filterEvent(SentryEvent event, Hint hint) {
     // Temporarily disable filtering for debugging
     // TODO: Re-enable filtering after confirming Sentry works
-    print('Sentry: Allowing event - ${event.exceptions?.first?.type}');
+    print('Sentry: Allowing event - ${event.exceptions?.first.type}');
     return event;
     
     // Original filtering code (commented out for debugging):

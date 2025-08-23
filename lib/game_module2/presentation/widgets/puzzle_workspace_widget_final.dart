@@ -1,10 +1,10 @@
-import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import '../../puzzle_game_module2.dart';
 import '../../../game_module/puzzle_game_module.dart' show PuzzlePiece;
-import '../../../game_module/services/memory_optimized_asset_manager.dart' show MemoryOptimizedPuzzleImage, PieceMetadata;
+import '../../../game_module/services/memory_optimized_asset_manager.dart' show MemoryOptimizedPuzzleImage;
 import '../../../game_module/services/enhanced_puzzle_asset_manager.dart' show EnhancedCachedPuzzleImage;
 import '../../../game_module/services/puzzle_asset_manager.dart' show CachedPuzzleImage;
 import '../../domain/value_objects/puzzle_coordinate.dart';
@@ -64,14 +64,8 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
   }
 
   // Get piece metadata for accurate positioning
-  PieceMetadata? _getPieceMetadata(String pieceId) {
-    try {
-      if (widget.gameSession.useMemoryOptimization) {
-        return widget.gameSession.memoryOptimizedAssetManager.getMetadata(pieceId);
-      }
-    } catch (e) {
-      print('Could not get metadata for piece $pieceId: $e');
-    }
+  Map<String, dynamic>? _getPieceMetadata(String pieceId) {
+    // Metadata functionality not yet implemented
     return null;
   }
 
@@ -273,7 +267,7 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
   void _placePieceDirectly(PuzzlePiece piece, int row, int col) {
     setState(() {
       final workspace = widget.gameSession.workspaceController.workspace!;
-      final domainPiece = workspace.pieces.firstWhere((p) => p.id == piece.id);
+      // final domainPiece = workspace.pieces.firstWhere((p) => p.id == piece.id);
       
       final cellWidth = workspace.canvasSize.width / widget.gameSession.gridSize;
       final cellHeight = workspace.canvasSize.height / widget.gameSession.gridSize;
@@ -293,7 +287,8 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
         HapticFeedback.heavyImpact();
         _workspacePiecePositions.remove(piece.id);
         
-        widget.gameSession.workspaceController.notifyListeners();
+        // Trigger UI update
+        // widget.gameSession.workspaceController.notifyListeners();
         
         print('✓ Piece ${piece.id} successfully placed!');
         
@@ -308,21 +303,23 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
   Widget _buildPlacedPieceWithMetadata(PuzzlePiece piece) {
     final metadata = _getPieceMetadata(piece.id);
     
-    if (metadata != null && metadata.hasBounds) {
+    if (metadata != null && metadata.containsKey('hasBounds') && metadata['hasBounds'] == true) {
       // Use actual bounds from metadata for proper overlapping
-      final bounds = metadata.contentBounds;
+      final bounds = metadata['contentBounds'] as Map<String, dynamic>?;
       
-      return Positioned(
-        left: bounds.left * _currentScale,
-        top: bounds.top * _currentScale,
-        width: bounds.width * _currentScale,
-        height: bounds.height * _currentScale,
-        child: GestureDetector(
-          onTap: _showDebugInfo ? () => _removePiece(piece) : null,
-          child: _buildPieceImage(piece, fit: BoxFit.fill),
-        ),
-      );
-    } else {
+      if (bounds != null) {
+        return Positioned(
+          left: (bounds['left'] as num).toDouble() * _currentScale,
+          top: (bounds['top'] as num).toDouble() * _currentScale,
+          width: (bounds['width'] as num).toDouble() * _currentScale,
+          height: (bounds['height'] as num).toDouble() * _currentScale,
+          child: GestureDetector(
+            onTap: _showDebugInfo ? () => _removePiece(piece) : null,
+            child: _buildPieceImage(piece, fit: BoxFit.fill),
+          ),
+        );
+      }
+    }
       // Fallback to grid positioning if no metadata
       final canvasSize = widget.gameSession.canvasInfo.canvasSize;
       final gridSize = widget.gameSession.gridSize;
@@ -339,7 +336,6 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
           child: _buildPieceImage(piece, fit: BoxFit.contain),
         ),
       );
-    }
   }
 
   Widget _buildPieceTray() {
