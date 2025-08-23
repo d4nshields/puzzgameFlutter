@@ -14,7 +14,8 @@ import 'package:puzzgame_flutter/core/infrastructure/sentry_error_reporting_serv
 import 'package:puzzgame_flutter/core/infrastructure/supabase/supabase_auth_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/supabase/supabase_game_session_tracking_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/supabase/supabase_achievement_service.dart';
-import 'package:puzzgame_flutter/game_module/puzzle_game_module.dart';
+
+import 'package:puzzgame_flutter/game_module2/puzzle_game_module2.dart';
 
 /// Service locator singleton
 final serviceLocator = GetIt.instance;
@@ -45,7 +46,7 @@ void setupDependencies() {
   serviceLocator.registerFactory<ZoomService>(() => DefaultZoomService());
   
   // Register Game Module - using PuzzleGameModule for jigsaw puzzle gameplay
-  serviceLocator.registerSingleton<GameModule>(PuzzleGameModule());
+  serviceLocator.registerSingleton<GameModule>(PuzzleGameModule2());
   
   // Register Use Cases
   serviceLocator.registerFactory(() => StartGameUseCase(serviceLocator()));

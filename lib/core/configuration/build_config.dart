@@ -15,7 +15,7 @@
 /// CHANGE THIS LINE to switch between build variants:
 /// - Use 'internal' for development/testing builds
 /// - Use 'external' for production builds
-const String _activeBuildVariant = 'external';
+const String _activeBuildVariant = 'internal';
 
 // =============================================================================
 // FEATURE FLAGS - CLEAR NAMING WITH CORRECTED BEHAVIOR

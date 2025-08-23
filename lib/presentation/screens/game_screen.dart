@@ -8,6 +8,8 @@ import 'package:puzzgame_flutter/game_module/puzzle_game_module.dart';
 import 'package:puzzgame_flutter/game_module/services/puzzle_asset_manager.dart';
 import 'package:puzzgame_flutter/game_module/widgets/puzzle_selection_widget.dart';
 import 'package:puzzgame_flutter/game_module/widgets/enhanced_puzzle_game_widget.dart';
+import 'package:puzzgame_flutter/game_module2/puzzle_game_module2.dart';
+import 'package:puzzgame_flutter/game_module2/presentation/widgets/puzzle_workspace_widget.dart';
 
 /// Provider for game session state that automatically restarts when difficulty changes
 final gameSessionProvider = AsyncNotifierProvider<GameSessionNotifier, GameSession?>(() {
@@ -194,6 +196,24 @@ class GameScreen extends ConsumerWidget {
       );
     }
 
+    // Check if this is using the new game_module2
+    if (gameSession is PuzzleGameSession2) {
+      return Column(
+        children: [
+          // Show current puzzle info
+          _buildPuzzleInfo2(context, gameSession, difficulty, gridSize, ref),
+          
+          // New puzzle workspace widget with fixed piece placement
+          Expanded(
+            child: PuzzleWorkspaceWidget(
+              gameSession: gameSession,
+              onGameCompleted: () => _onPuzzleCompleted(context, ref),
+            ),
+          ),
+        ],
+      );
+    }
+    
     // Check if this is a puzzle game session AND everything is ready
     if (gameSession is PuzzleGameSession) {
       // Add additional safety check for services
@@ -261,6 +281,62 @@ class GameScreen extends ConsumerWidget {
       case 3: return Colors.red;
       default: return Colors.orange;
     }
+  }
+
+  Widget _buildPuzzleInfo2(
+    BuildContext context,
+    PuzzleGameSession2 gameSession,
+    int difficulty,
+    int gridSize,
+    WidgetRef ref,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            _getDifficultyColor(difficulty).withOpacity(0.1),
+            _getDifficultyColor(difficulty).withOpacity(0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: _getDifficultyColor(difficulty).withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          // Compact puzzle info
+          Expanded(
+            child: Text(
+              '${_formatPuzzleName(gameSession.currentPuzzleId)} • ${gameSession.gridSize}×${gameSession.gridSize} • ${gameSession.piecesPlaced}/${gameSession.totalPieces} placed',
+              style: const TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 13,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          
+          // Compact quick actions
+          IconButton(
+            onPressed: () => _showPuzzleSelection(context, ref),
+            icon: const Icon(Icons.palette),
+            tooltip: 'Change Puzzle',
+            iconSize: 18,
+            padding: const EdgeInsets.all(4),
+            constraints: const BoxConstraints(),
+          ),
+          IconButton(
+            onPressed: () => _restartCurrentPuzzle(context, ref),
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Restart Puzzle',
+            iconSize: 18,
+            padding: const EdgeInsets.all(4),
+            constraints: const BoxConstraints(),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildPuzzleInfo(
@@ -364,6 +440,7 @@ class GameScreen extends ConsumerWidget {
     try {
       // Extract difficulty from grid size
       final dimensions = gridSize.split('x');
+      // ignore: unused_local_variable
       final size = int.parse(dimensions[0]);
       
       // This is a simplified approach - in a more complete implementation,
@@ -407,11 +484,13 @@ class GameScreen extends ConsumerWidget {
     Navigator.pushNamed(context, '/early-access');
   }
 
+  // ignore: unused_element
   void _onGridSizeChanged(BuildContext context, WidgetRef ref, int newGridSize) {
     // Handle grid size change if needed
     debugPrint('Grid size changed to: $newGridSize');
   }
 
+  // ignore: unused_element
   void _onPuzzleChanged(BuildContext context, WidgetRef ref, String newPuzzleId) {
     // Handle puzzle change if needed
     debugPrint('Puzzle changed to: $newPuzzleId');
@@ -428,6 +507,7 @@ class GameScreen extends ConsumerWidget {
   }
 
   /// Show celebration for puzzle completion
+  // ignore: unused_element
   void _showCompletionCelebration(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(

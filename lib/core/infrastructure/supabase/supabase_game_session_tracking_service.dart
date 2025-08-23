@@ -5,7 +5,7 @@ import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
 import 'package:puzzgame_flutter/core/domain/entities/user.dart';
 import 'package:puzzgame_flutter/core/infrastructure/supabase/supabase_config.dart';
 import 'package:puzzgame_flutter/game_module/puzzle_game_module.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 

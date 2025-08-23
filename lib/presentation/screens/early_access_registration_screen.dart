@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/core/domain/services/auth_service.dart';
 import 'package:puzzgame_flutter/core/domain/services/achievement_service.dart';
-import 'package:puzzgame_flutter/core/configuration/build_config.dart';
+// import 'package:puzzgame_flutter/core/configuration/build_config.dart'; // Not used
 import 'package:puzzgame_flutter/core/configuration/feature_aware_navigation.dart';
 import 'package:puzzgame_flutter/presentation/theme/cozy_puzzle_theme.dart';
 

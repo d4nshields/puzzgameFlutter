@@ -38,6 +38,7 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
   late final AudioService _audioService;
   late final ErrorReportingService _errorReporting;
   PuzzlePiece? _selectedPiece;
+  // ignore: unused_field
   bool _isLoading = false;
   final TransformationController _transformationController = TransformationController();
   
@@ -447,10 +448,10 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
     );
   }
   
-  Widget _buildTrayGrid() {
-    // This method is replaced by _buildTrayGridWithScroll for accessibility
-    return _buildTrayGridWithScroll();
-  }
+  // Widget _buildTrayGrid() {
+  //   // This method is replaced by _buildTrayGridWithScroll for accessibility
+  //   return _buildTrayGridWithScroll();
+  // }
   
   Widget _buildTrayGridWithScroll() {
     // Get sorted pieces using the piece sorting service
@@ -770,6 +771,7 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
   }
   
   // Legacy method for backward compatibility
+  // ignore: unused_element
   void _removePieceAtPosition(int row, int col) {
     setState(() {
       widget.gameSession.removePieceFromGrid(row, col);
@@ -778,6 +780,7 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
   }
   
   /// Build a canvas piece at native pixel coordinates (for memory optimization)
+  // ignore: unused_element
   Widget _buildNativeCanvasPiece(PuzzlePiece piece, Size nativeCanvasSize) {
     return Positioned.fill(
       child: GestureDetector(
@@ -800,10 +803,11 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
   }
   
   /// Build drop zone overlay at native coordinates
+  // ignore: unused_element
   Widget _buildNativeDropZoneOverlay(Size nativeCanvasSize) {
     return Positioned.fill(
       child: DragTarget<PuzzlePiece>(
-        onWillAcceptWithDetails: (details) => details.data != null,
+        onWillAcceptWithDetails: (details) => true,
         onAcceptWithDetails: (details) => _placePieceOnCanvas(details.data),
         builder: (context, candidateData, rejectedData) {
           return Container(
@@ -863,7 +867,7 @@ class _EnhancedPuzzleGameWidgetState extends ConsumerState<EnhancedPuzzleGameWid
   Widget _buildDropZoneOverlay(Size canvasSize) {
     return Positioned.fill(
       child: DragTarget<PuzzlePiece>(
-        onWillAcceptWithDetails: (details) => details.data != null,
+        onWillAcceptWithDetails: (details) => true,
         onAcceptWithDetails: (details) => _placePieceOnCanvas(details.data),
         builder: (context, candidateData, rejectedData) {
           return Container(
