@@ -66,32 +66,70 @@ Widget _buildCanvas(BoxConstraints constraints) {
   
   return Center(
     child: DragTarget<PuzzlePiece>(
-      // Accept drops anywhere on canvas
-      onWillAcceptWithDetails: (details) => true,
+      // Validate that the drop is within canvas bounds
+      onWillAcceptWithDetails: (details) {
+        // Get the render box to convert to local coordinates
+        final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
+        if (renderBox == null) return false;
+        
+        // Convert drop position to local coordinates relative to this widget
+        final localPosition = renderBox.globalToLocal(details.offset);
+        
+        // Get scaled canvas bounds
+        final scaledWidth = canvasSize.width * scale;
+        final scaledHeight = canvasSize.height * scale;
+        
+        // Check if drop is within canvas bounds
+        final isWithinBounds = localPosition.dx >= 0 &&
+                               localPosition.dy >= 0 &&
+                               localPosition.dx <= scaledWidth &&
+                               localPosition.dy <= scaledHeight;
+        
+        return isWithinBounds;
+      },
       onAcceptWithDetails: (details) {
         final piece = details.data;
         
-        // Convert drop position to canvas coordinates
-        final RenderBox renderBox = context.findRenderObject() as RenderBox;
+        // Get the render box for coordinate conversion
+        final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
+        if (renderBox == null) return;
+        
+        // Convert drop position to local coordinates
         final localPosition = renderBox.globalToLocal(details.offset);
         
-        // Scale to canvas coordinates
+        // Validate bounds again for safety
+        final scaledWidth = canvasSize.width * scale;
+        final scaledHeight = canvasSize.height * scale;
+        
+        if (localPosition.dx < 0 || localPosition.dy < 0 ||
+            localPosition.dx > scaledWidth || localPosition.dy > scaledHeight) {
+          // Drop is outside canvas bounds - return piece to tray
+          return;
+        }
+        
+        // Convert local position to canvas coordinates by dividing by scale
         final canvasX = localPosition.dx / scale;
         final canvasY = localPosition.dy / scale;
         
-        // Try to place piece at this position
+        // Try to place piece at this canvas position
         _tryPlacePieceAtCanvasPosition(piece, canvasX, canvasY);
       },
       builder: (context, candidateData, rejectedData) {
+        final isHighlighted = candidateData.isNotEmpty;
+        
         return Container(
           width: canvasSize.width * scale,
           height: canvasSize.height * scale,
           decoration: BoxDecoration(
             color: Colors.grey[100],
-            border: Border.all(color: Colors.grey[400]!, width: 2),
+            border: Border.all(
+              color: isHighlighted ? Colors.blue : Colors.grey[400]!,
+              width: isHighlighted ? 3 : 2,
+            ),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Stack(
+            clipBehavior: Clip.none, // Allow pieces to extend beyond canvas during drag
             children: [
               // Grid lines for guidance
               CustomPaint(

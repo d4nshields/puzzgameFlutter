@@ -134,13 +134,35 @@ class PuzzleCoordinate {
 ### 2. Puzzle Piece Entity
 
 ```dart
+/// Domain value object for dimensions - framework agnostic
+class Dimensions {
+  final double width;
+  final double height;
+  
+  const Dimensions({required this.width, required this.height});
+  
+  double get area => width * height;
+  double get aspectRatio => width / height;
+  
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Dimensions &&
+          runtimeType == other.runtimeType &&
+          width == other.width &&
+          height == other.height;
+  
+  @override
+  int get hashCode => width.hashCode ^ height.hashCode;
+}
+
 /// Core domain entity representing a puzzle piece
-/// Independent of rendering or UI concerns
+/// Independent of rendering or UI concerns - no Flutter dependencies
 class PuzzlePiece {
   final String id;
   final PuzzleCoordinate correctPosition;  // Where it should be placed
-  final Size contentBounds;                // Actual content size (with tabs)
-  final Size paddedBounds;                 // Full PNG dimensions
+  final Dimensions contentBounds;          // Actual content size (with tabs)
+  final Dimensions paddedBounds;           // Full PNG dimensions
   
   PuzzleCoordinate? currentPosition;       // Where it currently is (null if in tray)
   bool isPlaced = false;
@@ -152,6 +174,17 @@ class PuzzlePiece {
   
   bool canSnapToPosition({required double snapDistance}) {
     return isNearCorrectPosition(threshold: snapDistance);
+  }
+}
+
+/// Adapter for converting between domain and UI types (in presentation layer)
+class DimensionsAdapter {
+  static Size toFlutterSize(Dimensions dimensions) {
+    return Size(dimensions.width, dimensions.height);
+  }
+  
+  static Dimensions fromFlutterSize(Size size) {
+    return Dimensions(width: size.width, height: size.height);
   }
 }
 ```

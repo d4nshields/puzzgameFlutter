@@ -159,20 +159,70 @@ class HybridRenderer extends StatefulWidget {
 
 #### Implementation:
 ```dart
-// Performance test example
+// Performance test example with FrameTimingRecorder implementation
+
+// First, add this helper class for recording frame timings
+class FrameTimingRecorder {
+  final List<FrameTiming> _timings = [];
+  
+  void record(List<FrameTiming> timings) {
+    _timings.addAll(timings);
+  }
+  
+  int get droppedFrames {
+    int dropped = 0;
+    for (final timing in _timings) {
+      // A frame is considered dropped if it took longer than 16.67ms (60 FPS)
+      final frameDuration = timing.totalSpan.inMicroseconds;
+      if (frameDuration > 16667) {
+        dropped++;
+      }
+    }
+    return dropped;
+  }
+  
+  double get averageFps {
+    if (_timings.isEmpty) return 0;
+    
+    double totalFps = 0;
+    for (final timing in _timings) {
+      final frameDuration = timing.totalSpan.inMicroseconds;
+      if (frameDuration > 0) {
+        // Convert microseconds to FPS (1,000,000 microseconds = 1 second)
+        totalFps += 1000000.0 / frameDuration;
+      }
+    }
+    return totalFps / _timings.length;
+  }
+  
+  void clear() {
+    _timings.clear();
+  }
+}
+
+// Test implementation using the recorder
 testWidgets('maintains 60fps during drag', (tester) async {
   final controller = GameController();
   await tester.pumpWidget(GameWidget(controller: controller));
   
-  final frameCallback = FrameTimingRecorder();
-  SchedulerBinding.instance.addTimingsCallback(frameCallback.record);
+  // Set up frame timing recording
+  final recorder = FrameTimingRecorder();
+  SchedulerBinding.instance.addTimingsCallback(recorder.record);
   
-  // Simulate drag
-  await tester.drag(find.byType(PuzzlePiece), Offset(100, 100));
-  await tester.pumpAndSettle();
-  
-  expect(frameCallback.droppedFrames, equals(0));
-  expect(frameCallback.averageFps, greaterThan(59));
+  try {
+    // Simulate drag operation
+    await tester.drag(find.byType(PuzzlePiece), const Offset(100, 100));
+    await tester.pumpAndSettle();
+    
+    // Verify performance metrics
+    expect(recorder.droppedFrames, equals(0),
+        reason: 'Should have no dropped frames during drag');
+    expect(recorder.averageFps, greaterThan(59),
+        reason: 'Should maintain at least 59 FPS');
+  } finally {
+    // Clean up: remove the timing callback
+    SchedulerBinding.instance.removeTimingsCallback(recorder.record);
+  }
 });
 ```
 

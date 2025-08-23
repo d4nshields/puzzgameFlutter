@@ -116,11 +116,32 @@ class FlutterAssetAdapter implements AssetRepository {
         
         // Extract bounds from metadata
         final boundsData = pieceData['bounds'];
+        
+        // Prefer width/height over right/bottom for accuracy
+        final left = (boundsData['left'] as num).toDouble();
+        final top = (boundsData['top'] as num).toDouble();
+        
+        final double right;
+        final double bottom;
+        
+        // If width/height are available, calculate right/bottom from them
+        // This is more accurate as right/bottom might be inclusive
+        if (boundsData['width'] != null && boundsData['height'] != null) {
+          final width = (boundsData['width'] as num).toDouble();
+          final height = (boundsData['height'] as num).toDouble();
+          right = left + width;
+          bottom = top + height;
+        } else {
+          // Fallback to direct right/bottom values if width/height not available
+          right = (boundsData['right'] as num).toDouble();
+          bottom = (boundsData['bottom'] as num).toDouble();
+        }
+        
         final contentBounds = ContentRect(
-          left: boundsData['left'].toDouble(),
-          top: boundsData['top'].toDouble(),
-          right: boundsData['right'].toDouble(),
-          bottom: boundsData['bottom'].toDouble(),
+          left: left,
+          top: top,
+          right: right,
+          bottom: bottom,
         );
         
         // Calculate target bounds (where piece should be placed)
@@ -321,6 +342,19 @@ class FlutterAssetAdapter implements AssetRepository {
 
   /// Clear all caches
   void clearCache() {
+    // Dispose all cached images to free GPU memory
+    for (final image in _imageCache.values) {
+      try {
+        // Safely dispose of the image
+        // Some images might already be disposed or null
+        image.dispose();
+      } catch (e) {
+        // Ignore disposal errors - image might already be disposed
+        print('Warning: Failed to dispose image during cache clear: $e');
+      }
+    }
+    
+    // Now clear all caches
     _metadataCache.clear();
     _imageCache.clear();
     _pieceDataCache.clear();

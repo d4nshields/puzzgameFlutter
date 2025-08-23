@@ -32,9 +32,22 @@ Widget _buildDropZoneOverlay(Size canvasSize) {
       final RenderBox renderBox = context.findRenderObject() as RenderBox;
       final localPosition = renderBox.globalToLocal(dropPosition);
       
-      // Check proximity to correct position
-      final correctX = piece.correctCol * (canvasSize.width / widget.gameSession.gridSize);
-      final correctY = piece.correctRow * (canvasSize.height / widget.gameSession.gridSize);
+      // Parse and normalize grid size (handles "8x8", "8 x 8", etc.)
+      final gridSize = widget.gameSession.gridSize;
+      final normalizedGrid = gridSize.toLowerCase().replaceAll(' ', '');
+      final gridParts = normalizedGrid.split('x');
+      
+      // Safe parsing with fallback
+      final rows = int.tryParse(gridParts[0]) ?? 8;
+      final cols = gridParts.length > 1 ? (int.tryParse(gridParts[1]) ?? rows) : rows;
+      
+      // Calculate cell dimensions
+      final cellWidth = canvasSize.width / cols;
+      final cellHeight = canvasSize.height / rows;
+      
+      // Calculate correct center position for the piece
+      final correctX = (piece.correctCol + 0.5) * cellWidth;
+      final correctY = (piece.correctRow + 0.5) * cellHeight;
       
       final distance = sqrt(
         pow(localPosition.dx - correctX, 2) + 
@@ -60,16 +73,21 @@ void _placePieceIfCorrect(PuzzlePiece piece, Offset dropPosition) {
   final canvasSize = widget.gameSession.canvasInfo.canvasSize;
   final gridSize = widget.gameSession.gridSize;
   
-  // Parse grid dimensions
-  final dims = gridSize.split('x');
-  final cols = int.parse(dims[1]);
-  final rows = int.parse(dims[0]);
+  // Parse and normalize grid dimensions (handles "8x8", "8 x 8", etc.)
+  final normalizedGrid = gridSize.toLowerCase().replaceAll(' ', '');
+  final gridParts = normalizedGrid.split('x');
   
-  final pieceWidth = canvasSize.width / cols;
-  final pieceHeight = canvasSize.height / rows;
+  // Safe parsing with fallback to 8x8 if parsing fails
+  final rows = int.tryParse(gridParts[0]) ?? 8;
+  final cols = gridParts.length > 1 ? (int.tryParse(gridParts[1]) ?? rows) : rows;
   
-  final correctX = piece.correctCol * pieceWidth + pieceWidth / 2;
-  final correctY = piece.correctRow * pieceHeight + pieceHeight / 2;
+  // Calculate cell dimensions
+  final cellWidth = canvasSize.width / cols;
+  final cellHeight = canvasSize.height / rows;
+  
+  // Calculate correct center position for the piece
+  final correctX = (piece.correctCol + 0.5) * cellWidth;
+  final correctY = (piece.correctRow + 0.5) * cellHeight;
   
   // Convert drop position to canvas coordinates
   final RenderBox renderBox = context.findRenderObject() as RenderBox;

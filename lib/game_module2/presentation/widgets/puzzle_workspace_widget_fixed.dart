@@ -34,6 +34,9 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
   bool _isDragging = false;
   Offset? _lastDragPosition;
   
+  // GlobalKey for workspace container to get RenderBox
+  final GlobalKey _workspaceKey = GlobalKey();
+  
   @override
   void initState() {
     super.initState();
@@ -64,6 +67,7 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
     return LayoutBuilder(
       builder: (context, constraints) {
         return Stack(
+          key: _workspaceKey,
           children: [
             // Main canvas area with single drop target
             _buildCanvasWithDropTarget(constraints),
@@ -380,9 +384,19 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
         HapticFeedback.lightImpact();
       },
       onDragEnd: (details) {
-        setState(() {
-          _lastDragPosition = details.offset;
-        });
+        // Convert global position to local workspace coordinates
+        final RenderBox? workspaceBox = _workspaceKey.currentContext?.findRenderObject() as RenderBox?;
+        if (workspaceBox != null) {
+          final localPosition = workspaceBox.globalToLocal(details.offset);
+          setState(() {
+            _lastDragPosition = localPosition;
+          });
+        } else {
+          // Fallback if we can't get the workspace box
+          setState(() {
+            _lastDragPosition = details.offset;
+          });
+        }
       },
       onDragCompleted: () {
         setState(() {
@@ -453,11 +467,21 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
             });
           },
           onDragEnd: (details) {
-            // Update piece position
-            setState(() {
-              _workspacePiecePositions[pieceId] = details.offset;
-              _lastDragPosition = details.offset;
-            });
+            // Convert global position to local workspace coordinates
+            final RenderBox? workspaceBox = _workspaceKey.currentContext?.findRenderObject() as RenderBox?;
+            if (workspaceBox != null) {
+              final localPosition = workspaceBox.globalToLocal(details.offset);
+              setState(() {
+                _workspacePiecePositions[pieceId] = localPosition;
+                _lastDragPosition = localPosition;
+              });
+            } else {
+              // Fallback if we can't get the workspace box
+              setState(() {
+                _workspacePiecePositions[pieceId] = details.offset;
+                _lastDragPosition = details.offset;
+              });
+            }
           },
           child: Container(
             width: 80,

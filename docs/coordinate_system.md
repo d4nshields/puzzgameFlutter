@@ -192,8 +192,8 @@ coordSystem.resetView();
 ```dart
 // Check transformation performance
 final stats = coordSystem.getPerformanceStats();
-print('Average transformation time: ${stats['averageTransformationTimeUs']}μs');
-print('Meets target performance: ${stats['meetsTargetPerformance']}');
+print('Average transformation time: ${stats["averageTransformationTimeUs"]}μs');
+print('Meets target performance: ${stats["meetsTargetPerformance"]}');
 ```
 
 ### Dynamic Configuration Updates
