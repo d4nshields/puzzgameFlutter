@@ -316,7 +316,7 @@ class _AchievementDisplayWidgetState extends State<AchievementDisplayWidget> {
               ),
               child: Center(
                 child: Text(
-                  achievement.emoji ?? '🏆',
+                  achievement.iconEmoji,
                   style: const TextStyle(fontSize: 16),
                 ),
               ),
@@ -329,7 +329,7 @@ class _AchievementDisplayWidgetState extends State<AchievementDisplayWidget> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    achievement.title,
+                    achievement.name,
                     style: CozyPuzzleTheme.bodyMedium.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -346,7 +346,7 @@ class _AchievementDisplayWidgetState extends State<AchievementDisplayWidget> {
             ),
             
             // Points
-            if (achievement.points > 0)
+            if (achievement.pointsValue > 0)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
@@ -354,7 +354,7 @@ class _AchievementDisplayWidgetState extends State<AchievementDisplayWidget> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  '+${achievement.points}',
+                  '+${achievement.pointsValue}',
                   style: CozyPuzzleTheme.labelSmall.copyWith(
                     color: CozyPuzzleTheme.deepSlate,
                     fontWeight: FontWeight.w600,

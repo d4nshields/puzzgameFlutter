@@ -305,8 +305,8 @@ void main() {
         expect(gridAfterZoom, equals(gridBeforeZoom));
         
         // Also verify that a known grid point scales correctly
-        const testGridPoint = GridPoint(4, 3);
-        final canvasPoint = coordinateSystem.gridToCanvas(testGridPoint);
+        // const testGridPoint = GridPoint(4, 3);
+        // final canvasPoint = coordinateSystem.gridToCanvas(testGridPoint);
         
         // The grid cell size should be doubled (100 instead of 50)
         // Grid (4,3) center would be at (4.5, 3.5) in grid coords

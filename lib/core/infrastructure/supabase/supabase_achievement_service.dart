@@ -2,7 +2,7 @@ import 'package:puzzgame_flutter/core/domain/services/achievement_service.dart';
 import 'package:puzzgame_flutter/core/domain/entities/user.dart';
 import 'package:puzzgame_flutter/core/infrastructure/supabase/supabase_config.dart';
 import 'package:uuid/uuid.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+
 
 /// Supabase implementation compatible with existing database schema
 class SupabaseAchievementService implements AchievementService, SharingTrackingService {

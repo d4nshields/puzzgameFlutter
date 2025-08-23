@@ -440,6 +440,7 @@ class GameScreen extends ConsumerWidget {
     try {
       // Extract difficulty from grid size
       final dimensions = gridSize.split('x');
+      // ignore: unused_local_variable
       final size = int.parse(dimensions[0]);
       
       // This is a simplified approach - in a more complete implementation,
@@ -483,11 +484,13 @@ class GameScreen extends ConsumerWidget {
     Navigator.pushNamed(context, '/early-access');
   }
 
+  // ignore: unused_element
   void _onGridSizeChanged(BuildContext context, WidgetRef ref, int newGridSize) {
     // Handle grid size change if needed
     debugPrint('Grid size changed to: $newGridSize');
   }
 
+  // ignore: unused_element
   void _onPuzzleChanged(BuildContext context, WidgetRef ref, String newPuzzleId) {
     // Handle puzzle change if needed
     debugPrint('Puzzle changed to: $newPuzzleId');
@@ -504,6 +507,7 @@ class GameScreen extends ConsumerWidget {
   }
 
   /// Show celebration for puzzle completion
+  // ignore: unused_element
   void _showCompletionCelebration(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(

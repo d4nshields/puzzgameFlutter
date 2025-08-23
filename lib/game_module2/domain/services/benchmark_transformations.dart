@@ -276,6 +276,7 @@ class TransformationBenchmark {
     
     final stopwatch = Stopwatch()..start();
     
+    // ignore: unused_local_variable
     final result = await transformManager.batchTransform<ScreenPoint, GridPoint?>(
       points: dragPath,
       transformType: 'drag_path',
@@ -306,6 +307,7 @@ class TransformationBenchmark {
     
     final stopwatch = Stopwatch()..start();
     
+    // ignore: unused_local_variable
     final result = await transformManager.batchTransform<GridPoint, ui.Rect>(
       points: selectedPieces,
       transformType: 'multi_select',

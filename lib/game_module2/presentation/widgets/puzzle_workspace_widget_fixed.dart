@@ -155,7 +155,7 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
     
     // Convert global drop position to local canvas position
     final globalDropPosition = dropOffset;
-    final localPosition = canvasBox.globalToLocal(globalDropPosition);
+    // final localPosition = canvasBox.globalToLocal(globalDropPosition);
     
     // Get canvas center position on screen
     final canvasCenter = canvasBox.localToGlobal(
@@ -246,8 +246,8 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
     
     // Check if piece is near its correct position
     // This is a simplified check - you might want to use actual drag position
-    final correctCenterX = (piece.correctCol + 0.5) * cellWidth;
-    final correctCenterY = (piece.correctRow + 0.5) * cellHeight;
+    // final correctCenterX = (piece.correctCol + 0.5) * cellWidth;
+    // final correctCenterY = (piece.correctRow + 0.5) * cellHeight;
     
     return Positioned(
       left: piece.correctCol * cellWidth,

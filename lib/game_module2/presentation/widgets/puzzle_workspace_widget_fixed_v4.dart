@@ -1,4 +1,4 @@
-import 'dart:math' as math;
+// import 'dart:math' as math; // Not used
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../puzzle_game_module2.dart';
@@ -254,7 +254,7 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
     setState(() {
       // Get the workspace and domain piece
       final workspace = widget.gameSession.workspaceController.workspace!;
-      final domainPiece = workspace.pieces.firstWhere((p) => p.id == piece.id);
+      // final domainPiece = workspace.pieces.firstWhere((p) => p.id == piece.id);
       
       // Calculate the exact position for this grid cell
       final cellWidth = workspace.canvasSize.width / widget.gameSession.gridSize;
@@ -278,6 +278,9 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
         _workspacePiecePositions.remove(piece.id);
         
         // Force the controller to notify listeners
+        // Note: This is using notifyListeners() which should normally be called from within the controller
+        // Consider adding a public method in the controller to handle this properly
+        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
         widget.gameSession.workspaceController.notifyListeners();
         
         print('✓ Piece ${piece.id} successfully placed and snapped!');

@@ -724,6 +724,7 @@ class _TransformRecord {
 class TransformationManager {
   final CoordinateSystem _coordSystem;
   final TransformCache _cache;
+  // ignore: unused_field
   final BatchTransformation _batchTransform;
   final TransformationRecorder _recorder;
   final _performanceMonitor = _PerformanceMonitor();

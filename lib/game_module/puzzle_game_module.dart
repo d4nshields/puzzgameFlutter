@@ -6,7 +6,7 @@ import 'package:puzzgame_flutter/core/domain/services/settings_service.dart';
 import 'package:puzzgame_flutter/core/domain/services/error_reporting_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/core/domain/services/game_session_tracking_service.dart';
-import 'package:puzzgame_flutter/core/domain/services/auth_service.dart';
+
 import 'package:puzzgame_flutter/game_module/services/puzzle_asset_manager.dart';
 import 'package:puzzgame_flutter/game_module/services/enhanced_puzzle_asset_manager.dart';
 import 'package:puzzgame_flutter/game_module/services/memory_optimized_asset_manager.dart';
@@ -638,6 +638,7 @@ class PuzzleGameSession implements GameSession {
   }
   
   /// Track piece placement events
+  // ignore: unused_element
   void _trackPiecePlacement(PuzzlePiece piece, Offset position, bool correct, int points) {
     try {
       final trackingService = serviceLocator<GameSessionTrackingService>();
@@ -826,7 +827,7 @@ class _PuzzleGameWidgetState extends State<PuzzleGameWidget> {
             final piece = widget.gameSession.puzzleGrid[row][col];
             
             return DragTarget<PuzzlePiece>(
-              onWillAcceptWithDetails: (details) => details.data != null,
+              onWillAcceptWithDetails: (details) => true,
               onAcceptWithDetails: (details) => _placePiece(details.data, row, col),
               builder: (context, candidateData, rejectedData) {
                 return GestureDetector(

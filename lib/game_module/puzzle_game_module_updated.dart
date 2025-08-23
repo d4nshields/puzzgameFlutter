@@ -2,10 +2,8 @@
 // This file shows how to integrate the memory-optimized asset manager
 
 import 'dart:math';
-import 'package:flutter/material.dart';
 import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
 import 'package:puzzgame_flutter/core/domain/services/settings_service.dart';
-import 'package:puzzgame_flutter/core/domain/services/error_reporting_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/game_module/services/puzzle_asset_manager.dart';
 import 'package:puzzgame_flutter/game_module/services/enhanced_puzzle_asset_manager.dart';
@@ -21,7 +19,9 @@ class MemoryOptimizedPuzzleGameModule implements GameModule {
   EnhancedPuzzleAssetManager? _enhancedAssetManager;
   MemoryOptimizedAssetManager? _memoryOptimizedAssetManager;
   bool _isInitialized = false;
+  // ignore: unused_field
   bool _useMemoryOptimization = true;
+  // ignore: unused_field
   bool _useEnhancedRendering = true;
   
   @override

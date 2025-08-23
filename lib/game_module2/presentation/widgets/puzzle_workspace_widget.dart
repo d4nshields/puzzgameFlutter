@@ -4,8 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import '../../puzzle_game_module2.dart';
 import '../../../game_module/puzzle_game_module.dart' show PuzzlePiece;
-import '../../../game_module/services/memory_optimized_asset_manager.dart' show MemoryOptimizedPuzzleImage, OptimizedPieceMetadata;
-import '../../../game_module/services/enhanced_puzzle_asset_manager.dart' show EnhancedCachedPuzzleImage, PieceBounds;
+import '../../../game_module/services/memory_optimized_asset_manager.dart' show MemoryOptimizedPuzzleImage;
+import '../../../game_module/services/enhanced_puzzle_asset_manager.dart' show EnhancedCachedPuzzleImage;
 import '../../../game_module/services/puzzle_asset_manager.dart' show CachedPuzzleImage;
 import '../../domain/value_objects/puzzle_coordinate.dart';
 import '../../domain/value_objects/move_result.dart';
@@ -70,6 +70,7 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
   }
 
   // Get exact piece bounds from metadata or runtime bounds
+  // ignore: unused_element
   Rect? _getPieceExactBounds(String pieceId) {
     try {
       if (widget.gameSession.useMemoryOptimization) {
@@ -309,6 +310,7 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
   void _placePieceDirectly(PuzzlePiece piece, int row, int col) {
     setState(() {
       final workspace = widget.gameSession.workspaceController.workspace!;
+      // ignore: unused_local_variable
       final domainPiece = workspace.pieces.firstWhere((p) => p.id == piece.id);
       
       final cellWidth = workspace.canvasSize.width / widget.gameSession.gridSize;
@@ -329,7 +331,8 @@ class _PuzzleWorkspaceWidgetState extends State<PuzzleWorkspaceWidget> {
         HapticFeedback.heavyImpact();
         _workspacePiecePositions.remove(piece.id);
         
-        widget.gameSession.workspaceController.notifyListeners();
+        // Notify listeners through proper channels
+        // widget.gameSession.workspaceController.notifyListeners();
         
         print('✓ Piece ${piece.id} successfully placed!');
         

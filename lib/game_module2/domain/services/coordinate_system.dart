@@ -174,7 +174,9 @@ class CoordinateSystem {
   // Cached transformation matrices
   Matrix4? _screenToCanvasMatrix;
   Matrix4? _canvasToScreenMatrix;
+  // ignore: unused_field
   Matrix4? _canvasToGridMatrix;
+  // ignore: unused_field
   Matrix4? _gridToCanvasMatrix;
   Matrix4? _canvasToWorkspaceMatrix;
   Matrix4? _workspaceToCanvasMatrix;

@@ -97,6 +97,7 @@ class OptimizedCroppedImagePainter extends CustomPainter {
     }
   }
 
+  // ignore: unused_element
   void _drawDebugBounds(Canvas canvas, Rect rect, Color color) {
     final debugPaint = Paint()
       ..color = color.withOpacity(0.3)

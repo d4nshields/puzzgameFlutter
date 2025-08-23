@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'dart:ui' as ui;
-import 'dart:typed_data';
+// import 'dart:typed_data'; // Not used
 
 /// Debug tool to validate optimization metadata calculations
 class MetadataValidationScreen extends StatefulWidget {

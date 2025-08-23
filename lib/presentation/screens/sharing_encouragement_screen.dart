@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/core/domain/services/auth_service.dart';
-import 'package:puzzgame_flutter/core/domain/services/achievement_service.dart';
+// import 'package:puzzgame_flutter/core/domain/services/achievement_service.dart'; // Not used
 import 'package:puzzgame_flutter/presentation/theme/cozy_puzzle_theme.dart';
 
 /// Screen shown after successful registration to encourage sharing and highlight badge rewards

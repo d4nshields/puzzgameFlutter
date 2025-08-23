@@ -3,7 +3,7 @@ import 'package:puzzgame_flutter/core/domain/game_module_interface.dart';
 import 'package:puzzgame_flutter/core/domain/services/error_reporting_service.dart';
 import 'package:puzzgame_flutter/core/infrastructure/service_locator.dart';
 import 'package:puzzgame_flutter/core/infrastructure/desktop_window_config.dart';
-import 'package:puzzgame_flutter/core/infrastructure/supabase/supabase_config.dart';
+
 
 /// AppInitializer is responsible for loading necessary resources and
 /// initializing components during the splash screen display.
