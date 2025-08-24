@@ -66,4 +66,5 @@ prod-fingerprint.txt
 distribution/**
 !distribution/whatsnew/
 !distribution/whatsnew/**
+**/.obsidian
 **/.obsidian/**
