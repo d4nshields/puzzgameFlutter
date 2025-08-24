@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:vector_math/vector_math_64.dart' as vector_math;
 import 'package:puzzgame_flutter/game_module2/presentation/rendering/effects_layer.dart';
+import 'package:puzzgame_flutter/game_module2/presentation/rendering/render_coordinator.dart' show QualityLevel;
 import 'dart:math' as math;
 
 // Benchmark for particle system update performance

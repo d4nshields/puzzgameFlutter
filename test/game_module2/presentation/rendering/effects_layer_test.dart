@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vector_math/vector_math_64.dart' as vector_math;
 import 'package:puzzgame_flutter/game_module2/presentation/rendering/effects_layer.dart';
+import 'package:puzzgame_flutter/game_module2/presentation/rendering/render_coordinator.dart' show QualityLevel;
 import 'effects_layer_test_helpers.dart';
 import 'dart:ui' as ui;
 

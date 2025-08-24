@@ -27,6 +27,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart' as vector_math;
 
+// Import QualityLevel from render_coordinator to avoid duplication
+import 'package:puzzgame_flutter/game_module2/presentation/rendering/render_coordinator.dart' show QualityLevel;
+
 /// Main effects layer that integrates with Flame engine
 class EffectsLayer extends StatefulWidget {
   final Size size;
@@ -1234,22 +1237,6 @@ class EffectQualitySettings {
         break;
     }
   }
-}
-
-/// Quality levels with numeric values for comparison
-enum QualityLevel {
-  low(0),
-  medium(1),
-  high(2),
-  ultra(3);
-
-  final int value;
-  const QualityLevel(this.value);
-
-  bool operator >(QualityLevel other) => value > other.value;
-  bool operator <(QualityLevel other) => value < other.value;
-  bool operator >=(QualityLevel other) => value >= other.value;
-  bool operator <=(QualityLevel other) => value <= other.value;
 }
 
 /// Performance metrics tracking
