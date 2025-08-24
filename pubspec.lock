@@ -81,6 +81,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.13.0"
+  benchmark_harness:
+    dependency: "direct dev"
+    description:
+      name: benchmark_harness
+      sha256: "83f65107165883ba8623eb822daacb23dcf9f795c66841de758c9dd7c5a0cf28"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.1"
   boolean_selector:
     dependency: transitive
     description:
@@ -305,6 +313,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
+  flame:
+    dependency: "direct main"
+    description:
+      name: flame
+      sha256: "1da87b0c07e09491517b28bcfdbfdb7b77c2e1527c4d160e394f66c3a9635026"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.31.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -607,6 +623,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.4.6"
+  ordered_set:
+    dependency: transitive
+    description:
+      name: ordered_set
+      sha256: d6c1d053a533e84931a388cbf03f1ad21a0543bf06c7a281859d3ffacd8e15f2
+      url: "https://pub.dev"
+    source: hosted
+    version: "8.0.0"
   package_config:
     dependency: transitive
     description:
@@ -1222,4 +1246,4 @@ packages:
     version: "2.1.0"
 sdks:
   dart: ">=3.8.0 <4.0.0"
-  flutter: ">=3.29.0"
+  flutter: ">=3.32.0"

@@ -50,6 +50,9 @@ dependencies:
   
   # Math utilities
   vector_math: ^2.1.4
+  
+  # Game engine for particle effects
+  flame: ^1.18.0
 
 dev_dependencies:
   flutter_test:
@@ -63,6 +66,7 @@ dev_dependencies:
   
   # Testing
   mockito: ^5.4.6           # For mocking in tests
+  benchmark_harness: ^2.2.2  # For performance benchmarks
   flutter_driver:           # For integration tests
     sdk: flutter
   integration_test:         # For UI tests
