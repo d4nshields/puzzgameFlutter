@@ -1,0 +1,211 @@
+name: Performance Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run performance tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  performance:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.19.0'
+        channel: 'stable'
+        
+    - name: Install dependencies
+      run: |
+        flutter pub get
+        flutter doctor -v
+        
+    - name: Create test results directory
+      run: mkdir -p test_results/performance
+      
+    - name: Run performance tests
+      run: |
+        dart test/performance/ci_runner.dart
+      continue-on-error: true
+      
+    - name: Upload performance reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-reports
+        path: test_results/performance/
+        retention-days: 30
+        
+    - name: Parse CI summary
+      id: parse_summary
+      run: |
+        if [ -f "test_results/performance/ci_summary.json" ]; then
+          PASS_RATE=$(cat test_results/performance/ci_summary.json | jq -r '.passRate')
+          PASSED=$(cat test_results/performance/ci_summary.json | jq -r '.passed')
+          FAILED=$(cat test_results/performance/ci_summary.json | jq -r '.failed')
+          
+          echo "pass_rate=$PASS_RATE" >> $GITHUB_OUTPUT
+          echo "passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "failed=$FAILED" >> $GITHUB_OUTPUT
+          
+          # Fail if pass rate is below 90%
+          if (( $(echo "$PASS_RATE < 0.9" | bc -l) )); then
+            echo "Performance tests failed: Pass rate $PASS_RATE is below 90%"
+            exit 1
+          fi
+        else
+          echo "CI summary not found"
+          exit 1
+        fi
+        
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const path = 'test_results/performance/ci_summary.json';
+          
+          if (fs.existsSync(path)) {
+            const summary = JSON.parse(fs.readFileSync(path, 'utf8'));
+            const passRate = (summary.passRate * 100).toFixed(1);
+            
+            let comment = '## 📊 Performance Test Results\n\n';
+            comment += `- **Pass Rate**: ${passRate}%\n`;
+            comment += `- **Passed**: ${summary.passed}\n`;
+            comment += `- **Failed**: ${summary.failed}\n\n`;
+            
+            if (summary.failed > 0) {
+              comment += '### ❌ Failed Tests\n\n';
+              for (const [test, result] of Object.entries(summary.results)) {
+                if (!result.passed) {
+                  comment += `- **${test}**\n`;
+                  comment += `  - FPS: ${result.avgFps.toFixed(1)}\n`;
+                  comment += `  - Frame Time: ${result.avgFrameTime.toFixed(2)}ms\n`;
+                  comment += `  - Memory: ${result.avgMemoryMB.toFixed(1)}MB\n`;
+                }
+              }
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          }
+          
+    - name: Store baseline on main
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        cp test_results/performance/*.json performance_baseline.json || true
+        
+    - name: Check for regressions
+      if: github.event_name == 'pull_request'
+      run: |
+        if [ -f "performance_baseline.json" ]; then
+          echo "Checking for performance regressions..."
+          # The CI runner already handles regression detection
+        fi
+        
+    - name: Performance badge update
+      if: github.ref == 'refs/heads/main'
+      run: |
+        PASS_RATE=${{ steps.parse_summary.outputs.pass_rate }}
+        BADGE_COLOR="green"
+        if (( $(echo "$PASS_RATE < 0.9" | bc -l) )); then
+          BADGE_COLOR="yellow"
+        fi
+        if (( $(echo "$PASS_RATE < 0.75" | bc -l) )); then
+          BADGE_COLOR="red"
+        fi
+        
+        echo "Performance badge: $PASS_RATE with color $BADGE_COLOR"
+        # Could integrate with shields.io or similar service
+
+  performance-android:
+    name: Android Performance Tests
+    runs-on: macos-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.19.0'
+        channel: 'stable'
+        
+    - name: Setup Android emulator
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 33
+        arch: x86_64
+        profile: Nexus 6
+        avd-name: test
+        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        disable-animations: true
+        script: |
+          flutter pub get
+          flutter test test/performance/ci_runner.dart --reporter expanded
+          
+    - name: Upload Android performance reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: android-performance-reports
+        path: test_results/performance/
+        retention-days: 30
+
+  benchmark-comparison:
+    name: Benchmark Comparison
+    runs-on: ubuntu-latest
+    needs: [performance]
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Download current results
+      uses: actions/download-artifact@v3
+      with:
+        name: performance-reports
+        path: current/
+        
+    - name: Checkout base branch
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.pull_request.base.ref }}
+        
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.19.0'
+        channel: 'stable'
+        
+    - name: Run base performance tests
+      run: |
+        flutter pub get
+        flutter test test/performance/ci_runner.dart --reporter expanded
+      continue-on-error: true
+      
+    - name: Compare results
+      run: |
+        echo "Comparing performance between branches..."
+        # Add comparison logic here
+        
+    - name: Generate comparison report
+      run: |
+        echo "# Performance Comparison Report" > comparison.md
+        echo "" >> comparison.md
+        echo "Base: ${{ github.event.pull_request.base.ref }}" >> comparison.md
+        echo "Head: ${{ github.event.pull_request.head.ref }}" >> comparison.md
+        # Add detailed comparison here

@@ -21,7 +21,7 @@ import 'package:flutter_test/flutter_test.dart';
 // package:puzzgame_flutter/game_module2/infrastructure/performance/performance_monitor.dart
 
 // Import mock coordinate system from our test file
-import 'coordinate_system_test.dart' show CoordinateSystem, CoordinateSystemConfig, ScreenPoint, CanvasPoint, GridPoint, WorkspacePoint;
+import 'coordinate_system_test.dart' show CoordinateSystem, CoordinateSystemConfig, ScreenPoint;
 
 // Mock implementations for rendering components
 enum QualityLevel { low, medium, high }
@@ -707,7 +707,7 @@ void main() {
         final workspace = system.canvasToWorkspace(canvas);
         
         // Use results to prevent optimization
-        if (grid.x < 0) print('Never happens');
+        if (grid.x < 0 || workspace.x < 0) print('Never happens');
       }
       
       stopwatch.stop();
