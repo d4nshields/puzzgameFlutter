@@ -9,7 +9,7 @@ echo ""
 
 flutter test \
   test/coordinate_system_test.dart \
-  test/performance_test.dart \
+  test/performance/performance_test.dart \
   test/game_module2/ \
   --reporter expanded
 

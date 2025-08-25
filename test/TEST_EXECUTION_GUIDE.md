@@ -61,20 +61,26 @@ flutter test test/performance/performance_test.dart --reporter expanded
 flutter test test/performance/performance_test.dart --timeout 10m
 ```
 
-### Option 3: Use the Test Runner Script
+### Option 3: Use the Performance Test Runner Script
 
 ```bash
-# Run all tests including performance
-./run_tests.sh all
+# Run standard performance tests
+./run_performance_tests.sh
 
-# Run only performance tests
-./run_tests.sh performance
+# Run quick tests only
+./run_performance_tests.sh --quick
 
-# Run only unit tests (default)
-./run_tests.sh unit
+# Run full test suite including long sessions
+./run_performance_tests.sh --full
 
-# Run quick tests
-./run_tests.sh quick
+# Create a new baseline
+./run_performance_tests.sh --baseline
+
+# Run in CI mode with strict thresholds
+./run_performance_tests.sh --ci
+
+# Run the CI runner directly
+./run_performance_tests.sh --ci-runner
 ```
 
 ### Option 4: Run Specific Performance Tests

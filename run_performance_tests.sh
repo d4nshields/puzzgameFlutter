@@ -107,12 +107,18 @@ flutter pub get
 # Clean previous results
 if [ "$CI_MODE" = true ]; then
   echo -e "${YELLOW}🧹 Cleaning previous results...${NC}"
-  rm -rf "$RESULTS_DIR"/*
+  # Safe cleanup with directory check
+  if [ -n "$RESULTS_DIR" ] && [ -d "$RESULTS_DIR" ]; then
+    find "$RESULTS_DIR" -mindepth 1 -delete 2>/dev/null || true
+  fi
 fi
 
 # Run performance tests
 echo -e "${BLUE}🏃 Running performance tests...${NC}"
 echo ""
+
+# Temporarily disable errexit to capture test failures
+set +e
 
 if [ "$TEST_SUITE" = "quick" ]; then
   # Run only quick tests
@@ -136,6 +142,9 @@ else
 fi
 
 TEST_EXIT_CODE=$?
+
+# Re-enable errexit
+set -e
 
 # Check if CI summary was generated
 if [ -f "$RESULTS_DIR/ci_summary.json" ]; then
@@ -246,12 +255,21 @@ if [ "$CI_MODE" = true ]; then
   
   # Check pass rate for CI
   if [ -f "$RESULTS_DIR/ci_summary.json" ]; then
-    PASS_RATE=$(python3 -c "import json; print(json.load(open('$RESULTS_DIR/ci_summary.json'))['passRate'])")
-    if (( $(echo "$PASS_RATE < 0.9" | bc -l) )); then
+    # Use Python to check pass rate (no bc dependency)
+    python3 -c "
+import json
+import sys
+with open('$RESULTS_DIR/ci_summary.json') as f:
+    data = json.load(f)
+    pass_rate = data['passRate']
+    if pass_rate < 0.9:
+        print(f'Pass rate {pass_rate:.2%} is below 90% threshold')
+        sys.exit(1)
+" || {
       echo ""
       echo -e "${RED}❌ Pass rate below 90% threshold for CI${NC}"
       exit 1
-    fi
+    }
   fi
 fi
 
