@@ -293,7 +293,7 @@ Generate complete test suite with >90% coverage target.
 **PROMPT 4.2 - Create Performance Testing Framework**
 ```
 Build a performance testing framework:
-
+``
 1. Create file: /test/performance/performance_framework.dart
 2. Implement:
    - FrameTimingRecorder
