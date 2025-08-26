@@ -211,11 +211,17 @@ for test in baseline['results']:
     if test in current['results']:
         base_fps = baseline['results'][test]['avgFps']
         curr_fps = current['results'][test]['avgFps']
-        diff = ((curr_fps - base_fps) / base_fps) * 100
         
-        symbol = '✅' if diff >= -5 else '⚠️' if diff >= -10 else '❌'
-        print(f'{symbol} {test}:')
-        print(f'   FPS: {base_fps:.1f} → {curr_fps:.1f} ({diff:+.1f}%)')
+        # Guard against division by zero
+        if base_fps == 0:
+            symbol = '❌'
+            print(f'{symbol} {test}:')
+            print(f'   FPS: {base_fps:.1f} → {curr_fps:.1f} (baseline FPS is 0; cannot compute % change)')
+        else:
+            diff = ((curr_fps - base_fps) / base_fps) * 100
+            symbol = '✅' if diff >= -5 else '⚠️' if diff >= -10 else '❌'
+            print(f'{symbol} {test}:')
+            print(f'   FPS: {base_fps:.1f} → {curr_fps:.1f} ({diff:+.1f}%)')
 " || echo "Could not compare with baseline"
 fi
 

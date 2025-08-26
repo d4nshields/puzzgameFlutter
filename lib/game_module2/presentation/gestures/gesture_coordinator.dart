@@ -645,8 +645,20 @@ class GestureRecorder {
       
       // Wait for the appropriate time
       if (i > 0) {
+        // Validate speed to prevent division by zero or overflow
+        if (speed <= 0) {
+          throw ArgumentError('Replay speed must be greater than 0');
+        }
+        
         final delay = event.timestamp - events[i - 1].timestamp;
-        await Future.delayed(Duration(milliseconds: (delay.inMilliseconds ~/ speed).toInt()));
+        // Use floating point division and clamp to safe range
+        final scaledDelayMs = (delay.inMilliseconds / speed)
+            .round()
+            .clamp(0, 60000); // Max 60 seconds between events
+        
+        if (scaledDelayMs > 0) {
+          await Future.delayed(Duration(milliseconds: scaledDelayMs));
+        }
       }
       
       // Dispatch event

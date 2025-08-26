@@ -218,9 +218,13 @@ class DefaultPictureLoader implements PictureLoader {
       // Create picture from image
       final recorder = ui.PictureRecorder();
       final canvas = ui.Canvas(recorder);
-      canvas.drawImage(image, Offset.zero, Paint());
       
-      return recorder.endRecording();
+      try {
+        canvas.drawImage(image, Offset.zero, Paint());
+        return recorder.endRecording();
+      } finally {
+        image.dispose();
+      }
       
     } catch (e) {
       if (e is CancellationException) rethrow;
@@ -294,13 +298,13 @@ class SequentialWarmingPattern implements WarmingPattern {
 
 /// Time-based warming pattern
 class TimeBasedWarmingPattern implements WarmingPattern {
-  final Map<TimeOfDay, List<String>> schedule;
+  final Map<PictureTimeOfDay, List<String>> schedule;
   
   TimeBasedWarmingPattern(this.schedule);
   
   @override
   List<String> getPredictions() {
-    final now = TimeOfDay.now();
+    final now = PictureTimeOfDay.now();
     final predictions = <String>[];
     
     // Find matching time slots
@@ -396,22 +400,22 @@ base class LRUNode extends LinkedListEntry<LRUNode> {
   LRUNode(this.key);
 }
 
-/// Time of day for scheduling
-class TimeOfDay {
+/// Time of day for scheduling (renamed to avoid conflict with Flutter's TimeOfDay)
+class PictureTimeOfDay {
   final int hour;
   final int minute;
   
-  const TimeOfDay({required this.hour, required this.minute});
+  const PictureTimeOfDay({required this.hour, required this.minute});
   
-  factory TimeOfDay.now() {
+  factory PictureTimeOfDay.now() {
     final now = DateTime.now();
-    return TimeOfDay(hour: now.hour, minute: now.minute);
+    return PictureTimeOfDay(hour: now.hour, minute: now.minute);
   }
   
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is TimeOfDay && hour == other.hour && minute == other.minute;
+      other is PictureTimeOfDay && hour == other.hour && minute == other.minute;
   
   @override
   int get hashCode => hour.hashCode ^ minute.hashCode;
