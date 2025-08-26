@@ -140,11 +140,37 @@ class StaticLayerController extends ChangeNotifier {
 
   @override
   void dispose() {
-    // Dispose all cached pictures
-    _gridPicture?.dispose();
-    _backgroundPicture?.dispose();
-    _sectionPictures.values.forEach((p) => p.dispose());
-    _effectPictures.values.forEach((p) => p.dispose());
+    // Dispose all cached pictures with error handling
+    try {
+      _gridPicture?.dispose();
+    } catch (e) {
+      debugPrint('Error disposing grid picture: $e');
+    }
+    
+    try {
+      _backgroundPicture?.dispose();
+    } catch (e) {
+      debugPrint('Error disposing background picture: $e');
+    }
+    
+    // Dispose section pictures with error handling
+    for (final picture in _sectionPictures.values) {
+      try {
+        picture.dispose();
+      } catch (e) {
+        debugPrint('Error disposing section picture: $e');
+      }
+    }
+    
+    // Dispose effect pictures with error handling
+    for (final picture in _effectPictures.values) {
+      try {
+        picture.dispose();
+      } catch (e) {
+        debugPrint('Error disposing effect picture: $e');
+      }
+    }
+    
     super.dispose();
   }
 }

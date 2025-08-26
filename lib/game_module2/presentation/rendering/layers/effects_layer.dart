@@ -8,6 +8,8 @@ class EffectsLayerController extends ChangeNotifier {
   final List<ParticleEffect> _activeEffects = [];
   final Map<String, ContinuousEffect> _continuousEffects = {};
   Timer? _updateTimer;
+  DateTime? _lastUpdateTime;
+  final Map<ParticleEffect, Timer> _effectTimers = {};
 
   EffectsLayerController({
     required this.coordinateSystem,
@@ -17,9 +19,17 @@ class EffectsLayerController extends ChangeNotifier {
   }
 
   void _startUpdateLoop() {
+    _lastUpdateTime = DateTime.now();
     _updateTimer = Timer.periodic(
-      const Duration(milliseconds: 16), // 60 FPS
-      (_) => update(),
+      const Duration(milliseconds: 16), // Target 60 FPS
+      (_) {
+        final now = DateTime.now();
+        if (_lastUpdateTime != null) {
+          final dt = now.difference(_lastUpdateTime!).inMilliseconds / 1000.0;
+          update(dt);
+        }
+        _lastUpdateTime = now;
+      },
     );
   }
 
@@ -29,11 +39,21 @@ class EffectsLayerController extends ChangeNotifier {
     _activeEffects.add(effect);
     notifyListeners();
     
-    // Auto-remove after duration
-    Future.delayed(effect.duration, () {
+    // Auto-remove after duration with proper timer management
+    final timer = Timer(effect.duration, () {
       _activeEffects.remove(effect);
+      _effectTimers.remove(effect);
       notifyListeners();
     });
+    _effectTimers[effect] = timer;
+  }
+  
+  void removeEffect(ParticleEffect effect) {
+    _activeEffects.remove(effect);
+    // Cancel any pending timer
+    _effectTimers[effect]?.cancel();
+    _effectTimers.remove(effect);
+    notifyListeners();
   }
 
   String startContinuousEffect(ContinuousEffect effect) {
@@ -52,12 +72,12 @@ class EffectsLayerController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void update() {
-    // Update all active effects
+  void update([double dt = 0.016]) {
+    // Update all active effects with delta time
     bool needsRepaint = false;
     
     for (final effect in _activeEffects) {
-      effect.update(0.016); // 16ms frame time
+      effect.update(dt); // Use actual delta time
       needsRepaint = true;
     }
     
@@ -77,6 +97,12 @@ class EffectsLayerController extends ChangeNotifier {
   @override
   void dispose() {
     _updateTimer?.cancel();
+    // Cancel all effect timers
+    for (final timer in _effectTimers.values) {
+      timer.cancel();
+    }
+    _effectTimers.clear();
+    _lastUpdateTime = null;
     super.dispose();
   }
 }
