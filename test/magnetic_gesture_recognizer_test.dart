@@ -44,7 +44,6 @@ void main() {
       
       test('should handle 120Hz touch sampling rate', () {
         const samplingRate = 120; // Hz
-        const duration = Duration(seconds: 1);
         const eventCount = samplingRate;
         
         recognizer.onUpdate = (details) {};
@@ -163,7 +162,6 @@ void main() {
           fieldConfig: config,
         );
         
-        Offset? lastUpdatePosition;
         DragUpdateDetails? lastUpdateDetails;
         
         recognizer.onStart = (details) {
@@ -171,7 +169,6 @@ void main() {
         };
         
         recognizer.onUpdate = (details) {
-          lastUpdatePosition = details.globalPosition;
           lastUpdateDetails = details;
         };
         

@@ -230,12 +230,11 @@ class _MagneticGestureExampleState extends State<MagneticGestureExample>
               debugMode: _debugMode,
             ),
             (MagneticGestureRecognizer instance) {
-              instance
-                ..onStart = (details) => _handlePieceDragStart(piece.id, details)
-                ..onUpdate = (details) => _handlePieceDragUpdate(piece.id, details)
-                ..onEnd = (details) => _handlePieceDragEnd(piece.id, details)
-                ..onMagneticInfluence = _handleMagneticInfluence
-                ..onMultiTouch = _handleMultiTouch;
+              instance.onStart = (details) => _handlePieceDragStart(piece.id, details);
+              instance.onUpdate = (details) => _handlePieceDragUpdate(piece.id, details);
+              instance.onEnd = (details) => _handlePieceDragEnd(piece.id, details);
+              instance.onMagneticInfluence = _handleMagneticInfluence;
+              instance.onMultiTouch = _handleMultiTouch;
             },
           ),
         },
@@ -485,7 +484,6 @@ class SnapPointPainter extends CustomPainter {
     
     // Draw arrowhead
     final arrowSize = 8.0;
-    final angle = magneticInfluence!.direction.direction;
     
     path.moveTo(endPoint.dx, endPoint.dy);
     path.lineTo(

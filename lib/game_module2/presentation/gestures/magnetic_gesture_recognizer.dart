@@ -9,8 +9,6 @@ import 'package:flutter/gestures.dart';
 /// Advanced gesture recognizer with magnetic field influence for puzzle pieces.
 /// Provides smooth, intuitive piece manipulation with magnetic assistance.
 class MagneticGestureRecognizer extends OneSequenceGestureRecognizer {
-  // Track primary pointer for gesture recognition
-  int? _primaryPointer;
   /// Callback when a drag starts with magnetic influence.
   GestureDragStartCallback? onStart;
   
@@ -39,8 +37,6 @@ class MagneticGestureRecognizer extends OneSequenceGestureRecognizer {
   _DragState? _state;
   Offset? _initialPosition;
   Offset? _pendingDragOffset;
-  Offset? _lastPosition;
-  int? _lastTimestamp;
   
   // Multi-touch support
   final Map<int, TouchPoint> _activeTouches = {};
@@ -73,9 +69,6 @@ class MagneticGestureRecognizer extends OneSequenceGestureRecognizer {
 
   @override
   void addAllowedPointer(PointerDownEvent event) {
-    // Set primary pointer
-    _primaryPointer = event.pointer;
-    
     final stopwatch = Stopwatch()..start();
     
     // Track touch point for multi-touch support
@@ -99,8 +92,6 @@ class MagneticGestureRecognizer extends OneSequenceGestureRecognizer {
     _state = _DragState.ready;
     _initialPosition = event.position;
     _pendingDragOffset = Offset.zero;
-    _lastPosition = event.position;
-    _lastTimestamp = event.timeStamp.inMicroseconds;
     
     // Start gesture in arena
     startTrackingPointer(event.pointer, event.transform);
@@ -172,9 +163,6 @@ class MagneticGestureRecognizer extends OneSequenceGestureRecognizer {
       _updateDrag(event);
     }
     
-    _lastPosition = event.position;
-    _lastTimestamp = event.timeStamp.inMicroseconds;
-    
     if (_debugMode) {
       _debugger.logPointerMove(event);
     }
@@ -233,9 +221,6 @@ class MagneticGestureRecognizer extends OneSequenceGestureRecognizer {
 
   void _handleMultiTouch() {
     if (_activeTouches.length == 2) {
-      final touches = _activeTouches.values.toList();
-      final distance = (touches[0].position - touches[1].position).distance;
-      
       final multiTouchEvent = MultiTouchEvent(
         type: MultiTouchType.pinch,
         touches: List.from(_activeTouches.values),
@@ -268,7 +253,6 @@ class MagneticGestureRecognizer extends OneSequenceGestureRecognizer {
     );
     
     _pendingDragOffset = Offset.zero;
-    _lastPosition = details.globalPosition;
     
     onStart?.call(details);
     
@@ -427,9 +411,6 @@ class MagneticGestureRecognizer extends OneSequenceGestureRecognizer {
   double _calculatePinchScale() {
     if (_activeTouches.length != 2) return 1.0;
     
-    final touches = _activeTouches.values.toList();
-    final currentDistance = (touches[0].position - touches[1].position).distance;
-    
     // Would need to track initial distance for proper scale
     return 1.0; // Simplified for now
   }
@@ -460,9 +441,6 @@ class MagneticGestureRecognizer extends OneSequenceGestureRecognizer {
     _state = null;
     _initialPosition = null;
     _pendingDragOffset = null;
-    _lastPosition = null;
-    _lastTimestamp = null;
-    _primaryPointer = null;
     _velocityTracker.reset();
     _multiTouchTimer?.cancel();
   }
