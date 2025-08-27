@@ -53,6 +53,10 @@ dependencies:
   
   # Game engine for particle effects
   flame: ^1.18.0
+  
+  # Utilities for state machine
+  collection: ^1.18.0
+  logging: ^1.2.0
 
 dev_dependencies:
   flutter_test:

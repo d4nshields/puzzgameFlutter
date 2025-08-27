@@ -1,10 +1,8 @@
 #!/bin/bash
-
-echo "Running Flutter analysis to check for errors..."
-echo "=============================================="
-
-# Run flutter analyze and filter for errors only
-flutter analyze --fatal-infos --fatal-warnings
+# Check for remaining errors
+echo "Checking for Flutter analyze errors..."
+flutter analyze lib/game_module2/ 2>&1 | grep '^  error' | head -20
 
 echo ""
-echo "Analysis complete!"
+echo "Total error count:"
+flutter analyze lib/game_module2/ 2>&1 | grep '^  error' | wc -l

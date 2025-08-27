@@ -25,6 +25,23 @@ class PieceBounds {
     required this.paddedSize,
     required this.targetBounds,
   });
+  
+  /// Factory constructor for zero/empty bounds
+  factory PieceBounds.zero() => PieceBounds(
+    contentBounds: const ContentRect(
+      left: 0,
+      top: 0,
+      right: 0,
+      bottom: 0,
+    ),
+    paddedSize: const Size(0, 0),
+    targetBounds: const ContentRect(
+      left: 0,
+      top: 0,
+      right: 0,
+      bottom: 0,
+    ),
+  );
 
   /// Check if content bounds overlap with another piece's bounds
   bool overlaps(PieceBounds other) {
