@@ -422,19 +422,18 @@ class _StateMachineExampleWidgetState extends State<StateMachineExampleWidget>
             // Find piece at position and start drag
             final pieceId = _findPieceAt(details.localPosition);
             if (pieceId != null) {
+              _selectedPieceId = pieceId; // Set selected piece
+              _lastPosition = PuzzleCoordinate(
+                x: details.localPosition.dx,
+                y: details.localPosition.dy,
+              );
               _integration.handlePieceSelect(
                 pieceId,
-                PuzzleCoordinate(
-                  x: details.localPosition.dx,
-                  y: details.localPosition.dy,
-                ),
+                _lastPosition,
               );
               _integration.handleDragStart(
                 pieceId,
-                PuzzleCoordinate(
-                  x: details.localPosition.dx,
-                  y: details.localPosition.dy,
-                ),
+                _lastPosition,
               );
             }
           },
@@ -442,18 +441,20 @@ class _StateMachineExampleWidgetState extends State<StateMachineExampleWidget>
             // Update drag position
             final pieceId = _selectedPieceId;
             if (pieceId != null) {
+              final currentPosition = PuzzleCoordinate(
+                x: details.localPosition.dx,
+                y: details.localPosition.dy,
+              );
               _integration.handleDragUpdate(
                 pieceId,
-                PuzzleCoordinate(
-                  x: details.localPosition.dx,
-                  y: details.localPosition.dy,
-                ),
+                currentPosition,
                 PuzzleCoordinate(
                   x: details.delta.dx,
                   y: details.delta.dy,
                 ),
                 details.delta.distance * 10, // Approximate velocity
               );
+              _lastPosition = currentPosition; // Update last position
             }
           },
           onPanEnd: (details) {
@@ -463,8 +464,9 @@ class _StateMachineExampleWidgetState extends State<StateMachineExampleWidget>
               _integration.handleDragEnd(
                 pieceId,
                 _lastPosition,
-                100.0, // Default end velocity
+                details.velocity.pixelsPerSecond.distance, // Use actual velocity
               );
+              _selectedPieceId = null; // Clear selection
             }
           },
           child: Container(

@@ -9,6 +9,7 @@ class StaticLayerController extends ChangeNotifier {
   bool _needsRepaint = true;
   Size? _lastSize;
   GameState? _lastGameState;
+  int? _lastGameStateHash;
 
   StaticLayerController({
     required this.coordinateSystem,
@@ -24,6 +25,10 @@ class StaticLayerController extends ChangeNotifier {
   }
 
   void updatePicture(ui.Picture picture, Size size, GameState gameState) {
+    // Dispose of old picture to prevent memory leak
+    if (_cachedPicture != null && _cachedPicture != picture) {
+      _cachedPicture!.dispose();
+    }
     _cachedPicture = picture;
     _lastSize = size;
     _lastGameState = gameState;
@@ -40,14 +45,16 @@ class StaticLayerController extends ChangeNotifier {
   bool _hasGameStateChanged(GameState gameState) {
     if (_lastGameState == null) return true;
     
-    // Check for changes in completed sections
-    if (_lastGameState!.completedSections.length != 
-        gameState.completedSections.length) {
-      return true;
-    }
+    // Compute a hash of the game state content that affects rendering
+    final currentHash = Object.hash(
+      gameState.completedSections.length,
+      gameState.showGrid,
+      // Add other fields that affect static layer rendering
+      gameState.completedSections.fold<int>(0, (sum, section) => sum + section.hashCode),
+    );
     
-    // Check for changes in grid visibility
-    if (_lastGameState!.showGrid != gameState.showGrid) {
+    if (_lastGameStateHash != currentHash) {
+      _lastGameStateHash = currentHash;
       return true;
     }
     

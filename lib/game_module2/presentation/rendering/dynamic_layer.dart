@@ -576,7 +576,7 @@ class PiecePool {
 
 /// Pooled piece wrapper - using StatefulWidget to manage mutable state
 class _PooledPiece extends StatefulWidget {
-  const _PooledPiece({
+  _PooledPiece({
     super.key,
   });
   
@@ -912,8 +912,11 @@ class _DynamicLayerState extends State<DynamicLayer>
             }).toList()
               ..sort((a, b) {
                 // Sort by z-index for proper layering
-                final aKey = (a as PieceRenderWidget).piece.zIndex;
-                final bKey = (b as PieceRenderWidget).piece.zIndex;
+                // Safe type checking to avoid runtime cast errors
+                if (a is! PieceRenderWidget) return 0;
+                if (b is! PieceRenderWidget) return 0;
+                final aKey = a.piece.zIndex;
+                final bKey = b.piece.zIndex;
                 return aKey.compareTo(bKey);
               }),
             

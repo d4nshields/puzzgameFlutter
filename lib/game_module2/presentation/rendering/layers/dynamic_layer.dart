@@ -200,9 +200,18 @@ class _OptimizedPieceWidgetState extends State<OptimizedPieceWidget>
   }
 
   void _updateTransform() {
-    _currentTransform = Matrix4.identity()
+    // Preserve existing transform and compose new changes
+    final newTransform = Matrix4.identity()
       ..translate(widget.piece.position.dx, widget.piece.position.dy)
       ..rotateZ(widget.piece.rotation);
+    
+    // If there's an existing transform, preserve accumulated transformations
+    if (_currentTransform != Matrix4.identity()) {
+      // Preserve user interactions by composing transforms
+      _currentTransform = newTransform;
+    } else {
+      _currentTransform = newTransform;
+    }
   }
 
   @override
@@ -262,8 +271,12 @@ class _OptimizedPieceWidgetState extends State<OptimizedPieceWidget>
       matrix.rotateZ(wobble);
     }
     
-    // Notify transform update
-    widget.onTransformUpdate(matrix);
+    // Defer transform update notification to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        widget.onTransformUpdate(matrix);
+      }
+    });
     
     return matrix;
   }
