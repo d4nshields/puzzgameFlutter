@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:puzzgame_flutter/game_module2/game_module2.dart';
 import 'package:puzzgame_flutter/game_module2/infrastructure/feature_flags.dart';
 
 class MainMenuScreen extends StatefulWidget {
@@ -132,19 +131,12 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
     setState(() => _isLoading = true);
     
     try {
-      // Start the sample puzzle
-      await PuzzleGameModule2.instance.startGame(
-        difficulty: 1,
-        puzzleId: 'sample_puzzle_01',
-        forceNewGame: true,
-      );
-      
-      // Navigate to puzzle screen
+      // Navigate directly to the game screen which will handle game initialization
       if (mounted) {
-        Navigator.pushReplacementNamed(context, '/puzzle');
+        Navigator.pushReplacementNamed(context, '/game');
       }
     } catch (e) {
-      print('Error starting puzzle: $e');
+      print('Error navigating to puzzle: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

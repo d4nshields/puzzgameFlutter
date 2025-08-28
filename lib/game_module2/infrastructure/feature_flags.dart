@@ -26,6 +26,9 @@ class FeatureFlagService {
   /// Get the last source used for flags (database/cache/yaml)
   String get lastSource => _lastSource;
   
+  /// Get when the cache was last updated
+  DateTime? get lastCacheTime => _lastCacheTime;
+  
   /// Initialize the service
   Future<void> initialize({
     String? environment,
@@ -92,14 +95,14 @@ class FeatureFlagService {
         'p_product_name': 'puzzle_nook',
         'p_environment_name': _currentEnvironment,
         'p_user_id': _userId,
-      }).execute();
+      });
       
-      if (response.error != null) {
-        print('[FeatureFlagService] Database error: ${response.error!.message}');
+      if (response == null) {
+        print('[FeatureFlagService] Database error: No response');
         return false;
       }
       
-      final data = response.data as List<dynamic>;
+      final data = response as List<dynamic>;
       print('[FeatureFlagService] Database response: $data');
       
       _flags.clear();
