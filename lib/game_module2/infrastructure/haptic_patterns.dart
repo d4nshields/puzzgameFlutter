@@ -355,7 +355,7 @@ class HapticPatternLibrary {
       },
       durationCurve: (speed) {
         // Faster speed = shorter duration
-        final ms = (200 - speed * 0.15).round().clamp(20, 200) as int;
+        final ms = (200 - speed * 0.15).round().clamp(20, 200);
         return Duration(milliseconds: ms);
       },
     );
