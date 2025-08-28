@@ -57,6 +57,7 @@ dependencies:
   # Utilities for state machine
   collection: ^1.18.0
   logging: ^1.2.0
+  yaml: ^3.1.2  # For feature flag configuration
 
 dev_dependencies:
   flutter_test:
@@ -87,6 +88,7 @@ flutter:
     - assets/images/
     - assets/animations/
     - assets/library/
+    - assets/config/  # Feature flag configurations
     - assets/puzzles/sample_puzzle_01/
     - assets/puzzles/sample_puzzle_01/layouts/8x8/
     - assets/puzzles/sample_puzzle_01/layouts/8x8/pieces/
