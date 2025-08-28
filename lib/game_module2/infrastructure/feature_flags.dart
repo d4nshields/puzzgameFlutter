@@ -1,414 +1,235 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';  // Add Flutter material imports
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:yaml/yaml.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-/// Multi-tenant feature flag service for Tinkerplex products
-/// 
-/// This service provides database-driven feature flags with:
-/// - Multi-product support for all Tinkerplex apps
-/// - Environment-specific configurations
-/// - Offline support with caching
-/// - Gradual rollout capabilities
-/// - User-specific overrides
-class FeatureFlagService extends ChangeNotifier {
-  static FeatureFlagService? _instance;
+/// Database-driven feature flag service with caching and YAML fallback
+class FeatureFlagService {
+  static final FeatureFlagService instance = FeatureFlagService._();
   
-  final String productKey; // e.g., 'puzzle_nook'
-  final String environment; // 'development', 'qa', 'alpha', 'production'
-  final String? userId;
-  final SupabaseClient? supabase;
+  final SupabaseClient _supabase = Supabase.instance.client;
+  final Map<String, bool> _flags = {};
+  final String _cacheKey = 'feature_flags_cache';
+  final Duration _cacheExpiration = const Duration(hours: 1);
   
-  // Three layers of flag sources (priority: database > cache > yaml)
-  Map<String, dynamic> _yamlDefaults = {};
-  Map<String, dynamic> _cachedFlags = {};
-  Map<String, dynamic> _databaseFlags = {};
+  String _currentEnvironment = 'production';
+  String? _userId;
+  DateTime? _lastCacheTime;
+  String _lastSource = 'not_initialized';
   
-  // Track what we're currently using
-  Map<String, dynamic> _activeFlags = {};
-  FlagSource _currentSource = FlagSource.yamlDefaults;
+  FeatureFlagService._();
   
-  bool _databaseFetchInProgress = false;
-  DateTime? _lastDatabaseFetch;
-  Timer? _refreshTimer;
-  bool _disposed = false;
+  /// Get the current environment
+  String get currentEnvironment => _currentEnvironment;
   
-  // Cache management
-  static const Duration _cacheMaxAge = Duration(hours: 24);
-  static const Duration _cacheStaleAge = Duration(hours: 1);
-  static const Duration _refreshInterval = Duration(minutes: 5);
-  
-  /// Singleton getter for default Puzzle Nook instance
-  static FeatureFlagService get instance {
-    _instance ??= FeatureFlagService(
-      productKey: 'puzzle_nook',
-      environment: const String.fromEnvironment('ENVIRONMENT', 
-        defaultValue: 'development'),
-      supabase: Supabase.instance.client,
-    );
-    return _instance!;
-  }
-  
-  /// Constructor for creating product-specific instances
-  FeatureFlagService({
-    required this.productKey,
-    required this.environment,
-    this.userId,
-    this.supabase,
-  });
+  /// Get the last source used for flags (database/cache/yaml)
+  String get lastSource => _lastSource;
   
   /// Initialize the service
-  Future<void> initialize() async {
-    // Step 1: Load YAML defaults immediately
-    await _loadYamlDefaults();
-    _activeFlags = Map.from(_yamlDefaults);
-    _currentSource = FlagSource.yamlDefaults;
-    notifyListeners();
+  Future<void> initialize({
+    String? environment,
+    String? userId,
+  }) async {
+    print('[FeatureFlagService] Initializing...');
+    _currentEnvironment = environment ?? 
+        const String.fromEnvironment('ENVIRONMENT', defaultValue: 'production');
+    _userId = userId ?? _supabase.auth.currentUser?.id;
     
-    // Step 2: Load cache (fast, local)
-    await _loadCache();
-    if (_cachedFlags.isNotEmpty) {
-      _activeFlags = Map.from(_cachedFlags);
-      _currentSource = FlagSource.cache;
-      notifyListeners();
+    print('[FeatureFlagService] Environment: $_currentEnvironment');
+    print('[FeatureFlagService] User ID: $_userId');
+    
+    // Try loading in order: Database -> Cache -> YAML
+    bool loaded = await _loadFromDatabase();
+    
+    if (!loaded) {
+      print('[FeatureFlagService] Database load failed, trying cache...');
+      loaded = await _loadFromCache();
     }
     
-    // Step 3: Fetch from database (async, don't block)
-    _fetchFromDatabase();
+    if (!loaded) {
+      print('[FeatureFlagService] Cache load failed, loading from YAML...');
+      await _loadFromYaml();
+    }
     
-    // Step 4: Set up periodic refresh
-    _startPeriodicRefresh();
+    print('[FeatureFlagService] Initialization complete. Source: $_lastSource');
+    print('[FeatureFlagService] Loaded flags: $_flags');
   }
   
-  /// Load YAML defaults
-  Future<void> _loadYamlDefaults() async {
-    try {
-      // Try to load product-specific YAML first
-      final yamlString = await rootBundle.loadString(
-        'assets/config/feature_flags_${productKey}.yaml'
-      ).catchError((e) async {
-        // Fall back to generic defaults
-        return await rootBundle.loadString(
-          'assets/config/feature_flags_defaults.yaml'
-        );
-      });
-      
-      final yamlMap = loadYaml(yamlString) as Map;
-      
-      // Start with base flags
-      final baseFlags = Map<String, dynamic>.from(yamlMap['base_flags'] ?? {});
-      
-      // Apply environment-specific overrides
-      final envOverrides = yamlMap['environments']?[environment];
-      if (envOverrides != null) {
-        for (final entry in (envOverrides as Map).entries) {
-          // Convert YAML values to simple types
-          if (entry.value is Map) {
-            baseFlags[entry.key] = entry.value;
-          } else {
-            baseFlags[entry.key] = entry.value;
-          }
-        }
-      }
-      
-      _yamlDefaults = baseFlags;
-    } catch (e) {
-      print('Failed to load YAML defaults: $e');
-      // Provide absolute minimum defaults
-      _yamlDefaults = {
-        'debug_mode': false,
-        'performance_monitoring': false,
-        'magnetic_gestures': false,
-        'enhanced_feedback': false,
-        'smooth_animations': true,
-      };
+  /// Force refresh flags from database
+  Future<void> refresh() async {
+    print('[FeatureFlagService] Force refreshing from database...');
+    final loaded = await _loadFromDatabase();
+    if (!loaded) {
+      print('[FeatureFlagService] Database refresh failed, keeping current flags');
+    } else {
+      print('[FeatureFlagService] Flags refreshed successfully');
     }
-  }
-  
-  /// Load cached flags
-  Future<void> _loadCache() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final cacheKey = 'feature_flags_${productKey}_$environment';
-      final timestampKey = 'feature_flags_timestamp_${productKey}_$environment';
-      
-      final jsonString = prefs.getString(cacheKey);
-      final timestamp = prefs.getInt(timestampKey);
-      
-      if (jsonString != null && timestamp != null) {
-        final age = DateTime.now().millisecondsSinceEpoch - timestamp;
-        
-        if (age < _cacheMaxAge.inMilliseconds) {
-          _cachedFlags = Map<String, dynamic>.from(jsonDecode(jsonString));
-          
-          // Check if cache is stale
-          if (age > _cacheStaleAge.inMilliseconds) {
-            // Cache is stale but usable - trigger background refresh
-            _fetchFromDatabase();
-          }
-        }
-      }
-    } catch (e) {
-      print('Failed to load feature flag cache: $e');
-    }
-  }
-  
-  /// Save flags to cache
-  Future<void> _saveToCache(Map<String, dynamic> flags) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final cacheKey = 'feature_flags_${productKey}_$environment';
-      final timestampKey = 'feature_flags_timestamp_${productKey}_$environment';
-      
-      await prefs.setString(cacheKey, jsonEncode(flags));
-      await prefs.setInt(timestampKey, DateTime.now().millisecondsSinceEpoch);
-    } catch (e) {
-      print('Failed to save feature flag cache: $e');
-    }
-  }
-  
-  /// Fetch flags from database
-  Future<void> _fetchFromDatabase() async {
-    if (supabase == null || _databaseFetchInProgress) return;
-    
-    _databaseFetchInProgress = true;
-    
-    try {
-      final response = await supabase!
-          .rpc('get_feature_flags', params: {
-            'p_product_key': productKey,
-            'p_environment': environment,
-            'p_user_id': userId,
-          })
-          .timeout(const Duration(seconds: 5));
-      
-      if (response != null) {
-        _databaseFlags = Map<String, dynamic>.from(response);
-        _activeFlags = Map.from(_databaseFlags);
-        _currentSource = FlagSource.database;
-        _lastDatabaseFetch = DateTime.now();
-        
-        // Update cache with fresh data
-        await _saveToCache(_databaseFlags);
-        
-        notifyListeners();
-      }
-    } catch (e) {
-      print('Database fetch failed, keeping current flags: $e');
-      // Don't change _activeFlags - keep using whatever we have
-    } finally {
-      _databaseFetchInProgress = false;
-    }
-  }
-  
-  /// Start periodic refresh
-  void _startPeriodicRefresh() {
-    _refreshTimer?.cancel();
-    _refreshTimer = Timer.periodic(_refreshInterval, (_) {
-      if (!_disposed) {
-        _fetchFromDatabase();
-      }
-    });
   }
   
   /// Check if a feature is enabled
-  bool isEnabled(String key) {
-    final value = _activeFlags[key];
-    
-    if (value == null) {
-      // Check legacy flags for backward compatibility
-      return _checkLegacyFlag(key);
+  Future<bool> isEnabled(String flagName) async {
+    // Initialize if not already done
+    if (_flags.isEmpty && _lastSource == 'not_initialized') {
+      await initialize();
     }
     
-    if (value is bool) return value;
-    
-    if (value is Map) {
-      // Handle percentage rollout
-      if (value['type'] == 'percentage') {
-        final enabled = value['enabled'] ?? false;
-        if (!enabled) return false;
-        
-        final percentage = value['rollout_percentage'] ?? 0;
-        return _checkPercentageRollout(key, percentage);
+    final enabled = _flags[flagName] ?? false;
+    print('[FeatureFlagService] Flag check: $flagName = $enabled (source: $_lastSource)');
+    return enabled;
+  }
+  
+  /// Get all flags (for debugging)
+  Map<String, bool> getAllFlags() => Map.from(_flags);
+  
+  /// Load flags from Supabase database
+  Future<bool> _loadFromDatabase() async {
+    try {
+      print('[FeatureFlagService] Attempting to load from database...');
+      
+      // Call the RPC function to get feature flags
+      final response = await _supabase.rpc('get_feature_flags', params: {
+        'p_product_name': 'puzzle_nook',
+        'p_environment_name': _currentEnvironment,
+        'p_user_id': _userId,
+      }).execute();
+      
+      if (response.error != null) {
+        print('[FeatureFlagService] Database error: ${response.error!.message}');
+        return false;
       }
       
-      // Handle other complex types
-      return value['enabled'] ?? false;
-    }
-    
-    return false;
-  }
-  
-  /// Check percentage rollout
-  bool _checkPercentageRollout(String flagKey, int percentage) {
-    if (userId == null) {
-      // No user ID, use random
-      return Random().nextInt(100) < percentage;
-    }
-    
-    // Consistent rollout based on user ID
-    final hash = '$userId$flagKey'.hashCode;
-    return (hash.abs() % 100) < percentage;
-  }
-  
-  /// Check legacy flags for backward compatibility
-  bool _checkLegacyFlag(String key) {
-    // Import from old BuildConfig system during transition
-    try {
-      // This will be removed once migration is complete
-      switch (key) {
-        case 'sample_puzzle':
-          // Check compile-time flag if available
-          return const bool.fromEnvironment('SAMPLE_PUZZLE_ENABLED', 
-            defaultValue: false);
-        case 'debug_tools':
-          return const bool.fromEnvironment('DEBUG_TOOLS_ENABLED',
-            defaultValue: false);
-        default:
-          return false;
+      final data = response.data as List<dynamic>;
+      print('[FeatureFlagService] Database response: $data');
+      
+      _flags.clear();
+      for (final row in data) {
+        final flagName = row['flag_name'] as String;
+        final enabled = row['enabled'] as bool;
+        _flags[flagName] = enabled;
       }
+      
+      _lastSource = 'database';
+      _lastCacheTime = DateTime.now();
+      
+      // Save to cache for offline use
+      await _saveToCache();
+      
+      print('[FeatureFlagService] Loaded ${_flags.length} flags from database');
+      return true;
     } catch (e) {
+      print('[FeatureFlagService] Database load error: $e');
       return false;
     }
   }
   
-  /// Get a typed value for a flag
-  T? getValue<T>(String key) {
-    final value = _activeFlags[key];
-    
-    if (value is Map) {
-      // Complex value - extract the actual value
-      if (value['value'] != null) {
-        return value['value'] as T?;
+  /// Load flags from local cache
+  Future<bool> _loadFromCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cacheData = prefs.getString(_cacheKey);
+      final cacheTime = prefs.getInt('${_cacheKey}_time');
+      
+      if (cacheData == null || cacheTime == null) {
+        print('[FeatureFlagService] No cache data found');
+        return false;
       }
-      // For percentage type, return the percentage
-      if (value['type'] == 'percentage' && T == int) {
-        return value['rollout_percentage'] as T?;
+      
+      final cacheDateTime = DateTime.fromMillisecondsSinceEpoch(cacheTime);
+      final age = DateTime.now().difference(cacheDateTime);
+      
+      if (age > _cacheExpiration) {
+        print('[FeatureFlagService] Cache expired (age: ${age.inMinutes} minutes)');
+        return false;
       }
+      
+      final Map<String, dynamic> cached = json.decode(cacheData);
+      _flags.clear();
+      cached.forEach((key, value) {
+        _flags[key] = value as bool;
+      });
+      
+      _lastSource = 'cache';
+      _lastCacheTime = cacheDateTime;
+      
+      print('[FeatureFlagService] Loaded ${_flags.length} flags from cache');
+      return true;
+    } catch (e) {
+      print('[FeatureFlagService] Cache load error: $e');
+      return false;
     }
-    
-    return value as T?;
   }
   
-  /// Get variant for A/B testing
-  String getVariant(String key, {String defaultVariant = 'control'}) {
-    final value = _activeFlags[key];
-    
-    if (value is Map && value['type'] == 'variant') {
-      final variants = value['variants'] as List<String>?;
-      final selectedVariant = value['selected_variant'] as String?;
+  /// Load flags from YAML configuration
+  Future<bool> _loadFromYaml() async {
+    try {
+      print('[FeatureFlagService] Loading from YAML fallback...');
+      final yamlContent = await rootBundle.loadString(
+        'assets/config/feature_flags_puzzle_nook.yaml'
+      );
       
-      if (selectedVariant != null) {
-        return selectedVariant;
-      }
+      // Simple YAML parsing for feature flags
+      final lines = yamlContent.split('\n');
+      _flags.clear();
       
-      if (variants != null && variants.isNotEmpty) {
-        // Select variant based on user ID hash
-        if (userId != null) {
-          final hash = '$userId$key'.hashCode;
-          final index = hash.abs() % variants.length;
-          return variants[index];
+      String? currentFlag;
+      for (final line in lines) {
+        final trimmed = line.trim();
+        if (trimmed.isEmpty || trimmed.startsWith('#')) continue;
+        
+        if (!trimmed.startsWith(' ') && trimmed.endsWith(':')) {
+          // This is a flag name
+          currentFlag = trimmed.substring(0, trimmed.length - 1);
+        } else if (currentFlag != null && trimmed.startsWith('enabled:')) {
+          // This is the enabled value
+          final value = trimmed.substring('enabled:'.length).trim();
+          _flags[currentFlag] = value.toLowerCase() == 'true';
+          currentFlag = null;
         }
-        // Random selection if no user ID
-        return variants[Random().nextInt(variants.length)];
       }
+      
+      _lastSource = 'yaml';
+      
+      print('[FeatureFlagService] Loaded ${_flags.length} flags from YAML');
+      return true;
+    } catch (e) {
+      print('[FeatureFlagService] YAML load error: $e');
+      
+      // Final fallback - hardcoded defaults
+      _flags.clear();
+      _flags['sample_puzzle'] = false;  // Default to false as requested
+      _flags['magnetic_gestures'] = false;
+      _flags['enhanced_feedback'] = false;
+      _flags['smooth_animations'] = false;
+      
+      _lastSource = 'defaults';
+      print('[FeatureFlagService] Using hardcoded defaults');
+      return true;
     }
-    
-    return defaultVariant;
   }
   
-  /// Force refresh from database
-  Future<void> forceRefresh() async {
-    await _fetchFromDatabase();
+  /// Save current flags to cache
+  Future<void> _saveToCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cacheData = json.encode(_flags);
+      await prefs.setString(_cacheKey, cacheData);
+      await prefs.setInt('${_cacheKey}_time', DateTime.now().millisecondsSinceEpoch);
+      print('[FeatureFlagService] Saved ${_flags.length} flags to cache');
+    } catch (e) {
+      print('[FeatureFlagService] Cache save error: $e');
+    }
   }
   
-  /// Clear cache
+  /// Clear the cache (for testing)
   Future<void> clearCache() async {
-    final prefs = await SharedPreferences.getInstance();
-    final cacheKey = 'feature_flags_${productKey}_$environment';
-    final timestampKey = 'feature_flags_timestamp_${productKey}_$environment';
-    
-    await prefs.remove(cacheKey);
-    await prefs.remove(timestampKey);
-    _cachedFlags.clear();
-  }
-  
-  // Getters for monitoring
-  FlagSource get currentSource => _currentSource;
-  bool get isUsingLiveData => _currentSource == FlagSource.database;
-  DateTime? get lastDatabaseUpdate => _lastDatabaseFetch;
-  Map<String, dynamic> get activeFlags => Map.unmodifiable(_activeFlags);
-  
-  /// Get debug information
-  Map<String, dynamic> getDebugInfo() {
-    return {
-      'product': productKey,
-      'environment': environment,
-      'currentSource': _currentSource.toString(),
-      'lastDatabaseFetch': _lastDatabaseFetch?.toIso8601String(),
-      'flagCount': _activeFlags.length,
-      'flags': _activeFlags,
-    };
-  }
-  
-  @override
-  void dispose() {
-    _disposed = true;
-    _refreshTimer?.cancel();
-    super.dispose();
-  }
-}
-
-/// Source of feature flags
-enum FlagSource {
-  yamlDefaults,  // Fallback YAML configuration
-  cache,         // Cached from previous database fetch
-  database,      // Live from database
-}
-
-/// Feature flag gate widget for conditional rendering
-class FeatureGate extends StatelessWidget {
-  final String feature;
-  final Widget child;
-  final Widget? fallback;
-  final FeatureFlagService? service;
-  
-  const FeatureGate({
-    Key? key,
-    required this.feature,
-    required this.child,
-    this.fallback,
-    this.service,
-  }) : super(key: key);
-  
-  @override
-  Widget build(BuildContext context) {
-    final flagService = service ?? FeatureFlagService.instance;
-    
-    return ListenableBuilder(
-      listenable: flagService,
-      builder: (context, _) {
-        if (flagService.isEnabled(feature)) {
-          return child;
-        }
-        return fallback ?? const SizedBox.shrink();
-      },
-    );
-  }
-}
-
-/// Extension for easy feature flag access
-extension FeatureFlagExtension on BuildContext {
-  bool isFeatureEnabled(String feature) {
-    return FeatureFlagService.instance.isEnabled(feature);
-  }
-  
-  T? getFeatureValue<T>(String feature) {
-    return FeatureFlagService.instance.getValue<T>(feature);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_cacheKey);
+      await prefs.remove('${_cacheKey}_time');
+      print('[FeatureFlagService] Cache cleared');
+    } catch (e) {
+      print('[FeatureFlagService] Cache clear error: $e');
+    }
   }
 }

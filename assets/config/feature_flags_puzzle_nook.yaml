@@ -1,99 +1,35 @@
-# Default feature flags for Puzzle Nook
-# This file provides fallback values when database is unavailable
-version: "1.0.0"
+# Feature Flags Configuration for Puzzle Nook
+# This is the fallback when database is unavailable
 
-# Base flags that apply to all environments
-base_flags:
-  # Core game features
-  magnetic_gestures:
-    enabled: false
-    description: "Magnetic snap behavior for puzzle pieces"
-    
-  enhanced_feedback:
-    enabled: false
-    description: "Haptic and audio feedback system"
-    
-  smooth_animations:
-    enabled: true
-    description: "Enhanced animation system"
-    
-  performance_monitoring:
-    enabled: false
-    description: "Collect performance metrics"
-    
-  debug_mode:
-    enabled: false
-    description: "Enable debug tools and panels"
-    
-  # Legacy flags for compatibility
-  sample_puzzle:
-    enabled: false
-    description: "Show sample puzzle (development only)"
-    
-  debug_tools:
-    enabled: false
-    description: "Development tools and overlays"
-    
-  # New features
-  new_hint_system:
-    enabled: false
-    description: "Enhanced hint system"
-    rollout_percentage: 0
-    
-  tutorial_variant:
-    type: "variant"
-    default: "original"
-    variants:
-      - original
-      - simplified
-      - interactive
+sample_puzzle:
+  enabled: false
+  description: "Shows the sample puzzle on app launch"
 
-# Environment-specific overrides
-environments:
-  development:
-    magnetic_gestures: true
-    enhanced_feedback: true
-    smooth_animations: true
-    performance_monitoring: true
-    debug_mode: true
-    sample_puzzle: true
-    debug_tools: true
-    new_hint_system: 
-      enabled: true
-      rollout_percentage: 100
-    
-  qa:
-    magnetic_gestures: true
-    enhanced_feedback: true
-    smooth_animations: true
-    performance_monitoring: true
-    debug_mode: true
-    sample_puzzle: false
-    debug_tools: true
-    new_hint_system:
-      enabled: true
-      rollout_percentage: 100
-    
-  alpha:
-    magnetic_gestures: false
-    enhanced_feedback: true
-    smooth_animations: true
-    performance_monitoring: true
-    debug_mode: false
-    sample_puzzle: false
-    debug_tools: false
-    new_hint_system:
-      enabled: true
-      rollout_percentage: 50
-    
-  production:
-    magnetic_gestures: false
-    enhanced_feedback: false
-    smooth_animations: true
-    performance_monitoring: false
-    debug_mode: false
-    sample_puzzle: false
-    debug_tools: false
-    new_hint_system:
-      enabled: true
-      rollout_percentage: 10
+magnetic_gestures:
+  enabled: false
+  description: "Enable magnetic gesture recognition for piece placement"
+
+enhanced_feedback:
+  enabled: false
+  description: "Enable enhanced haptic and audio feedback"
+
+smooth_animations:
+  enabled: false
+  description: "Enable smooth animations for piece movement"
+
+# Additional flags can be added here
+puzzle_library:
+  enabled: false
+  description: "Enable puzzle library feature"
+
+achievements:
+  enabled: false
+  description: "Enable achievements system"
+
+daily_challenges:
+  enabled: false
+  description: "Enable daily puzzle challenges"
+
+social_features:
+  enabled: false
+  description: "Enable social features like sharing and leaderboards"
