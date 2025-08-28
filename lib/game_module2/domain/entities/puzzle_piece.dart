@@ -48,6 +48,7 @@ class PuzzlePiece {
   bool get isPlaced => _isPlaced;
   bool get isSelected => _isSelected;
   bool get isInTray => _currentPosition == null;
+  bool get isLocked => _isPlaced; // A piece is considered locked when it's placed
   DateTime? get pickupTime => _pickupTime;
   DateTime? get placementTime => _placementTime;
 
@@ -56,6 +57,12 @@ class PuzzlePiece {
     if (_pickupTime == null) return null;
     final endTime = _placementTime ?? DateTime.now();
     return endTime.difference(_pickupTime!);
+  }
+
+  /// Check if the piece is at its correct position
+  bool isAtCorrectPosition({double tolerance = 1.0}) {
+    if (_currentPosition == null) return false;
+    return _currentPosition!.distanceTo(correctPosition) <= tolerance;
   }
 
   /// Check if the piece is near its correct position
