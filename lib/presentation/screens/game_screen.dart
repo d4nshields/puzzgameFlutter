@@ -10,6 +10,8 @@ import 'package:puzzgame_flutter/game_module/widgets/puzzle_selection_widget.dar
 import 'package:puzzgame_flutter/game_module/widgets/enhanced_puzzle_game_widget.dart';
 import 'package:puzzgame_flutter/game_module2/puzzle_game_module2.dart';
 import 'package:puzzgame_flutter/game_module2/presentation/widgets/puzzle_workspace_widget.dart';
+import 'package:puzzgame_flutter/game_module2/presentation/widgets/puzzle_workspace_widget_magnetic.dart';
+import 'package:puzzgame_flutter/game_module2/debug_tracer.dart';
 import 'package:puzzgame_flutter/game_module2/infrastructure/feature_flags.dart';
 
 /// Provider for game session state that automatically restarts when difficulty changes
@@ -27,10 +29,19 @@ class GameSessionNotifier extends AsyncNotifier<GameSession?> {
       final featureFlags = FeatureFlagService.instance;
       await featureFlags.initialize();
       final samplePuzzle = await featureFlags.isEnabled('sample_puzzle');
+      final magneticGestures = await featureFlags.isEnabled('magnetic_gestures');
       print('>>> GAMESCREEN: sample_puzzle flag = $samplePuzzle <<<');
+      print('>>> GAMESCREEN: magnetic_gestures flag = $magneticGestures <<<');
       print('>>> GAMESCREEN: Flag source = ${featureFlags.lastSource} <<<');
+      
+      DebugTracer.log('GAMESCREEN', 'Feature flags checked', data: {
+        'sample_puzzle': samplePuzzle,
+        'magnetic_gestures': magneticGestures,
+        'source': featureFlags.lastSource,
+      });
     } catch (e) {
       print('>>> GAMESCREEN: Error checking feature flags: $e <<<');
+      DebugTracer.log('GAMESCREEN', 'Error checking flags: $e');
     }
     
     // Watch difficulty changes to automatically restart game
@@ -211,19 +222,37 @@ class GameScreen extends ConsumerWidget {
 
     // Check if this is using the new game_module2
     if (gameSession is PuzzleGameSession2) {
-      return Column(
-        children: [
-          // Show current puzzle info
-          _buildPuzzleInfo2(context, gameSession, difficulty, gridSize, ref),
+      // Check if magnetic gestures are enabled
+      return FutureBuilder<bool>(
+        future: FeatureFlagService.instance.isEnabled('magnetic_gestures'),
+        builder: (context, snapshot) {
+          final useMagnetic = snapshot.data ?? false;
           
-          // New puzzle workspace widget with fixed piece placement
-          Expanded(
-            child: PuzzleWorkspaceWidget(
-              gameSession: gameSession,
-              onGameCompleted: () => _onPuzzleCompleted(context, ref),
-            ),
-          ),
-        ],
+          DebugTracer.log('GAMESCREEN', 'Choosing widget', data: {
+            'use_magnetic': useMagnetic,
+            'widget': useMagnetic ? 'PuzzleWorkspaceWidgetMagnetic' : 'PuzzleWorkspaceWidget',
+          });
+          
+          return Column(
+            children: [
+              // Show current puzzle info
+              _buildPuzzleInfo2(context, gameSession, difficulty, gridSize, ref),
+              
+              // Choose widget based on feature flag
+              Expanded(
+                child: useMagnetic
+                  ? PuzzleWorkspaceWidgetMagnetic(
+                      gameSession: gameSession,
+                      onGameCompleted: () => _onPuzzleCompleted(context, ref),
+                    )
+                  : PuzzleWorkspaceWidget(
+                      gameSession: gameSession,
+                      onGameCompleted: () => _onPuzzleCompleted(context, ref),
+                    ),
+              ),
+            ],
+          );
+        },
       );
     }
     
