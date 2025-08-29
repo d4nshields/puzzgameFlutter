@@ -25,11 +25,15 @@ void main() async {
   print('Supabase initialized successfully in main()');
   
   // Initialize Feature Flags BEFORE service locator setup
-  print('Initializing feature flag service...');
+  print('=== INITIALIZING FEATURE FLAGS ===');
+  print('Creating FeatureFlagService instance...');
   _globalFeatureFlags = FeatureFlagService.instance;
+  print('Calling initialize on FeatureFlagService...');
   await _globalFeatureFlags.initialize();
+  print('Feature flag initialization complete');
   
   // Debug output for feature flags
+  print('Checking feature flag values...');
   final showSamplePuzzle = await _globalFeatureFlags.isEnabled('sample_puzzle');
   final magneticGestures = await _globalFeatureFlags.isEnabled('magnetic_gestures');
   final enhancedFeedback = await _globalFeatureFlags.isEnabled('enhanced_feedback');
@@ -43,6 +47,13 @@ void main() async {
   print('Flag source: ${_globalFeatureFlags.lastSource}');
   print('Environment: ${_globalFeatureFlags.currentEnvironment}');
   print('===========================');
+  
+  // IMPORTANT: Override navigation based on feature flag
+  if (!showSamplePuzzle) {
+    print('>>> SAMPLE PUZZLE DISABLED - Should show menu/registration <<<');
+  } else {
+    print('>>> SAMPLE PUZZLE ENABLED - Will show puzzle <<<');
+  }
   
   // Set up dependency injection
   setupDependencies();
@@ -119,10 +130,13 @@ class PuzzleBazaarGameApp extends StatelessWidget {
 class FeatureFlagAwareHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    print('>>> FeatureFlagAwareHome: Checking feature flags...');
+    
     return FutureBuilder<bool>(
       future: _globalFeatureFlags.isEnabled('sample_puzzle'),
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
+          print('>>> FeatureFlagAwareHome: Still loading flags...');
           // Still checking feature flags
           return const Scaffold(
             body: Center(
@@ -133,8 +147,8 @@ class FeatureFlagAwareHome extends StatelessWidget {
         
         final showSamplePuzzle = snapshot.data ?? false;
         
-        print('FeatureFlagAwareHome: sample_puzzle = $showSamplePuzzle');
-        print('FeatureFlagAwareHome: Navigating to ${showSamplePuzzle ? "GameScreen" : "EarlyAccessRegistrationScreen"}');
+        print('>>> FeatureFlagAwareHome: sample_puzzle = $showSamplePuzzle');
+        print('>>> FeatureFlagAwareHome: Navigating to ${showSamplePuzzle ? "GameScreen" : "EarlyAccessRegistrationScreen"}');
         
         // Navigate based on feature flag
         if (showSamplePuzzle) {
