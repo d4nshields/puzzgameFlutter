@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import '../../puzzle_game_module2.dart';
 import '../../debug_tracer.dart';
 import '../../../game_module/puzzle_game_module.dart' show PuzzlePiece;
-import '../gestures/magnetic_gesture_recognizer.dart';
+import '../gestures/magnetic_gesture_recognizer.dart' show MagneticSnapPoint;
 import '../../infrastructure/feature_flags.dart';
 
 /// Extended magnetic snap point with grid metadata
@@ -43,8 +43,7 @@ class _PuzzleWorkspaceWidgetMagneticState extends State<PuzzleWorkspaceWidgetMag
   // Track pieces on workspace
   final Map<String, Offset> _workspacePiecePositions = {};
   
-  // Magnetic gesture configuration
-  late MagneticFieldConfiguration _magneticConfig;
+  // Magnetic snap points for grid positions
   final List<ExtendedMagneticSnapPoint> _snapPoints = [];
   
   // Track dragging state
@@ -119,19 +118,13 @@ class _PuzzleWorkspaceWidgetMagneticState extends State<PuzzleWorkspaceWidgetMag
       }
     }
     
-    // Configure magnetic field
-    _magneticConfig = MagneticFieldConfiguration(
-      snapPoints: _snapPoints,
-      strength: 0.5, // Medium strength
-      minimumInfluence: 0.1,
-      maxInfluence: 5.0,
-      falloffType: FieldFalloffType.quadratic,
-    );
+    // Note: We're using direct snap point calculations rather than
+    // MagneticFieldConfiguration. The configuration could be used
+    // if we integrate the full MagneticGestureRecognizer in the future.
     
     DebugTracer.logMagnetic('Magnetic system initialized', data: {
       'snap_points': _snapPoints.length,
-      'field_strength': 0.5,
-      'falloff': 'quadratic',
+      'grid_size': gridSize,
     });
   }
   
@@ -153,49 +146,10 @@ class _PuzzleWorkspaceWidgetMagneticState extends State<PuzzleWorkspaceWidgetMag
     }
   }
   
-  /// Create a magnetic gesture recognizer for a piece
-  MagneticGestureRecognizer _createMagneticRecognizer(PuzzlePiece piece) {
-    DebugTracer.logMagnetic('Creating magnetic recognizer for piece ${piece.id}');
-    
-    return MagneticGestureRecognizer(
-      fieldConfig: _magneticConfig,
-      debugMode: _showDebugInfo,
-    )
-      ..onStart = (details) {
-        DebugTracer.logInteraction('Drag START: piece ${piece.id}', data: details.globalPosition);
-        setState(() {
-          _draggingPieceId = piece.id;
-          _dragOffset = details.localPosition;
-        });
-        if (_enhancedFeedback) {
-          HapticFeedback.selectionClick();
-        }
-      }
-      ..onUpdate = (details) {
-        if (_draggingPieceId == piece.id) {
-          setState(() {
-            _workspacePiecePositions[piece.id] = details.localPosition - (_dragOffset ?? Offset.zero);
-          });
-        }
-      }
-      ..onEnd = (details) {
-        DebugTracer.logInteraction('Drag END: piece ${piece.id}', data: {
-          'velocity': details.velocity,
-          'position': _workspacePiecePositions[piece.id],
-        });
-        _handleMagneticDrop(piece, details);
-      }
-      ..onMagneticInfluence = (influence) {
-        DebugTracer.logMagnetic('Magnetic influence on ${piece.id}', data: {
-          'strength': influence.strength,
-          'direction': influence.direction,
-        });
-        
-        if (_enhancedFeedback && influence.strength > 0.3) {
-          HapticFeedback.lightImpact();
-        }
-      };
-  }
+  // Note: The MagneticGestureRecognizer from magnetic_gesture_recognizer.dart
+  // is available but not currently used. We're using simplified GestureDetector
+  // with manual magnetic calculations for now. The full magnetic recognizer
+  // could be integrated in the future for more advanced magnetic field effects.
   
   void _handleMagneticDrop(PuzzlePiece piece, DragEndDetails details) {
     DebugTracer.logMagnetic('Processing magnetic drop for ${piece.id}');
@@ -285,6 +239,70 @@ class _PuzzleWorkspaceWidgetMagneticState extends State<PuzzleWorkspaceWidgetMag
     setState(() {
       _workspacePiecePositions[pieceId] = targetPosition;
     });
+  }
+  
+  /// Check if a newly placed piece from the tray should snap to a grid position
+  void _checkMagneticSnapForNewPiece(PuzzlePiece piece, Offset position) {
+    DebugTracer.logMagnetic('Checking magnetic snap for new piece ${piece.id}');
+    
+    // Find nearest snap point
+    ExtendedMagneticSnapPoint? nearestSnap;
+    double minDistance = double.infinity;
+    
+    for (final snap in _snapPoints) {
+      final distance = (snap.position - position).distance;
+      if (distance < minDistance && distance < snap.radius * 1.5) { // Larger radius for initial placement
+        minDistance = distance;
+        nearestSnap = snap;
+      }
+    }
+    
+    if (nearestSnap != null) {
+      final row = nearestSnap.row;
+      final col = nearestSnap.col;
+      
+      DebugTracer.logMagnetic('Piece ${piece.id} near snap point ($row, $col)', data: {
+        'distance': minDistance,
+        'snap_radius': nearestSnap.radius,
+      });
+      
+      // Snap to the position
+      if (_smoothAnimations) {
+        _animateToPosition(piece.id, nearestSnap.position);
+      } else {
+        _workspacePiecePositions[piece.id] = nearestSnap.position;
+      }
+      
+      // Check if it's the correct position
+      if (piece.correctRow == row && piece.correctCol == col) {
+        // Correct placement!
+        DebugTracer.logMagnetic('✅ Piece ${piece.id} placed correctly at ($row, $col)');
+        
+        // Calculate pixel coordinates and place the piece
+        final canvasSize = widget.gameSession.canvasInfo.canvasSize;
+        final gridSize = widget.gameSession.gridSize;
+        final x = col * (canvasSize.width / gridSize);
+        final y = row * (canvasSize.height / gridSize);
+        
+        widget.gameSession.tryPlacePieceAt(piece, x, y);
+        _workspacePiecePositions.remove(piece.id);
+        
+        if (_enhancedFeedback) {
+          HapticFeedback.heavyImpact();
+        }
+        
+        // Check for completion
+        if (widget.gameSession.isCompleted) {
+          DebugTracer.log('COMPLETE', '🎉 Puzzle completed!');
+          widget.onGameCompleted?.call();
+        }
+      } else {
+        // Wrong position but still snap for visual feedback
+        if (_enhancedFeedback) {
+          HapticFeedback.lightImpact();
+        }
+      }
+    }
   }
   
   double _calculateCanvasScale(Size canvasSize, Size availableSize) {
@@ -403,30 +421,50 @@ class _PuzzleWorkspaceWidgetMagneticState extends State<PuzzleWorkspaceWidgetMag
         left: position.dx,
         top: position.dy,
         child: GestureDetector(
-          onPanStart: _createMagneticRecognizer(piece).onStart != null 
-            ? (details) => _createMagneticRecognizer(piece).onStart!(
-                DragStartDetails(
-                  globalPosition: details.globalPosition,
-                  localPosition: details.localPosition,
-                )
-              )
-            : null,
-          onPanUpdate: _createMagneticRecognizer(piece).onUpdate != null
-            ? (details) => _createMagneticRecognizer(piece).onUpdate!(
-                DragUpdateDetails(
-                  globalPosition: details.globalPosition,
-                  localPosition: details.localPosition,
-                  delta: details.delta,
-                )
-              )
-            : null,
-          onPanEnd: _createMagneticRecognizer(piece).onEnd != null
-            ? (details) => _createMagneticRecognizer(piece).onEnd!(
-                DragEndDetails(
-                  velocity: details.velocity,
-                )
-              )
-            : null,
+          onPanStart: (details) {
+            DebugTracer.logInteraction('Drag START: piece ${piece.id}', data: details.globalPosition);
+            setState(() {
+              _draggingPieceId = piece.id;
+              _dragOffset = details.localPosition;
+            });
+            if (_enhancedFeedback) {
+              HapticFeedback.selectionClick();
+            }
+          },
+          onPanUpdate: (details) {
+            if (_draggingPieceId == piece.id) {
+              setState(() {
+                // Update position based on drag
+                final RenderBox? overlayBox = _overlayKey.currentContext?.findRenderObject() as RenderBox?;
+                if (overlayBox != null) {
+                  final localPosition = overlayBox.globalToLocal(details.globalPosition);
+                  _workspacePiecePositions[piece.id] = localPosition - (_dragOffset ?? Offset.zero);
+                  
+                  // Check for magnetic influence during drag
+                  if (_magneticEnabled) {
+                    for (final snap in _snapPoints) {
+                      final distance = (snap.position - _workspacePiecePositions[piece.id]!).distance;
+                      if (distance < snap.radius) {
+                        final influence = 1.0 - (distance / snap.radius);
+                        if (influence > 0.3 && _enhancedFeedback) {
+                          HapticFeedback.lightImpact();
+                        }
+                      }
+                    }
+                  }
+                }
+              });
+            }
+          },
+          onPanEnd: (details) {
+            DebugTracer.logInteraction('Drag END: piece ${piece.id}', data: {
+              'velocity': details.velocity,
+              'position': _workspacePiecePositions[piece.id],
+            });
+            _handleMagneticDrop(piece, DragEndDetails(
+              velocity: details.velocity,
+            ));
+          },
           child: Container(
             width: 80,
             height: 80,
@@ -436,11 +474,28 @@ class _PuzzleWorkspaceWidgetMagneticState extends State<PuzzleWorkspaceWidgetMag
                 color: _draggingPieceId == pieceId ? Colors.blue : Colors.grey,
                 width: _draggingPieceId == pieceId ? 3 : 1,
               ),
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: _draggingPieceId == pieceId
+                ? [
+                    BoxShadow(
+                      color: Colors.blue.withOpacity(0.5),
+                      blurRadius: 12,
+                      spreadRadius: 2,
+                    ),
+                  ]
+                : [],
             ),
             child: Center(
-              child: Text(
-                piece.id,
-                style: const TextStyle(fontSize: 10),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.extension, color: Colors.blue, size: 30),
+                  const SizedBox(height: 4),
+                  Text(
+                    piece.id,
+                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
             ),
           ),
@@ -493,17 +548,97 @@ class _PuzzleWorkspaceWidgetMagneticState extends State<PuzzleWorkspaceWidgetMag
           final piece = widget.gameSession.trayPieces[index];
           return Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.amber.withOpacity(0.3),
-                border: Border.all(color: Colors.amber),
+            child: Draggable<PuzzlePiece>(
+              data: piece,
+              feedback: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: Colors.amber.withOpacity(0.7),
+                  border: Border.all(color: Colors.amber, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(2, 2),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    piece.id,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ),
               ),
-              child: Center(
-                child: Text(
-                  piece.id,
-                  style: const TextStyle(fontSize: 10),
+              childWhenDragging: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.3),
+                  border: Border.all(color: Colors.grey),
+                ),
+              ),
+              onDragStarted: () {
+                DebugTracer.logInteraction('Started dragging piece ${piece.id} from tray');
+                if (_enhancedFeedback) {
+                  HapticFeedback.selectionClick();
+                }
+              },
+              onDragEnd: (details) {
+                // Convert the drag end position to local coordinates and add to workspace
+                DebugTracer.logInteraction('Dropped piece ${piece.id} from tray', data: {
+                  'global_position': details.offset,
+                });
+                
+                // Find the position relative to the Stack
+                final RenderBox? overlayBox = _overlayKey.currentContext?.findRenderObject() as RenderBox?;
+                if (overlayBox != null) {
+                  final localPosition = overlayBox.globalToLocal(details.offset);
+                  
+                  // Check if dropped within the canvas area (not in tray)
+                  if (localPosition.dy < overlayBox.size.height - 120) {
+                    setState(() {
+                      // Move piece from tray to workspace
+                      _workspacePiecePositions[piece.id] = localPosition;
+                      
+                      // Check for magnetic snap
+                      if (_magneticEnabled) {
+                        _checkMagneticSnapForNewPiece(piece, localPosition);
+                      }
+                    });
+                    
+                    DebugTracer.logWorkspace('Piece ${piece.id} moved to workspace', data: localPosition);
+                  } else {
+                    DebugTracer.logWorkspace('Piece ${piece.id} dropped back in tray area');
+                  }
+                }
+              },
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: Colors.amber.withOpacity(0.3),
+                  border: Border.all(color: Colors.amber),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.extension, color: Colors.amber, size: 30),
+                      const SizedBox(height: 4),
+                      Text(
+                        piece.id,
+                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
