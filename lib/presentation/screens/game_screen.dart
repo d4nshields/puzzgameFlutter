@@ -10,6 +10,7 @@ import 'package:puzzgame_flutter/game_module/widgets/puzzle_selection_widget.dar
 import 'package:puzzgame_flutter/game_module/widgets/enhanced_puzzle_game_widget.dart';
 import 'package:puzzgame_flutter/game_module2/puzzle_game_module2.dart';
 import 'package:puzzgame_flutter/game_module2/presentation/widgets/puzzle_workspace_widget.dart';
+import 'package:puzzgame_flutter/game_module2/infrastructure/feature_flags.dart';
 
 /// Provider for game session state that automatically restarts when difficulty changes
 final gameSessionProvider = AsyncNotifierProvider<GameSessionNotifier, GameSession?>(() {
@@ -20,6 +21,18 @@ final gameSessionProvider = AsyncNotifierProvider<GameSessionNotifier, GameSessi
 class GameSessionNotifier extends AsyncNotifier<GameSession?> {
   @override
   Future<GameSession?> build() async {
+    // FEATURE FLAG CHECK - THIS MUST PRINT
+    print('>>> GAMESCREEN: Checking feature flags in GameSessionNotifier <<<');
+    try {
+      final featureFlags = FeatureFlagService.instance;
+      await featureFlags.initialize();
+      final samplePuzzle = await featureFlags.isEnabled('sample_puzzle');
+      print('>>> GAMESCREEN: sample_puzzle flag = $samplePuzzle <<<');
+      print('>>> GAMESCREEN: Flag source = ${featureFlags.lastSource} <<<');
+    } catch (e) {
+      print('>>> GAMESCREEN: Error checking feature flags: $e <<<');
+    }
+    
     // Watch difficulty changes to automatically restart game
     final difficulty = await ref.watch(difficultyProvider.future);
     
