@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,18 +30,49 @@ class FeatureFlagService {
   /// Get when the cache was last updated
   DateTime? get lastCacheTime => _lastCacheTime;
   
+  /// Detect the deployment channel/track from Google Play
+  Future<String> _detectDeploymentChannel() async {
+    try {
+      // Check if debug mode - definitely development
+      if (!const bool.fromEnvironment('dart.vm.product')) {
+        return 'development';  // Local debug builds
+      }
+      
+      // For release builds deployed to Play Store
+      // Since we can't detect the actual track without native code,
+      // default to 'development' for internal testing channel
+      // You'll need to change this when deploying to other channels:
+      // - 'qa' for closed testing
+      // - 'alpha' for open testing  
+      // - 'production' for production
+      return 'development';  // Internal testing channel
+    } catch (e) {
+      print('[FeatureFlagService] Error detecting deployment channel: $e');
+      return 'production';
+    }
+  }
+  
   /// Initialize the service
   Future<void> initialize({
     String? environment,
     String? userId,
   }) async {
     print('[FeatureFlagService] Initializing...');
-    _currentEnvironment = environment ?? 
-        const String.fromEnvironment('ENVIRONMENT', defaultValue: 'production');
+    
+    // Determine environment
+    if (environment != null) {
+      _currentEnvironment = environment;
+    } else {
+      // Try to detect deployment channel
+      _currentEnvironment = await _detectDeploymentChannel();
+    }
+    
     _userId = userId ?? _supabase.auth.currentUser?.id;
     
     print('[FeatureFlagService] Environment: $_currentEnvironment');
     print('[FeatureFlagService] User ID: $_userId');
+    print('[FeatureFlagService] Auth current user: ${_supabase.auth.currentUser?.id}');
+    print('[FeatureFlagService] Debug mode: ${bool.fromEnvironment('dart.vm.product') == false}');
     
     // Try loading in order: Database -> Cache -> YAML
     bool loaded = await _loadFromDatabase();
@@ -89,27 +121,45 @@ class FeatureFlagService {
   Future<bool> _loadFromDatabase() async {
     try {
       print('[FeatureFlagService] Attempting to load from database...');
+      print('[FeatureFlagService] Using environment: $_currentEnvironment');
+      print('[FeatureFlagService] Using user_id: $_userId');
       
       // Call the RPC function to get feature flags
       final response = await _supabase.rpc('get_feature_flags', params: {
-        'p_product_name': 'puzzle_nook',
-        'p_environment_name': _currentEnvironment,
+        'p_product_key': 'puzzle_nook',
+        'p_environment': _currentEnvironment,
         'p_user_id': _userId,
       });
+      
+      print('[FeatureFlagService] Raw RPC response: $response');
       
       if (response == null) {
         print('[FeatureFlagService] Database error: No response');
         return false;
       }
       
-      final data = response as List<dynamic>;
-      print('[FeatureFlagService] Database response: $data');
-      
-      _flags.clear();
-      for (final row in data) {
-        final flagName = row['flag_name'] as String;
-        final enabled = row['enabled'] as bool;
-        _flags[flagName] = enabled;
+      // Handle response as a Map (the RPC returns a single object with flag names as keys)
+      if (response is Map<String, dynamic>) {
+        _flags.clear();
+        response.forEach((key, value) {
+          // Handle boolean values directly or nested objects with 'enabled' field
+          if (value is bool) {
+            _flags[key] = value;
+          } else if (value is Map && value.containsKey('enabled')) {
+            _flags[key] = value['enabled'] as bool;
+          }
+        });
+      } else {
+        // Fallback to original list handling if format changes
+        final data = response as List<dynamic>;
+        print('[FeatureFlagService] Database response: $data');
+        
+        _flags.clear();
+        for (final row in data) {
+          final flagName = row['flag_name'] as String;
+          final enabled = row['enabled'] as bool;
+          _flags[flagName] = enabled;
+        }
       }
       
       _lastSource = 'database';
